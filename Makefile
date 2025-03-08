@@ -1,6 +1,6 @@
 ## dry-run: Test home in a local container
 dry-run: ## - dry-run test home configuration in a local container
-	rm -rf $(CACHE_DIR)
+	guix home container home.scm
 
 ## help: Show this help.
 .PHONY: help
