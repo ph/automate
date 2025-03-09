@@ -16,6 +16,7 @@
   #:use-module (gnu packages vim)
   #:use-module (gnu packages ghostscript)
   #:use-module (packages gnu home services zathura)
+  #:use-module (packages gnu home services mako)
   #:use-module (packages gnu packages wayland))
 
 (define %user "ph")
@@ -63,5 +64,6 @@
              (syncthing-configuration
               (user %user))))
    (service home-dbus-service-type)
+   (service home-mako-service-type)
    (service home-zathura-service-type)
    (service home-fish-service-type))))

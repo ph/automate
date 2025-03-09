@@ -6,16 +6,9 @@
   #:use-module (gnu services configuration)
   #:use-module (guix packages)
   #:use-module (guix gexp)
-  #:export (
-	    home-zathura-service-type
+  #:use-module (packages helpers)
+  #:export (home-zathura-service-type
 	    home-zathura-configuration))
-
-(define (extra-content? content)
-  (every string-or-gexp? content))
-
-(define (string-or-gexp? s)
-  (or (gexp? s)
-      (string? s)))
 
 (define %zathura-default-extra-content
   '("map <C-=> zoom in"
