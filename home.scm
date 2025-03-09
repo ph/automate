@@ -167,7 +167,6 @@
    xdg-utils
    xdg-desktop-portal
    xdg-desktop-portal-wlr
-   avizo
    pamixer
    pulseaudio
    pavucontrol
