@@ -66,4 +66,5 @@
    (service home-dbus-service-type)
    (service home-mako-service-type)
    (service home-zathura-service-type)
+   (service home-pipewire-service-type)
    (service home-fish-service-type))))
