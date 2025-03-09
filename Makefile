@@ -1,6 +1,8 @@
+ARGS := --verbosity=1
+
 ## dry-run: Test home in a local container
 dry-run: ## - dry-run test home configuration in a local container
-	guix home container home.scm
+	guix home container home.scm $< $(ARGS)
 
 ## help: Show this help.
 .PHONY: help
