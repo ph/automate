@@ -1,13 +1,13 @@
 (define-module (packages gnu home services avizo)
-  #:use-module (gnu services configuration)
-  #:use-module (gnu home services)
   #:use-module (gnu home services shepherd)
-  #:use-module (guix packages)
-  #:use-module (guix gexp)
-  #:use-module (srfi srfi-1)
+  #:use-module (gnu home services)
   #:use-module (gnu packages wm)
+  #:use-module (gnu services configuration)
   #:use-module (gnu services)
+  #:use-module (guix gexp)
+  #:use-module (guix packages)
   #:use-module (packages helpers)
+  #:use-module (srfi srfi-1)
   #:export (home-avizo-service-type
 	    home-avizo-configuration))
 
@@ -22,7 +22,7 @@
 (define (home-avizo-shepherd-services config)
   (list (shepherd-service
 	 (provision '(avizo))
-	 (documentation "Run the avizo daemon.")
+	 (documentation "Run the Avizo daemon.")
 	 (start #~(make-forkexec-constructor
 		   (#$(file-append avizo "/bin/avizo"))))
 	 (stop #~(make-kill-destructor)))))

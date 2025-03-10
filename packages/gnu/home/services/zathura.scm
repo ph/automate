@@ -1,12 +1,12 @@
 (define-module (packages gnu home services zathura)
-  #:use-module (srfi srfi-1)
-  #:use-module (gnu packages pdf)
-  #:use-module (gnu services)
   #:use-module (gnu home services)
+  #:use-module (gnu packages pdf)
   #:use-module (gnu services configuration)
-  #:use-module (guix packages)
+  #:use-module (gnu services)
   #:use-module (guix gexp)
+  #:use-module (guix packages)
   #:use-module (packages helpers)
+  #:use-module (srfi srfi-1)
   #:export (home-zathura-service-type
 	    home-zathura-configuration))
 

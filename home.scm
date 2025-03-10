@@ -1,78 +1,80 @@
 (define-module (home)
-  #:use-module (guix gexp)
-  #:use-module (gnu home)
-  #:use-module (gnu home services)
-  #:use-module (gnu home services syncthing)
-  #:use-module (gnu home services sway)
   #:use-module (gnu home services desktop)
-  #:use-module (gnu home services shells)
   #:use-module (gnu home services gnupg)
+  #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services sound)
-  #:use-module (gnu services)
-  #:use-module (gnu services configuration)
-  #:use-module (gnu packages)
-  #:use-module (guix packages)
-  #:use-module (gnu system keyboard)
+  #:use-module (gnu home services sway)
+  #:use-module (gnu home services syncthing)
+  #:use-module (gnu home services)
+  #:use-module (gnu home)
   #:use-module (gnu packages admin)
-  #:use-module (gnu packages fonts)
-  #:use-module (gnu packages vim)
-  #:use-module (gnu packages web)
-  #:use-module (gnu packages librewolf)
-  #:use-module (gnu packages chromium)
-  #:use-module (gnu packages curl)
-  #:use-module (gnu packages tree-sitter)
-  #:use-module (gnu packages video)
-  #:use-module (gnu packages virtualization)
-  #:use-module (gnu packages docker)
-  #:use-module (gnu packages compression)
-  #:use-module (gnu packages rsync)
-  #:use-module (gnu packages graphviz)
-  #:use-module (gnu packages python)
   #:use-module (gnu packages algebra)
-  #:use-module (gnu packages mail)
-  #:use-module (gnu packages password-utils)
-  #:use-module (gnu packages terminals)
-  #:use-module (gnu packages image-viewers)
-  #:use-module (gnu packages xdisorg)
-  #:use-module (gnu packages networking)
-  #:use-module (gnu packages gnome)
-  #:use-module (gnu packages gnome-xyz)
+  #:use-module (gnu packages aspell)
+  #:use-module (gnu packages chromium)
+  #:use-module (gnu packages compression)
+  #:use-module (gnu packages curl)
+  #:use-module (gnu packages docker)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages emulators)
-  #:use-module (gnu packages package-management)
-  #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages rust-apps)
-  #:use-module (gnu packages aspell)
-  #:use-module (gnu packages tls)
-  #:use-module (gnu packages license)
-  #:use-module (gnu packages shellutils)
-  #:use-module (gnu packages node)
-  #:use-module (gnu packages wm)
-  #:use-module (gnu packages pulseaudio)
-  #:use-module (gnu packages music)
-  #:use-module (gnu packages image)
-  #:use-module (gnu packages graphics)
-  #:use-module (gnu packages inkscape)
   #:use-module (gnu packages engineering)
+  #:use-module (gnu packages fonts)
+  #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages ghostscript)
+  #:use-module (gnu packages glib)
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages gnome-xyz)
+  #:use-module (gnu packages graphics)
+  #:use-module (gnu packages graphviz)
   #:use-module (gnu packages haskell-apps)
   #:use-module (gnu packages haskell-xyz)
+  #:use-module (gnu packages image)
+  #:use-module (gnu packages image-viewers)
+  #:use-module (gnu packages inkscape)
+  #:use-module (gnu packages librewolf)
+  #:use-module (gnu packages license)
+  #:use-module (gnu packages mail)
+  #:use-module (gnu packages music)
+  #:use-module (gnu packages networking)
+  #:use-module (gnu packages node)
+  #:use-module (gnu packages package-management)
+  #:use-module (gnu packages password-utils)
+  #:use-module (gnu packages pulseaudio)
+  #:use-module (gnu packages python)
+  #:use-module (gnu packages rsync)
+  #:use-module (gnu packages rust-apps)
+  #:use-module (gnu packages shellutils)
+  #:use-module (gnu packages terminals)
+  #:use-module (gnu packages tls)
+  #:use-module (gnu packages tree-sitter)
   #:use-module (gnu packages version-control)
-  #:use-module (gnu packages ghostscript)
+  #:use-module (gnu packages video)
+  #:use-module (gnu packages vim)
+  #:use-module (gnu packages virtualization)
+  #:use-module (gnu packages web)
+  #:use-module (gnu packages wm)
+  #:use-module (gnu packages xdisorg)
+  #:use-module (gnu packages)
+  #:use-module (gnu services configuration)
+  #:use-module (gnu services)
+  #:use-module (gnu system keyboard)
+  #:use-module (guix gexp)
+  #:use-module (guix packages)
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages mozilla)
-  #:use-module (packages gnu home services zathura)
-  #:use-module (packages gnu home services mako)
   #:use-module (packages gnu home services avizo)
-  #:use-module (packages gnu packages wayland)
-  #:use-module (packages gnu packages rust-apps))
+  #:use-module (packages gnu home services mako)
+  #:use-module (packages gnu home services zathura)
+  #:use-module (packages gnu packages rust-apps)
+  #:use-module (packages gnu packages wayland))
 
 (define %user "ph")
 
 (define %vcs
   (list git
 	git
+	jujutsu
 	`(,git "send-email")))
 
 (define %browsers
@@ -85,7 +87,6 @@
 	curl
 	b4
 	reuse
-	;; jujutsu
 	flatpak
 	flatpak-xdg-utils
 	fd
@@ -171,6 +172,7 @@
 
 (define %wm
   (list
+   `(,glib "bin")
    blueman
    alacritty
    foot
@@ -183,13 +185,9 @@
    pulseaudio
    pavucontrol
    playerctl
-   sway
-   swaybg
-   swayidle
    waybar
    grim
    slurp
-   wl-clipboard
    yaru-theme
    matcha-theme
    papirus-icon-theme))
@@ -210,9 +208,15 @@
 
 (define %swayish 
   (sway-configuration
+   (packages
+     (list qtwayland-5
+	   swayidle
+           sway
+           wl-clipboard
+           xdg-desktop-portal-gtk
+           xdg-desktop-portal-wlr))
    (variables
     `((mod . "Mod4")))
-
    (keybindings
     `(($mod+Return . ,#~(string-append "exec " #$foot "/bin/foot"))
       ($mod+Shift+q . "kill")
@@ -350,6 +354,7 @@
       "smart_gaps on"
       "smart_borders on"
       "set $laptop eDP-1"
+
       ;; AFAIK this cannot be set with the sway configuration.
       "client.focused #e9e9f4 #62d6e8 #282936 #62d6e8 #62d6e8"
       "client.focused_inactive #3a3c4e #3a3c4e #e9e9f4 #626483 #3a3c4e"
@@ -360,7 +365,6 @@
 
       "bindswitch --reload --locked lid:on output $laptop disable"
       "bindswitch --reload --locked lid:off output $laptop enable"))))
-
 (home-environment
  (packages (append
 	    %browsers
@@ -374,7 +378,7 @@
   (list
    (service home-shepherd-service-type
 	    (home-shepherd-configuration
-	     (auto-start? #f))) ;; We will start during the WM to have access to $DISPLAY
+	     (auto-start? #f))) ;; We will it from WM to have access to $DISPLAY.
    (service home-gpg-agent-service-type
             (home-gpg-agent-configuration
              (pinentry-program (file-append pinentry-rofi/wayland "/bin/pinentry-rofi"))
