@@ -1,5 +1,6 @@
 (define-module (home)
   #:use-module (gnu home services desktop)
+  #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
@@ -42,6 +43,7 @@
   #:use-module (gnu packages password-utils)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
+  #:use-module (gnu packages qt)
   #:use-module (gnu packages rsync)
   #:use-module (gnu packages rust-apps)
   #:use-module (gnu packages shellutils)
@@ -59,6 +61,7 @@
   #:use-module (gnu services configuration)
   #:use-module (gnu services)
   #:use-module (gnu system keyboard)
+  #:use-module (gnu system shadow)
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (nongnu packages game-client)
@@ -66,6 +69,7 @@
   #:use-module (packages gnu home services avizo)
   #:use-module (packages gnu home services mako)
   #:use-module (packages gnu home services zathura)
+  #:use-module (packages gnu home services waybar)
   #:use-module (packages gnu packages rust-apps)
   #:use-module (packages gnu packages wayland))
 
@@ -310,7 +314,6 @@
 		       "scroll_method two_finger")))))
 
    (gestures '())
-
    (startup-programs
     (list
      "pgrep --uid $USER shepherd > /dev/null || shepherd"
@@ -320,7 +323,6 @@
      "gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'"
      "gsettings set org.gnome.desktop.interface font-name 'Fira Code 10'"
      "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway"))
-
    (modes
     (list
      (sway-mode
@@ -336,7 +338,6 @@
     (sway-bar
      (identifier 'top)
      (status-command #~(string-append #$waybar "/bin/waybar"))))
-
    (extra-content
     '("font pango:monospace 8.0"
       "default_border pixel 2"
@@ -375,28 +376,39 @@
 	    %wm
 	    %fonts))
  (services
-  (list
-   (service home-shepherd-service-type
-	    (home-shepherd-configuration
-	     (auto-start? #f))) ;; We will it from WM to have access to $DISPLAY.
-   (service home-gpg-agent-service-type
-            (home-gpg-agent-configuration
-             (pinentry-program (file-append pinentry-rofi/wayland "/bin/pinentry-rofi"))
-             (ssh-support? #t)))
-   (service home-syncthing-service-type
-	    (for-home
-             (syncthing-configuration
-              (user %user))))
-   (service home-sway-service-type
-	    %swayish)
-   (service home-dbus-service-type)
-   (service home-mako-service-type)
-   (service home-avizo-service-type)
-   (service home-zathura-service-type)
-   (service home-pipewire-service-type)
-   (service home-fish-service-type
-	    (home-fish-configuration
-	     (config (list
-		      (mixed-text-file
-		       "fish-config-direnv"
-		       direnv "/bin/direnv hook fish | source"))))))))
+   (cons*
+    (service home-shepherd-service-type
+	     (home-shepherd-configuration
+	      (auto-start? #f))) ;; We will it from WM to have access to $DISPLAY.
+    (service home-gpg-agent-service-type
+	     (home-gpg-agent-configuration
+	      (pinentry-program (file-append pinentry-rofi/wayland "/bin/pinentry-rofi"))
+	      (ssh-support? #t)))
+    (service home-xdg-configuration-files-service-type
+	     `(("gdb/gdbinit" ,%default-gdbinit)
+	       (".Xdefaults" ,%default-xdefaults)
+	       ("nano/nanorc" ,%default-nanorc)))
+    (service home-syncthing-service-type
+	     (for-home
+	      (syncthing-configuration
+	       (user %user))))
+    (service home-dotfiles-service-type
+	     (home-dotfiles-configuration
+	      (directories
+	       '("files/dotfiles"))))
+    (service home-files-service-type
+	     `((".guile" ,%default-dotguile)))
+    (service home-sway-service-type
+	     %swayish)
+    (service home-dbus-service-type)
+    (service home-mako-service-type)
+    (service home-avizo-service-type)
+    (service home-zathura-service-type)
+    (service home-pipewire-service-type)
+    (service home-fish-service-type
+	     (home-fish-configuration
+	      (config (list
+		       (mixed-text-file
+			"fish-config-direnv"
+			direnv "/bin/direnv hook fish | source")))))
+    %base-home-services)))
