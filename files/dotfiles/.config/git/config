@@ -1,0 +1,30 @@
+[alias]
+	graph = "log --decorate --oneline --graph"
+	st = status
+	b = branch
+	c = commit
+	cl = clone
+	t = tag
+
+# [core]
+# 	editor = "emacs"
+
+[credential]
+	helper = "cache"
+
+[feature]
+	manyFiles = false
+
+[init]
+	defaultBranch = "main"
+
+[commit]
+	gpgsign = true
+	template = ~/.config/git/gitmessage
+
+[user]
+	email = "phpellerin@gmail.com"
+	name = "Pier-Hugues Pellerin"
+
+[github]
+	user = "ph"

@@ -1,0 +1,46 @@
+* {
+    font-family: FiraCode Nerd Font;
+    font-size: 10pt;
+    padding: 0 8px;
+}
+.modules-right {
+    margin-right: -15px;
+}
+.modules-left {
+    margin-left: -15px;
+}
+window#waybar.top {
+    opacity: 0.95;
+    background-color: #282936;
+}
+window#waybar {
+    color: #e9e9f4;
+    border: 1px solid White;
+    /* border: 1px solid #626483; */
+}
+#workspaces button {
+    background-color: #3a3c4e;
+    color: #e9e9f4;
+    margin: 2px;
+    border-radius: 0px;
+}
+#workspaces button.hidden {
+    background-color: #282936;
+    color: #62d6e8;
+}
+#workspaces button.focused,
+#workspaces button.active {
+    background-color: #00f769;
+    color: #282936;
+}
+#clock {
+    background-color: #a1efe4;
+    color: #282936;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+#tray {
+    color: #e9e9f4;
+}

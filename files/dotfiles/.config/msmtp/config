@@ -1,0 +1,14 @@
+defaults
+auth on
+protocol smtp
+tls on
+
+account gmail
+host smtp.gmail.com
+port 465
+user ph@heykimo.com
+passwordeval "pass ph@heykimo.com"
+tls_starttls off
+from ph@heykimo.com
+
+account default : gmail
