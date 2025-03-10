@@ -6,9 +6,12 @@ default: help
 dry-run: ## - dry-run test home configuration in a local container
 	guix home container home.scm $< $(ARGS)
 
-## apply: apply guix configuration to local machine.
-apply: ## - apply guix configuration (home)
+## home: apply guix home configuration.
+home: ## - apply guix home configuration
 	guix home reconfigure home.scm $< $(ARGS)
+
+## apply: apply guix configuration to local machine.
+apply: home ## - apply guix configuration (home)
 
 .PHONY: help
 ## help: Show this help.

@@ -41,6 +41,7 @@
   #:use-module (gnu packages node)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages password-utils)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
@@ -68,10 +69,16 @@
   #:use-module (nongnu packages mozilla)
   #:use-module (packages gnu home services avizo)
   #:use-module (packages gnu home services mako)
-  #:use-module (packages gnu home services zathura)
   #:use-module (packages gnu home services waybar)
-  #:use-module (packages gnu packages rust-apps)
-  #:use-module (packages gnu packages wayland))
+  #:use-module (packages gnu home services zathura)
+  #:use-module (packages gnu packages rust-apps))
+
+(define rofi/wayland
+  (package-input-rewriting/spec
+   `(("rofi" . ,(const rofi-wayland)))))
+
+(define-public pinentry-rofi/wayland
+  (rofi/wayland pinentry-rofi))
 
 (define %user "ph")
 
@@ -182,18 +189,17 @@
    foot
    imv
    mpv
-   xdg-utils
-   xdg-desktop-portal
-   xdg-desktop-portal-wlr
    pamixer
    pulseaudio
    pavucontrol
    playerctl
-   waybar
    grim
    slurp
    yaru-theme
    matcha-theme
+   rofi-wayland
+   adwaita-icon-theme
+   hicolor-icon-theme
    papirus-icon-theme))
 
 (define %games
@@ -217,6 +223,7 @@
 	   swayidle
            sway
            wl-clipboard
+	   xdg-utils
            xdg-desktop-portal-gtk
            xdg-desktop-portal-wlr))
    (variables
@@ -253,12 +260,14 @@
       ($mod+Shift+l . "move right")
 
       ($mod+Shift+minus . "move scratchpad")
-      ($mod+Shift+q . "kill")
       ($mod+Shift+space . "floating toggle")
 
       ($mod+a . "focus parent")
       ($mod+b . "splith")
+
+      ($mod+d . ,#~(string-append "exec " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
       ($mod+Shift+d . ,#~(string-append "exec " #$mako "/bin/makoctl dismiss -a"))
+
       ($mod+e . "layout toggle split")
       ($mod+f . "fullscreen toggle")
 
@@ -334,10 +343,6 @@
 	 (j . "resize grow height 10 px")
 	 (k . "resize shrink height 10 px")
 	 (l . "resize grow width 10 px"))))))
-   (bar
-    (sway-bar
-     (identifier 'top)
-     (status-command #~(string-append #$waybar "/bin/waybar"))))
    (extra-content
     '("font pango:monospace 8.0"
       "default_border pixel 2"
@@ -380,6 +385,7 @@
     (service home-shepherd-service-type
 	     (home-shepherd-configuration
 	      (auto-start? #f))) ;; We will it from WM to have access to $DISPLAY.
+    (service home-dbus-service-type)
     (service home-gpg-agent-service-type
 	     (home-gpg-agent-configuration
 	      (pinentry-program (file-append pinentry-rofi/wayland "/bin/pinentry-rofi"))
@@ -400,8 +406,8 @@
 	     `((".guile" ,%default-dotguile)))
     (service home-sway-service-type
 	     %swayish)
-    (service home-dbus-service-type)
     (service home-mako-service-type)
+    (service home-waybar-service-type)
     (service home-avizo-service-type)
     (service home-zathura-service-type)
     (service home-pipewire-service-type)

@@ -24,7 +24,7 @@
 	 (provision '(avizo))
 	 (documentation "Run the Avizo daemon.")
 	 (start #~(make-forkexec-constructor
-		   (#$(file-append avizo "/bin/avizo"))))
+		   (list #$(file-append avizo "/bin/avizo-service"))))
 	 (stop #~(make-kill-destructor)))))
 
 (define home-avizo-service-type

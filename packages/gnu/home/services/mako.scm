@@ -12,15 +12,28 @@
 	    home-mako-configuration))
 
 (define %mako-default-extra-content
-  '("map <C-=> zoom in"
-   "map <C--> zoom out"
-   "set font \"Iosevka 14\""
-   "set selection-clipboard clipboard"
-   "set default-bg rgba(0,43,53,0.8)"
-   "set recolor true"
-   "set recolor-lightcolor rgba(0,43,53,0)"
-   "set recolor-darkcolor rgb(131,148,150)"
-   "set adjust-open \"width\""))
+  '("max-visible=5"
+    "sort=-time"
+    "layer=top"
+    "anchor=top-right"
+    "font=Fira Sans 10"
+    "background-color=#282936dd"
+    "text-color=#e9e9f4dd"
+    "width=400"
+    "height=150"
+    "margin=10"
+    "padding=5"
+    "border-size=1"
+    "border-color=#626483dd"
+    "border-radius=0"
+    "progress-color=over #5588AAFF"
+    "icons=true"
+    "max-icon-size=64"
+    "markup=true"
+    "actions=true"
+    "format=<b>%s</b>\\n%b"
+    "default-timeout=12000"
+    "ignore-timeout=false"))
 
 (define-configuration/no-serialization home-mako-configuration
   (mako
@@ -44,7 +57,7 @@
 	 (provision '(mako))
 	 (documentation "Run the Mako daemon.")
 	 (start #~(make-forkexec-constructor
-		   (#$(file-append mako "/bin/mako"))))
+		   (list #$(file-append mako "/bin/mako"))))
 	 (stop #~(make-kill-destructor)))))
 
 (define home-mako-service-type
