@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 (define-module (packages gnu packages rust-crates)
   #:use-module (guix gexp)
   #:use-module (guix packages)

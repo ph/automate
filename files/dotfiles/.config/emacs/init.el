@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 ;; Elpaca Installer -*- lexical-binding: t; -*-
 ;; Copy below this line into your init.el
 (defvar elpaca-installer-version 0.10)
