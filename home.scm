@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 (define-module (home)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services dotfiles)
@@ -69,14 +73,15 @@
   #:use-module (gnu system shadow)
   #:use-module (guix gexp)
   #:use-module (guix packages)
-  #:use-module (nongnu packages game-client)
-  #:use-module (nongnu packages mozilla)
+  ;; #:use-module (nongnu packages game-client)
+  ;; #:use-module (nongnu packages mozilla)
   #:use-module (packages gnu home services avizo)
   #:use-module (packages gnu home services mako)
   #:use-module (packages gnu home services waybar)
   #:use-module (packages gnu home services zathura)
   #:use-module (packages gnu packages rust-apps)
-  #:use-module (packages gnu packages fonts))
+  #:use-module (packages gnu packages fonts)
+  #:use-module (packages gnu packages wayland))
 
 (define rofi/wayland
   (package-input-rewriting/spec
@@ -99,7 +104,8 @@
 	guile-colorized))
 
 (define %browsers
-  (list firefox
+  (list
+   ;; firefox
 	librewolf
 	ungoogled-chromium))
 
@@ -148,6 +154,7 @@
   (list
    emacs-pgtk
    emacs-guix
+   emacs-arei
    emacs-debbugs
    emacs-vterm
    emacs-geiser))
@@ -205,7 +212,6 @@
    playerctl
    yaru-theme
    matcha-theme
-   rofi-wayland
    adwaita-icon-theme
    hicolor-icon-theme
    papirus-icon-theme))
@@ -214,7 +220,8 @@
   (list
    scummvm
    bsnes
-   steam))
+   ;; steam
+   ))
 
 (define %multimedia
   (list
@@ -260,9 +267,15 @@
    "for_window [app_id=\"zoom\" title=\"^zoom$\"] border none, floating enable"
    "# For specific Zoom windows"
    "for_window [app_id=\"zoom\" title=\"^(Zoom|About)$\"] border pixel, floating enable"
-   "for_window [app_id=\"zoom\" title=\"Settings\"] floating enable, floating_minimum_size 960 x 700"
+   "for_window [app_id=\"zoom\" title=\"Settings\"] floating enable, floating_minimum_size 960 xu700"
    "# Open Zoom Meeting windows on a new workspace (a bit hacky)"
    "for_window [app_id=\"zoom\" title=\"Zoom Meeting(.*)?\"] workspace next_on_output --create, move container to workspace current, floating disable, inhibit_idle open"))
+
+(define-public (rofi-theme name)
+  #~(string-append "@theme '" #$rofi-themes-collection "/share/themes/" name ".rasi'"))
+
+(define-public (activate-rofi-theme name)
+  `("rofi/rofi.rasi" ,(plain-file "rofi.rasi" (rofi-theme name))))
 
 (define %swayish 
   (sway-configuration
@@ -270,6 +283,8 @@
      (list qtwayland-5
            sway
 	   swayidle
+	   rofi-wayland
+	   rofi-themes-collection
            wl-clipboard
 	   foot
 	   grim
@@ -444,7 +459,9 @@
     (service home-xdg-configuration-files-service-type
 	     `(("gdb/gdbinit" ,%default-gdbinit)
 	       (".Xdefaults" ,%default-xdefaults)
-	       ("nano/nanorc" ,%default-nanorc)))
+	       ("nano/nanorc" ,%default-nanorc)
+;;	       ,(activate-rofi-theme "nord")
+))
     (service home-syncthing-service-type
 	     (for-home
 	      (syncthing-configuration
