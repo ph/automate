@@ -1,3 +1,9 @@
+/*
+* spdx-fILEcOPYRIGHTtEXT: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+*
+* spdx-lICENSE-iDENTIFIER: GPL-3.0-or-later
+*/ 
+
 configuration {
 /*	modes: "window,drun,run,ssh";*/
 	font: "FiraCode Nerd Font 10";

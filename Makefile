@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 ARGS := --verbosity=1
 
 default: help
@@ -12,6 +16,13 @@ home: ## - apply guix home configuration
 
 ## apply: apply guix configuration to local machine.
 apply: home ## - apply guix configuration (home)
+
+## reuse: check for license header
+reuse: ## - check for license header
+	reuse lint
+
+## check: run linters or any check on code
+check: reuse ## - check for license header
 
 .PHONY: help
 ## help: Show this help.
