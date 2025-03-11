@@ -12,6 +12,7 @@
   #:use-module (gnu packages admin)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages aspell)
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages chromium)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
@@ -26,6 +27,8 @@
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
+  #:use-module (gnu packages guile)
+  #:use-module (gnu packages guile-xyz)
   #:use-module (gnu packages graphics)
   #:use-module (gnu packages graphviz)
   #:use-module (gnu packages haskell-apps)
@@ -35,6 +38,7 @@
   #:use-module (gnu packages inkscape)
   #:use-module (gnu packages librewolf)
   #:use-module (gnu packages license)
+  #:use-module (gnu packages linux)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages music)
   #:use-module (gnu packages networking)
@@ -71,7 +75,8 @@
   #:use-module (packages gnu home services mako)
   #:use-module (packages gnu home services waybar)
   #:use-module (packages gnu home services zathura)
-  #:use-module (packages gnu packages rust-apps))
+  #:use-module (packages gnu packages rust-apps)
+  #:use-module (packages gnu packages fonts))
 
 (define rofi/wayland
   (package-input-rewriting/spec
@@ -88,6 +93,11 @@
 	jujutsu
 	`(,git "send-email")))
 
+(define %dev
+  (list guile-gcrypt
+	guile-readline
+	guile-colorized))
+
 (define %browsers
   (list firefox
 	librewolf
@@ -95,6 +105,7 @@
 
 (define %tools
   (list htop
+	bash
 	curl
 	b4
 	reuse
@@ -165,10 +176,10 @@
 
 (define %fonts
   (list font-dejavu
-	;; font-fira-code-nerd
-	;; font-fira-code
-	;; font-fira-code-regular-symbols
-	;; font-iosevkas
+	font-fira-code-nerd
+	font-fira-code
+	font-fira-code-regular-symbols
+	font-iosevka
 	font-fira-mono
 	font-fira-sans
 	font-opendyslexic
@@ -186,15 +197,12 @@
    `(,glib "bin")
    blueman
    alacritty
-   foot
    imv
    mpv
    pamixer
    pulseaudio
    pavucontrol
    playerctl
-   grim
-   slurp
    yaru-theme
    matcha-theme
    rofi-wayland
@@ -216,13 +224,57 @@
    kicad
    vlc))
 
+(define %sway-extra-content
+  '("font pango:monospace 8.0"
+    "default_border pixel 2"
+    "default_floating_border pixel 2"
+    "hide_edge_borders none"
+    "focus_wrapping no"
+    "focus_follows_mouse yes"
+    "focus_on_window_activation smart"
+    "mouse_warping output"
+    "workspace_layout default"
+    "workspace_auto_back_and_forth no"
+    "gaps inner 2"
+    "gaps outer 2"
+    "seat * xcursor_theme Yaru 24"
+    "smart_gaps on"
+    "smart_borders on"
+    "set $laptop eDP-1"
+
+    ;; AFAIK this cannot be set with the sway configuration.
+    "client.focused #e9e9f4 #62d6e8 #282936 #62d6e8 #62d6e8"
+    "client.focused_inactive #3a3c4e #3a3c4e #e9e9f4 #626483 #3a3c4e"
+    "client.unfocused #3a3c4e #282936 #e9e9f4 #3a3c4e #3a3c4e"
+    "client.urgent #ea51b2 #ea51b2 #282936 #ea51b2 #ea51b2"
+    "client.placeholder #000000 #0c0c0c #ffffff #000000 #0c0c0c"
+    "client.background #ffffff"
+
+    "bindswitch --reload --locked lid:on output $laptop disable"
+    "bindswitch --reload --locked lid:off output $laptop enable"))
+
+(define %sway-zoom-config
+'( "# Zoom Meeting App"
+   "# Default for all windows is non-floating."
+   "# For pop up notification windows that don't use notifications api"
+   "for_window [app_id=\"zoom\" title=\"^zoom$\"] border none, floating enable"
+   "# For specific Zoom windows"
+   "for_window [app_id=\"zoom\" title=\"^(Zoom|About)$\"] border pixel, floating enable"
+   "for_window [app_id=\"zoom\" title=\"Settings\"] floating enable, floating_minimum_size 960 x 700"
+   "# Open Zoom Meeting windows on a new workspace (a bit hacky)"
+   "for_window [app_id=\"zoom\" title=\"Zoom Meeting(.*)?\"] workspace next_on_output --create, move container to workspace current, floating disable, inhibit_idle open"))
+
 (define %swayish 
   (sway-configuration
    (packages
      (list qtwayland-5
-	   swayidle
            sway
+	   swayidle
            wl-clipboard
+	   foot
+	   grim
+	   slurp
+	   light
 	   xdg-utils
            xdg-desktop-portal-gtk
            xdg-desktop-portal-wlr))
@@ -276,6 +328,7 @@
       ($mod+k . "focus up")
       ($mod+l . "focus right")
 
+
       ($mod+minus . "scratchpad show")
       ($mod+r . "mod resize")
       ($mod+s . "layout stacking")
@@ -286,8 +339,26 @@
       ($mod+BackSpace . "input \"type:keyboard\" xkb_switch_layout next")
 
       ($mod+Shift+e . ,#~(string-append "exec " #$sway "/bin/swaynag -t warning -m 'You pressed the  to exit sway? This will end your Wayland session.' -b 'Yes, exit sway' 'swaymsg exit'"))
-      ($mod+Shift+c . "reload")))
+      ($mod+Shift+c . "reload")
 
+      ;; Avizo laptop shortcuts
+      (XF86AudioRaiseVolume . "exec volumectl -u up")
+      (XF86AudioLowerVolume . "exec volumectl -u down")
+      (XF86AudioMute . "exec volumectl toggle-mute")
+      (XF86AudioMicMute . "exec volumectl -m toggle-mute")
+      (XF86MonBrightnessUp . "exec lightctl up")
+      (XF86MonBrightnessDown . "exec lightctl down")
+
+      ;; screenshots
+      ;; Take a region
+      (mod1+Shift+4 . "exec grim -g \"$(slurp)\" && notify-send \"screenshot taken\"")
+
+      ;; ;; Take active window
+      (mod1+Shift+3 . "exec grim -g \"$(swaymsg -t get_tree | jq -j '.. | select(.type?) | select(.focused).rect | \"\(.x),\(.y) \(.width)x\(.height)\"')\" && notify-send \"screenshot taken\"")
+
+      ;; ;; Take active monitor
+      (mod1+Print . "exec grim -o $(swaymsg -t get_outputs | jq -r '.[] | select(.focused) | .name') && notify-send \"screenshot taken\"")
+      ))
    (outputs
     (list
      (sway-output
@@ -331,7 +402,9 @@
      "gsettings set org.gnome.desktop.interface gtk-theme 'Matcha-dark-azul'"
      "gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'"
      "gsettings set org.gnome.desktop.interface font-name 'Fira Code 10'"
-     "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway"))
+     "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway"
+     "pgrep swayidle || swayidle  timeout 300 'sh $HOME/.config/sway/locker.sh' timeout 360 'swaymsg \"output * dpms off\"' resume 'swaymsg \"output * dpms on\"' timeout 600 'swaymsg \"output * dpms on\"; sleep 1; loginctl suspend' before-sleep 'sh $HOME/.config/sway/locker.sh'"
+     ))
    (modes
     (list
      (sway-mode
@@ -344,37 +417,15 @@
 	 (k . "resize shrink height 10 px")
 	 (l . "resize grow width 10 px"))))))
    (extra-content
-    '("font pango:monospace 8.0"
-      "default_border pixel 2"
-      "default_floating_border pixel 2"
-      "hide_edge_borders none"
-      "focus_wrapping no"
-      "focus_follows_mouse yes"
-      "focus_on_window_activation smart"
-      "mouse_warping output"
-      "workspace_layout default"
-      "workspace_auto_back_and_forth no"
-      "gaps inner 2"
-      "gaps outer 2"
-      "seat * xcursor_theme Yaru 24"
-      "smart_gaps on"
-      "smart_borders on"
-      "set $laptop eDP-1"
+    (append
+     %sway-extra-content
+     %sway-zoom-config))))
 
-      ;; AFAIK this cannot be set with the sway configuration.
-      "client.focused #e9e9f4 #62d6e8 #282936 #62d6e8 #62d6e8"
-      "client.focused_inactive #3a3c4e #3a3c4e #e9e9f4 #626483 #3a3c4e"
-      "client.unfocused #3a3c4e #282936 #e9e9f4 #3a3c4e #3a3c4e"
-      "client.urgent #ea51b2 #ea51b2 #282936 #ea51b2 #ea51b2"
-      "client.placeholder #000000 #0c0c0c #ffffff #000000 #0c0c0c"
-      "client.background #ffffff"
-
-      "bindswitch --reload --locked lid:on output $laptop disable"
-      "bindswitch --reload --locked lid:off output $laptop enable"))))
 (home-environment
  (packages (append
 	    %browsers
 	    %vcs
+	    %dev
 	    %tools
 	    %mail
 	    %editors
