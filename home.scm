@@ -13,6 +13,7 @@
   #:use-module (gnu home services syncthing)
   #:use-module (gnu home services)
   #:use-module (gnu home)
+  #:use-module (guix store)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages aspell)
@@ -271,11 +272,8 @@
     "# Open Zoom Meeting windows on a new workspace (a bit hacky)"
     "for_window [app_id=\"zoom\" title=\"Zoom Meeting(.*)?\"] workspace next_on_output --create, move container to workspace current, floating disable, inhibit_idle open"))
 
-(define-public (rofi-theme name)
-  #~(string-append "@theme '" #$rofi-themes-collection "/share/themes/" name ".rasi'"))
-
 (define-public (activate-rofi-theme name)
-  `("rofi/rofi.rasi" ,(plain-file "rofi.rasi" (rofi-theme name))))
+  `("rofi/config.rasi" ,(mixed-text-file "config.rasi" "@theme '" rofi-themes-collection "/share/themes/" name ".rasi'")))
 
 (define %swayish 
   (sway-configuration
@@ -332,7 +330,8 @@
       ($mod+a . "focus parent")
       ($mod+b . "splith")
 
-      ($mod+d . ,#~(string-append "exec " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
+      ($mod+d . ,#~(string-append "exec XDG_DATA_DIRS=\"$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share\" " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
+
       ($mod+Shift+d . ,#~(string-append "exec " #$mako "/bin/makoctl dismiss -a"))
 
       ($mod+e . "layout toggle split")
@@ -460,8 +459,7 @@
 	     `(("gdb/gdbinit" ,%default-gdbinit)
 	       (".Xdefaults" ,%default-xdefaults)
 	       ("nano/nanorc" ,%default-nanorc)
-;;	       ,(activate-rofi-theme "nord")
-))
+	       ,(activate-rofi-theme "nord")))
     (service home-syncthing-service-type
 	     (for-home
 	      (syncthing-configuration
