@@ -14,8 +14,12 @@ dry-run: ## - dry-run test home configuration in a local container
 home: ## - apply guix home configuration
 	guix home reconfigure home.scm $< $(ARGS)
 
+## system: apply guix system configuration.
+system: ## - apply guix system configuration
+	sudo -E guix system reconfigure babayaga.scm $< $(ARGS)
+
 ## apply: apply guix configuration to local machine.
-apply: home ## - apply guix configuration (home)
+apply: home system ## - apply guix configuration (home)
 
 ## reuse: check for license header
 reuse: ## - check for license header
