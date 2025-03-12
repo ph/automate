@@ -23,7 +23,7 @@ apply: home system ## - apply guix configuration (home)
 
 ## reuse: check for license header
 reuse: ## - check for license header
-	reuse lint
+	guix shell -m manifest.scm -- reuse lint
 
 ## nrepl: run the nrepl
 nrepl: ## - run the nrepl for arei

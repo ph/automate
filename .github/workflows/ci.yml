@@ -1,0 +1,47 @@
+# SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+name: Test and build
+run-name: Test and build
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  clippy:
+    name: Run check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guix cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/guix
+          # use a key that (almost) never matches
+          key: guix-cache-${{ github.sha }}
+          restore-keys: |
+            guix-cache-
+
+      - name: Install Guix
+        uses: PromyLOPh/guix-install-action@v1
+
+      - uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ~/.cache/guix
+          key: guix-cache-${{ github.sha }}
+
+      - name: Ensure no locale warning
+        run: test -z "$(guix --version 2>&1 >/dev/null)"
+
+      - name: remove other files before linting
+        run: rm guix-binary-nightly.x86_64-linux.tar.xz
+
+      - name: install dependencies
+        run: guix shell -m manifest.scm
+
+      - name: make check
+        run: make check
