@@ -7,4 +7,6 @@
 ;; that accepts a '--manifest' (or '-m') option.
 
 (specifications->manifest (list "cmake"
-				"reuse"))
+				"reuse"
+				"guile-next"
+				"guile-ares-rs"))

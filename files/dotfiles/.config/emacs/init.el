@@ -66,35 +66,11 @@
   ;; Hide commands in M-x which do not apply to the current mode.  Corfu
   ;; commands are hidden, since they are not used via M-x. This setting is
   ;; useful beyond Corfu.
-  (read-extended-command-predicate #'command-completion-default-include-p))
+  (read-extended-command-predicate #'command-completion-default-include-p)
+  (add-hook 'scheme-mode-hook 'guix-devel-mode)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(use-package gcmh
-  :ensure (gcmh :host gitlab :repo "koral/gcmh")
-  :init
-  (gcmh-mode 1)
-  (defmacro k-time (&rest body)
-    "Measure and return the time it takes evaluating BODY."
-    `(let ((time (current-time)))
-       ,@body
-       (float-time (time-since time))))
-
-  
-  ;; Set garbage collection threshold to 1GB.
-  (setq gc-cons-threshold #x40000000)
-
-  ;; When idle for 15sec run the GC no matter what.
-  (defvar k-gc-timer
-    (run-with-idle-timer 15 t
-			 (lambda ()
-                           (message "Garbage Collector has run for %.06fsec"
-                                    (k-time (garbage-collect)))))))
-
-(use-package emacs
-  :config
   (fset 'yes-or-no-p 'y-or-n-p)
+  :config
   (setq
    ;; evil-want-keybinding nil
    custom-file null-device
@@ -135,6 +111,29 @@
   (add-to-list 'default-frame-alist '(font . "FiraCode 9"))
   (require 'midnight))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package gcmh
+  :ensure (gcmh :host gitlab :repo "koral/gcmh")
+  :init
+  (gcmh-mode 1)
+  (defmacro k-time (&rest body)
+    "Measure and return the time it takes evaluating BODY."
+    `(let ((time (current-time)))
+       ,@body
+       (float-time (time-since time))))
+
+  
+  ;; Set garbage collection threshold to 1GB.
+  (setq gc-cons-threshold #x40000000)
+
+  ;; When idle for 15sec run the GC no matter what.
+  (defvar k-gc-timer
+    (run-with-idle-timer 15 t
+			 (lambda ()
+                           (message "Garbage Collector has run for %.06fsec"
+                                    (k-time (garbage-collect)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; keybinds
@@ -491,6 +490,11 @@
 
   :config
   (setq project-switch-commands #'project-find-file))
+
+(use-package arei
+  :ensure nil
+  :after (project)
+  (setq arei-mode-auto t))
 
 (use-package lin
   :ensure t)

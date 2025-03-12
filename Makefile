@@ -21,6 +21,10 @@ apply: home ## - apply guix configuration (home)
 reuse: ## - check for license header
 	reuse lint
 
+## nrepl: run the nrepl
+nrepl: ## - run the nrepl for arei
+	guix shell guile-next guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
+
 ## check: run linters or any check on code
 check: reuse ## - check for license header
 
