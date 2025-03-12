@@ -14,12 +14,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: ~/.cache/guix
+          
+      - name: Guix cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.cache/guix
+          # use a key that (almost) never matches
           key: guix-cache-${{ github.sha }}
           restore-keys: |
             guix-cache-
 
       - name: Install Guix
         uses: PromyLOPh/guix-install-action@v1
+
+      - uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: ~/.cache/guix
+          key: guix-cache-${{ github.sha }}
 
       - name: Ensure no locale warning
         run: test -z "$(guix --version 2>&1 >/dev/null)"
