@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 name: Test and build
 run-name: Test and build
 on:
@@ -32,6 +36,9 @@ jobs:
 
       - name: Ensure no locale warning
         run: test -z "$(guix --version 2>&1 >/dev/null)"
+
+      - name: remove other files before linting
+        run: rm guix-binary-nightly.x86_64-linux.tar.xz
 
       - name: install dependencies
         run: guix shell -m manifest.scm
