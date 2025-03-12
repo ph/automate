@@ -74,8 +74,8 @@
   #:use-module (gnu system shadow)
   #:use-module (guix gexp)
   #:use-module (guix packages)
-  ;; #:use-module (nongnu packages game-client)
-  ;; #:use-module (nongnu packages mozilla)
+  #:use-module (nongnu packages game-client)
+  #:use-module (nongnu packages mozilla)
   #:use-module (packages gnu home services avizo)
   #:use-module (packages gnu home services mako)
   #:use-module (packages gnu home services waybar)
@@ -105,8 +105,7 @@
 	guile-colorized))
 
 (define %browsers
-  (list
-   ;; firefox
+  (list firefox
 	librewolf
 	ungoogled-chromium))
 
@@ -218,11 +217,10 @@
    papirus-icon-theme))
 
 (define %games
-  (list
-   scummvm
-   bsnes
-   ;; steam
-   ))
+  (list scummvm
+	bsnes
+	steam
+	))
 
 (define %multimedia
   (list
@@ -330,7 +328,8 @@
       ($mod+a . "focus parent")
       ($mod+b . "splith")
 
-      ($mod+d . ,#~(string-append "exec XDG_DATA_DIRS=\"$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share\" " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
+      ($mod+d . ,#~(string-append "exec " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
+      ;; ($mod+d . ,#~(string-append "exec XDG_DATA_DIRS=\"$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share\" " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
 
       ($mod+Shift+d . ,#~(string-append "exec " #$mako "/bin/makoctl dismiss -a"))
 
@@ -417,7 +416,7 @@
      "gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark'"
      "gsettings set org.gnome.desktop.interface font-name 'Fira Code 10'"
      "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway"
-     "pgrep swayidle || swayidle  timeout 300 'sh $HOME/.config/sway/locker.sh' timeout 360 'swaymsg \"output * dpms off\"' resume 'swaymsg \"output * dpms on\"' timeout 600 'swaymsg \"output * dpms on\"; sleep 1; loginctl suspend' before-sleep 'sh $HOME/.config/sway/locker.sh'"
+     "pgrep --uid $USER swayidle || swayidle  timeout 300 'sh $HOME/.config/sway/locker.sh' timeout 360 'swaymsg \"output * dpms off\"' resume 'swaymsg \"output * dpms on\"' timeout 600 'swaymsg \"output * dpms on\"; sleep 1; loginctl suspend' before-sleep 'sh $HOME/.config/sway/locker.sh'"
      ))
    (modes
     (list
@@ -455,6 +454,10 @@
 	     (home-gpg-agent-configuration
 	      (pinentry-program (file-append pinentry-rofi/wayland "/bin/pinentry-rofi"))
 	      (ssh-support? #t)))
+    ;; Make flatpak applications available for rofi.
+    (simple-service 'some-useful-env-vars-service
+		    home-environment-variables-service-type
+		    `(("XDG_DATA_DIRS" . "$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share")))
     (service home-xdg-configuration-files-service-type
 	     `(("gdb/gdbinit" ,%default-gdbinit)
 	       (".Xdefaults" ,%default-xdefaults)
