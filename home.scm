@@ -261,15 +261,15 @@
     "bindswitch --reload --locked lid:off output $laptop enable"))
 
 (define %sway-zoom-config
-'( "# Zoom Meeting App"
-   "# Default for all windows is non-floating."
-   "# For pop up notification windows that don't use notifications api"
-   "for_window [app_id=\"zoom\" title=\"^zoom$\"] border none, floating enable"
-   "# For specific Zoom windows"
-   "for_window [app_id=\"zoom\" title=\"^(Zoom|About)$\"] border pixel, floating enable"
-   "for_window [app_id=\"zoom\" title=\"Settings\"] floating enable, floating_minimum_size 960 xu700"
-   "# Open Zoom Meeting windows on a new workspace (a bit hacky)"
-   "for_window [app_id=\"zoom\" title=\"Zoom Meeting(.*)?\"] workspace next_on_output --create, move container to workspace current, floating disable, inhibit_idle open"))
+  '("# Zoom Meeting App"
+    "# Default for all windows is non-floating."
+    "# For pop up notification windows that don't use notifications api"
+    "for_window [app_id=\"zoom\" title=\"^zoom$\"] border none, floating enable"
+    "# For specific Zoom windows"
+    "for_window [app_id=\"zoom\" title=\"^(Zoom|About)$\"] border pixel, floating enable"
+    "for_window [app_id=\"zoom\" title=\"Settings\"] floating enable, floating_minimum_size 960 xu700"
+    "# Open Zoom Meeting windows on a new workspace (a bit hacky)"
+    "for_window [app_id=\"zoom\" title=\"Zoom Meeting(.*)?\"] workspace next_on_output --create, move container to workspace current, floating disable, inhibit_idle open"))
 
 (define-public (rofi-theme name)
   #~(string-append "@theme '" #$rofi-themes-collection "/share/themes/" name ".rasi'"))

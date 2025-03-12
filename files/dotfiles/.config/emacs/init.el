@@ -491,6 +491,11 @@
   :config
   (setq project-switch-commands #'project-find-file))
 
+(use-package arei
+  :ensure nil
+  :after (project)
+  (setq arei-mode-auto t))
+
 (use-package lin
   :ensure t)
 
