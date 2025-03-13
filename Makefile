@@ -4,6 +4,8 @@
 
 ARGS := --verbosity=1
 
+HOST?=$(subst .local.heyk.org,,$(shell hostname))
+
 default: help
 
 ## dry-run: Test home in a local container
@@ -16,10 +18,12 @@ home: ## - apply guix home configuration
 
 ## system: apply guix system configuration.
 system: ## - apply guix system configuration
-	sudo -E guix system reconfigure babayaga.scm $< $(ARGS)
+	sudo -E guix system reconfigure $(HOST).scm $< $(ARGS)
 
 ## apply: apply guix configuration to local machine.
-apply: home system ## - apply guix configuration (home)
+apply: ## - apply guix configuration
+	$(MAKE) system
+	$(MAKE) home
 
 ## reuse: check for license header
 reuse: ## - check for license header
