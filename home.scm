@@ -485,5 +485,7 @@
 	      (config (list
 		       (mixed-text-file
 			"fish-config-direnv"
-			direnv "/bin/direnv hook fish | source")))))
+			direnv "/bin/direnv hook fish | source")
+		       (mixed-text-file
+			"disable-fish-greetings" "set -U fish_greeting")))))
     %base-home-services)))
