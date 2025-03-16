@@ -120,6 +120,15 @@
 
 (define %my-desktop-services
   (modify-services %base-services
+		   (guix-service-type config => (guix-configuration
+						 (inherit config)
+						 (substitute-urls
+						  (append (list "https://substitutes.nonguix.org")
+							  %default-substitute-urls))
+						 (authorized-keys
+						  (append (list (plain-file "nonguix-signing-key.pub"
+									    "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))"))
+							  %default-authorized-guix-keys))))
 		   (delete console-font-service-type)))
 
 (define %my-system-services
