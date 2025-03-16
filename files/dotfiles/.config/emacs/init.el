@@ -231,6 +231,12 @@
   :config
   (which-key-setup-minibuffer))
 
+(use-package org-modern
+  :ensure t
+  :config
+  (add-hook 'org-mode-hook #'org-modern-mode)
+  (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
+
 (use-package evil-commentary
   :ensure t
   :after (evil)
@@ -965,5 +971,3 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
       message-sendmail-f-is-evil t
       message-sendmail-extra-arguments '("--read-envelope-from")
       message-send-mail-function #'message-send-mail-with-sendmail)
-
-(provide 'mail)
