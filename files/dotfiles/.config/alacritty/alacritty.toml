@@ -1,42 +1,77 @@
 # SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
-
-background_opacity = 0.9
-
 [colors]
 draw_bold_text_with_bright_colors = false
 
-[colors.bright]
-black = "#626483"
-blue = "#62d6e8"
-cyan = "#a1efe4"
-green = "#ebff87"
-magenta = "#b45bcf"
-red = "#ea51b2"
-white = "#f7f7fb"
-yellow = "#00f769"
+[colors.primary]
+background = "#24273a"
+foreground = "#cad3f5"
+dim_foreground = "#8087a2"
+bright_foreground = "#cad3f5"
 
 [colors.cursor]
-cursor = "#e9e9f4"
-text = "#e9e9f4"
+text = "#24273a"
+cursor = "#f4dbd6"
+
+[colors.vi_mode_cursor]
+text = "#24273a"
+cursor = "#b7bdf8"
+
+[colors.search.matches]
+foreground = "#24273a"
+background = "#a5adcb"
+
+[colors.search.focused_match]
+foreground = "#24273a"
+background = "#a6da95"
+
+[colors.footer_bar]
+foreground = "#24273a"
+background = "#a5adcb"
+
+[colors.hints.start]
+foreground = "#24273a"
+background = "#eed49f"
+
+[colors.hints.end]
+foreground = "#24273a"
+background = "#a5adcb"
+
+[colors.selection]
+text = "#24273a"
+background = "#f4dbd6"
 
 [colors.normal]
-black = "#3a3c4e"
-blue = "#62d6e8"
-cyan = "#a1efe4"
-green = "#ebff87"
-magenta = "#b45bcf"
-red = "#ea51b2"
-white = "#e9e9f4"
-yellow = "#00f769"
+black = "#494d64"
+red = "#ed8796"
+green = "#a6da95"
+yellow = "#eed49f"
+blue = "#8aadf4"
+magenta = "#f5bde6"
+cyan = "#8bd5ca"
+white = "#b8c0e0"
 
-[colors.primary]
-background = "#282936"
-foreground = "#e9e9f4"
+[colors.bright]
+black = "#5b6078"
+red = "#ed8796"
+green = "#a6da95"
+yellow = "#eed49f"
+blue = "#8aadf4"
+magenta = "#f5bde6"
+cyan = "#8bd5ca"
+white = "#a5adcb"
+
+[[colors.indexed_colors]]
+index = 16
+color = "#f5a97f"
+
+[[colors.indexed_colors]]
+index = 17
+color = "#f4dbd6"
 
 [font]
-size = 10
+size = 9
 
 [font.bold]
 family = "FiraCode Nerd Font"
@@ -53,3 +88,11 @@ opacity = 0.9
 [window.padding]
 x = 4
 y = 4
+
+# general.import = [
+#   # uncomment the flavour you want below:
+#   "~/.config/alacritty/catppuccin-latte.toml"
+#   # "~/.config/alacritty/catppuccin-frappe.toml"
+#   # "~/.config/alacritty/catppuccin-macchiato.toml"
+#   # "~/.config/alacritty/catppuccin-mocha.toml"
+# ]
