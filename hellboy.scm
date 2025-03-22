@@ -115,5 +115,7 @@
 		 (mount-point "/tmp")
 		 (device "tmp")
 		 (type "tmpfs")
+		 (options "size=20G")
 		 (check? #f))
+
 		%base-file-systems)))
