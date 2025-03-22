@@ -275,8 +275,14 @@
     "# Open Zoom Meeting windows on a new workspace (a bit hacky)"
     "for_window [app_id=\"zoom\" title=\"Zoom Meeting(.*)?\"] workspace next_on_output --create, move container to workspace current, floating disable, inhibit_idle open"))
 
+(define %sway-signal-config
+  '("# Signal message app"
+    "for_window [app_id=\"signal\" title=\"^Signal$\"] border none, floating enable"))
+
 (define-public (activate-rofi-theme name)
-  `("rofi/config.rasi" ,(mixed-text-file "config.rasi" "@theme '" rofi-themes-collection "/share/themes/" name ".rasi'")))
+  `("rofi/config.rasi" ,(mixed-text-file "config.rasi"
+					 "@import '" rofi-theme-catppuccin "/share/themes/catppuccin-macchiato'\n"
+					 "@theme '" rofi-theme-catppuccin "/share/themes/catppuccin-default'")))
 
 (define %swayish 
   (sway-configuration
@@ -437,7 +443,8 @@
    (extra-content
     (append
      %sway-extra-content
-     %sway-zoom-config))))
+     %sway-zoom-config
+     %sway-signal-config))))
 
 (home-environment
  (packages (append
