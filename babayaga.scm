@@ -19,7 +19,7 @@
 		     linux)
 
 (operating-system
-  (kernel linux)
+  (kernel linux-xanmod)
   (initrd microcode-initrd)
   (firmware (list linux-firmware sof-firmware))
   (locale "en_CA.utf8")

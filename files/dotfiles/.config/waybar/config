@@ -48,6 +48,10 @@
     "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
     "on-click": "blueman-manager"
     },
+    "tray": {
+	"icon-size": 21,
+	"spacing": 10
+    },
     "cpu": {
       "format": "  {usage}%",
       "on-click" : "gnome-system-monitor"

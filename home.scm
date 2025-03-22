@@ -6,6 +6,7 @@
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
+  #:use-module (gnu home services pm)
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services sound)
@@ -77,11 +78,13 @@
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages mozilla)
   #:use-module (packages gnu home services avizo)
+  #:use-module (packages gnu home services fish)
   #:use-module (packages gnu home services mako)
   #:use-module (packages gnu home services waybar)
   #:use-module (packages gnu home services zathura)
   #:use-module (packages gnu packages rust-apps)
   #:use-module (packages gnu packages fonts)
+  #:use-module (packages gnu packages fish)
   #:use-module (packages gnu packages wayland))
 
 (define rofi/wayland
@@ -96,7 +99,7 @@
 (define %vcs
   (list git
 	git
-	jujutsu
+	;; jujutsu
 	`(,git "send-email")))
 
 (define %dev
@@ -105,12 +108,14 @@
 	guile-colorized))
 
 (define %browsers
-  (list firefox
+  (list
+   ;; firefox
 	librewolf
 	ungoogled-chromium))
 
 (define %tools
   (list htop
+	fish-hydro
 	bash
 	curl
 	b4
@@ -457,7 +462,9 @@
     ;; Make flatpak applications available for rofi.
     (simple-service 'some-useful-env-vars-service
 		    home-environment-variables-service-type
-		    `(("XDG_DATA_DIRS" . "$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share")))
+		    `(("XDG_DATA_DIRS" . "$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share")
+		      ("hydro_color_pwd" . "brcyan")
+		      ("fish_term24bit" . "1")))
     (service home-xdg-configuration-files-service-type
 	     `(("gdb/gdbinit" ,%default-gdbinit)
 	       (".Xdefaults" ,%default-xdefaults)
@@ -480,6 +487,7 @@
     (service home-avizo-service-type)
     (service home-zathura-service-type)
     (service home-pipewire-service-type)
+    (service home-batsignal-service-type)
     (service home-fish-service-type
 	     (home-fish-configuration
 	      (config (list
@@ -488,4 +496,5 @@
 			direnv "/bin/direnv hook fish | source")
 		       (mixed-text-file
 			"disable-fish-greetings" "set -U fish_greeting")))))
+    (service home-fish-hydro-service-type)
     %base-home-services)))
