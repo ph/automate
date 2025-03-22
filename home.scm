@@ -462,9 +462,7 @@
     ;; Make flatpak applications available for rofi.
     (simple-service 'some-useful-env-vars-service
 		    home-environment-variables-service-type
-		    `(("XDG_DATA_DIRS" . "$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share")
-		      ("hydro_color_pwd" . "brcyan")
-		      ("fish_term24bit" . "1")))
+		    `(("XDG_DATA_DIRS" . "$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share")))
     (service home-xdg-configuration-files-service-type
 	     `(("gdb/gdbinit" ,%default-gdbinit)
 	       (".Xdefaults" ,%default-xdefaults)
@@ -495,6 +493,11 @@
 			"fish-config-direnv"
 			direnv "/bin/direnv hook fish | source")
 		       (mixed-text-file
-			"disable-fish-greetings" "set -U fish_greeting")))))
+			"disable-fish-greetings" "set -U fish_greeting")
+		       (plain-file
+			"fish-hydro-config" "\
+set -g hydro_color_pwd \"brcyan\"
+set -g fish_term24bit 1")
+		       ))))
     (service home-fish-hydro-service-type)
     %base-home-services)))
