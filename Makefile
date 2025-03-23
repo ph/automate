@@ -10,15 +10,15 @@ default: help
 
 ## dry-run: Test home in a local container
 dry-run: ## - dry-run test home configuration in a local container
-	guix home container home.scm $< $(ARGS)
+	guix home container -L modules/ config/home.scm $< $(ARGS)
 
 ## home: apply guix home configuration.
 home: ## - apply guix home configuration
-	guix home reconfigure home.scm $< $(ARGS)
+	guix home reconfigure -L modules/ config/home.scm $< $(ARGS)
 
 ## system: apply guix system configuration.
 system: ## - apply guix system configuration
-	sudo -E guix system reconfigure $(HOST).scm $< $(ARGS)
+	sudo -E guix system reconfigure -L modules/ config/$(HOST).scm $< $(ARGS)
 
 ## apply: apply guix configuration to local machine.
 apply: ## - apply guix configuration

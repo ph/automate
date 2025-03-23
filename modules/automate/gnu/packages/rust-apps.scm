@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (packages gnu packages rust-apps)
+(define-module (automate gnu packages rust-apps)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (guix packages)
   #:use-module (guix gexp)
@@ -11,7 +11,7 @@
   #:use-module (gnu packages version-control)
   #:use-module (guix git-download)
   #:use-module (guix build-system cargo)
-  #:use-module (packages gnu packages rust-crates))
+  #:use-module (automate gnu packages rust-crates))
 
 (define-public jujutsu
   (package

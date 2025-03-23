@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (packages common)
+(define-module (automate common)
   #:use-module (gnu)
   #:use-module (gnu packages display-managers)
   #:use-module (gnu packages gnome)

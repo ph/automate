@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (packages gnu packages wayland)
+(define-module (automate gnu packages wayland)
   #:use-module (guix build-system copy)
   #:use-module (guix packages)
   #:use-module (guix gexp)

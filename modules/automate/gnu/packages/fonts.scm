@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (packages gnu packages fonts)
+(define-module (automate gnu packages fonts)
   #:use-module (guix packages)
   #:use-module (guix build-system font)
   #:use-module (guix build-system copy)
