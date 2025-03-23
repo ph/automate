@@ -116,7 +116,7 @@
 (define %probe-rs-udev-rules
   (file->udev-rule
    "69-probe-rs.rules"
-   (local-file "../files/udev/69-probe-rs.rules")))
+   (local-file "../../files/udev/69-probe-rs.rules")))
 
 (define %my-desktop-services
   (modify-services %base-services

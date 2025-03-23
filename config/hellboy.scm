@@ -10,7 +10,7 @@
   #:use-module (gnu)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
-  #:use-module (packages common)
+  #:use-module (automate common)
   #:use-module (srfi srfi-1))
 
 (use-service-modules desktop
