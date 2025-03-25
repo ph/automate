@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (packages gnu home services avizo)
+(define-module (automate gnu home services avizo)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services)
   #:use-module (gnu packages wm)
@@ -10,7 +10,7 @@
   #:use-module (gnu services)
   #:use-module (guix gexp)
   #:use-module (guix packages)
-  #:use-module (packages helpers)
+  #:use-module (automate helpers)
   #:use-module (srfi srfi-1)
   #:export (home-avizo-service-type
 	    home-avizo-configuration))

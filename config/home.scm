@@ -77,15 +77,15 @@
   #:use-module (guix packages)
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages mozilla)
-  #:use-module (packages gnu home services avizo)
-  #:use-module (packages gnu home services fish)
-  #:use-module (packages gnu home services mako)
-  #:use-module (packages gnu home services waybar)
-  #:use-module (packages gnu home services zathura)
-  #:use-module (packages gnu packages rust-apps)
-  #:use-module (packages gnu packages fonts)
-  #:use-module (packages gnu packages fish)
-  #:use-module (packages gnu packages wayland))
+  #:use-module (automate gnu home services avizo)
+  #:use-module (automate gnu home services fish)
+  #:use-module (automate gnu home services mako)
+  #:use-module (automate gnu home services waybar)
+  #:use-module (automate gnu home services zathura)
+  #:use-module (automate gnu packages rust-apps)
+  #:use-module (automate gnu packages fonts)
+  #:use-module (automate gnu packages fish)
+  #:use-module (automate gnu packages wayland))
 
 (define rofi/wayland
   (package-input-rewriting/spec
@@ -399,7 +399,7 @@
 		       "transform 270"
 		       "position 0 0")))
      (sway-output
-      (background (local-file "wallpapers/sea-is-for-cookie.jpg")))))
+      (background (local-file "../wallpapers/sea-is-for-cookie.jpg")))))
    (inputs
     (list
      (sway-input
@@ -482,7 +482,7 @@
     (service home-dotfiles-service-type
 	     (home-dotfiles-configuration
 	      (directories
-	       '("files/dotfiles"))))
+	       '("../files/dotfiles"))))
     (service home-files-service-type
 	     `((".guile" ,%default-dotguile)))
     (service home-sway-service-type

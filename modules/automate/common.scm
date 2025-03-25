@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (packages common)
+(define-module (automate common)
   #:use-module (gnu)
   #:use-module (gnu packages display-managers)
   #:use-module (gnu packages gnome)
@@ -116,7 +116,7 @@
 (define %probe-rs-udev-rules
   (file->udev-rule
    "69-probe-rs.rules"
-   (local-file "../files/udev/69-probe-rs.rules")))
+   (local-file "../../files/udev/69-probe-rs.rules")))
 
 (define %my-desktop-services
   (modify-services %base-services

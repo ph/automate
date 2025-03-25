@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
-(define-module (packages gnu packages rust-crates)
+(define-module (automate gnu packages rust-crates)
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix download)
