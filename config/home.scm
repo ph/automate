@@ -99,6 +99,7 @@
 (define %vcs
   (list git
 	git
+	;; mako
 	;; jujutsu
 	`(,git "send-email")))
 
@@ -210,6 +211,7 @@
    blueman
    alacritty
    imv
+   signal-desktop
    mpv
    pamixer
    pulseaudio
@@ -277,7 +279,7 @@
 
 (define %sway-signal-config
   '("# Signal message app"
-    "for_window [app_id=\"signal\" title=\"^Signal$\"] border none, floating enable"))
+    "for_window [app_id=\"signal\" title=\"^Signal$\"] resize set 400 400, floating enable"))
 
 (define-public (activate-rofi-theme name)
   `("rofi/config.rasi" ,(mixed-text-file "config.rasi"
@@ -487,7 +489,7 @@
 	     `((".guile" ,%default-dotguile)))
     (service home-sway-service-type
 	     %swayish)
-    (service home-mako-service-type)
+    ;; (service home-mako-service-type)
     (service home-waybar-service-type)
     (service home-avizo-service-type)
     (service home-zathura-service-type)
