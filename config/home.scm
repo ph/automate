@@ -76,6 +76,7 @@
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (nongnu packages game-client)
+  #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
   #:use-module (automate gnu home services avizo)
   #:use-module (automate gnu home services fish)
