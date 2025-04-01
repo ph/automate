@@ -57,6 +57,7 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages rsync)
   #:use-module (gnu packages rust-apps)
+  #:use-module (gnu packages shells)
   #:use-module (gnu packages shellutils)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages tls)
@@ -99,15 +100,17 @@
 
 (define %vcs
   (list git
-	git
 	;; mako
 	;; jujutsu
 	`(,git "send-email")))
 
 (define %dev
-  (list guile-gcrypt
-	guile-readline
-	guile-colorized))
+  (list
+
+   fish-foreign-env
+   guile-gcrypt
+   guile-readline
+   guile-colorized))
 
 (define %browsers
   (list
@@ -210,7 +213,6 @@
   (list
    `(,glib "bin")
    blueman
-   alacritty
    imv
    signal-desktop
    mpv
@@ -297,6 +299,7 @@
 	   rofi-themes-collection
            wl-clipboard
 	   foot
+	   alacritty
 	   grim
 	   slurp
 	   light
@@ -306,7 +309,7 @@
    (variables
     `((mod . "Mod4")))
    (keybindings
-    `(($mod+Return . ,#~(string-append "exec " #$foot "/bin/foot"))
+    `(($mod+Return . ,#~(string-append "exec " #$alacritty "/bin/alacritty"))
       ($mod+Shift+q . "kill")
 
       ;; select current workspace
@@ -496,6 +499,7 @@
     (service home-zathura-service-type)
     (service home-pipewire-service-type)
     (service home-batsignal-service-type)
+    (service home-fish-hydro-service-type)
     (service home-fish-service-type
 	     (home-fish-configuration
 	      (config (list
@@ -504,10 +508,13 @@
 			direnv "/bin/direnv hook fish | source")
 		       (mixed-text-file
 			"disable-fish-greetings" "set -U fish_greeting")
+		       (mixed-text-file
+			"enable-foreign-fish-env"
+			"set fish_function_path $fish_function_path $HOME/.guix-profile/share/fish/functions")
 		       (plain-file
 			"fish-hydro-config" "\
 set -g hydro_color_pwd \"brcyan\"
+set -g fish_key_bindings fish_vi_key_bindings
 set -g fish_term24bit 1")
 		       ))))
-    (service home-fish-hydro-service-type)
     %base-home-services)))
