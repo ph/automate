@@ -504,10 +504,13 @@
 			direnv "/bin/direnv hook fish | source")
 		       (mixed-text-file
 			"disable-fish-greetings" "set -U fish_greeting")
+		       (mixed-text-file
+			"enable-foreign-fish-env"
+			"set fish_function_path $fish_function_path $HOME/.guix-profile/share/fish/functions")
 		       (plain-file
 			"fish-hydro-config" "\
 set -g hydro_color_pwd \"brcyan\"
+set -g fish_key_bindings fish_vi_key_bindings
 set -g fish_term24bit 1")
 		       ))))
-    (service home-fish-hydro-service-type)
     %base-home-services)))
