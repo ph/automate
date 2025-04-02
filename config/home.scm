@@ -3,9 +3,19 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (home)
+  #:use-module (automate gnu home services avizo)
+  #:use-module (automate gnu home services fish)
+  #:use-module (automate gnu home services mako)
+  #:use-module (automate gnu home services waybar)
+  #:use-module (automate gnu home services zathura)
+  #:use-module (automate gnu packages fish)
+  #:use-module (automate gnu packages fonts)
+  #:use-module (automate gnu packages rust-apps)
+  #:use-module (automate gnu packages wayland)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
+  #:use-module (gnu home services guix)
   #:use-module (gnu home services pm)
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
@@ -14,7 +24,6 @@
   #:use-module (gnu home services syncthing)
   #:use-module (gnu home services)
   #:use-module (gnu home)
-  #:use-module (guix store)
   #:use-module (gnu packages admin)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages aspell)
@@ -33,10 +42,11 @@
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
-  #:use-module (gnu packages guile)
-  #:use-module (gnu packages guile-xyz)
+  #:use-module (gnu packages gnupg)
   #:use-module (gnu packages graphics)
   #:use-module (gnu packages graphviz)
+  #:use-module (gnu packages guile)
+  #:use-module (gnu packages guile-xyz)
   #:use-module (gnu packages haskell-apps)
   #:use-module (gnu packages haskell-xyz)
   #:use-module (gnu packages image)
@@ -51,7 +61,6 @@
   #:use-module (gnu packages node)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages password-utils)
-  #:use-module (gnu packages gnupg)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
@@ -74,20 +83,14 @@
   #:use-module (gnu services)
   #:use-module (gnu system keyboard)
   #:use-module (gnu system shadow)
+  #:use-module (guix channels)
   #:use-module (guix gexp)
   #:use-module (guix packages)
+  #:use-module (guix store)
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
-  #:use-module (automate gnu home services avizo)
-  #:use-module (automate gnu home services fish)
-  #:use-module (automate gnu home services mako)
-  #:use-module (automate gnu home services waybar)
-  #:use-module (automate gnu home services zathura)
-  #:use-module (automate gnu packages rust-apps)
-  #:use-module (automate gnu packages fonts)
-  #:use-module (automate gnu packages fish)
-  #:use-module (automate gnu packages wayland))
+  #:use-module (rosenthal packages rust-apps))
 
 (define rofi/wayland
   (package-input-rewriting/spec
@@ -106,7 +109,7 @@
 
 (define %dev
   (list
-
+   atuin
    fish-foreign-env
    guile-gcrypt
    guile-readline
@@ -229,8 +232,7 @@
 (define %games
   (list scummvm
 	bsnes
-	steam
-	))
+	steam))
 
 (define %multimedia
   (list
@@ -464,6 +466,30 @@
 	    %fonts))
  (services
    (cons*
+    (simple-service 'additional-channels-service
+		    home-channels-service-type
+		    (list
+		     (channel
+		      (name 'nonguix)
+		      (url "https://gitlab.com/nonguix/nonguix")
+		      (introduction
+		       (make-channel-introduction
+			"897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+			(openpgp-fingerprint
+			 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
+		     (channel
+		      (name 'rosenthal)
+		      (url "https://codeberg.org/hako/rosenthal.git")
+		      (branch "trunk")
+		      (introduction
+		       (make-channel-introduction
+			"7677db76330121a901604dfbad19077893865f35"
+			(openpgp-fingerprint
+			 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
+		     (channel
+		      (name 'guix-rusty)
+		      (branch "main")
+		      (url "https://github.com/ph/guix-rusty"))))
     (service home-shepherd-service-type
 	     (home-shepherd-configuration
 	      (auto-start? #f))) ;; We will it from WM to have access to $DISPLAY.
@@ -506,6 +532,9 @@
 		       (mixed-text-file
 			"fish-config-direnv"
 			direnv "/bin/direnv hook fish | source")
+		       (mixed-text-file
+			"fish-config-atuin"
+			atuin "/bin/atuin init fish | source")
 		       (mixed-text-file
 			"disable-fish-greetings" "set -U fish_greeting")
 		       (mixed-text-file

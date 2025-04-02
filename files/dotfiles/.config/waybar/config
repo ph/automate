@@ -78,6 +78,7 @@
       "sway/mode"
     ],
     "modules-right": [
+      "tray",
       "bluetooth",
       "temperature",
       "cpu",
