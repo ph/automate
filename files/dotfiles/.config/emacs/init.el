@@ -972,6 +972,10 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
       message-sendmail-extra-arguments '("--read-envelope-from")
       message-send-mail-function #'message-send-mail-with-sendmail)
 
+(defun ph/open-todo()
+  (interactive)
+  (org-open-file "~/src/notes/inbox.org"))
+
 (use-package org-roam
   :ensure t
   :after (org)
@@ -991,5 +995,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (ph/leader-key
     "x" '(:ignore t :wk "org")
     "xc" '(org-capture :wk "capture")
+    "xt" '(ph/open-todo :wk "todo")
     "xn" '(org-roam-capture :wk "new note")
     "xf" '(org-roam-find-file :wk "find note"))
+
