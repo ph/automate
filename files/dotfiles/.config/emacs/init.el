@@ -971,3 +971,25 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
       message-sendmail-f-is-evil t
       message-sendmail-extra-arguments '("--read-envelope-from")
       message-send-mail-function #'message-send-mail-with-sendmail)
+
+(use-package org-roam
+  :ensure t
+  :after (org)
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/src/notes/roam")
+  (org-roam-setup))
+
+(use-package org
+  :mode
+  ("\\.org\\'" . org-mode)
+  :custom
+  (setq org-capture-templates
+	'(("t" "todo" entry (file "~/src/notes/inbox.org"))))
+  :config
+  (ph/leader-key
+    "x" '(:ignore t :wk "org")
+    "xc" '(org-capture :wk "capture")
+    "xn" '(org-roam-capture :wk "new note")
+    "xf" '(org-roam-find-file :wk "find note"))
