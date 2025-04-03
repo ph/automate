@@ -101,10 +101,13 @@
 
 (define %user "ph")
 
+(define %scanner
+  (list simple-scan
+	sane-airscan))
+
 (define %vcs
   (list git
-	;; mako
-	;; jujutsu
+	jujutsu
 	`(,git "send-email")))
 
 (define %dev
