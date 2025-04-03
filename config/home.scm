@@ -104,7 +104,7 @@
 (define %vcs
   (list git
 	;; mako
-	;; jujutsu
+	jujutsu
 	`(,git "send-email")))
 
 (define %dev
