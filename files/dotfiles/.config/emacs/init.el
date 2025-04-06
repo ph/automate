@@ -313,11 +313,10 @@
 
 (use-package rustic
   :ensure (rustic :host github :repo "emacs-rustic/rustic")
-  :after (inheritenv envrc eglot)
+  :after (inheritenv envrc)
   :mode ("\\.rs\\'" . rustic-mode)
   :init
-  (setq rustic-lsp-client 'eglot)
-  )
+  (setq rustic-lsp-server 'rust-analyzer))
 
 (use-package ultra-scroll
   :ensure (ultra-scroll :host github :repo "jdtsmith/ultra-scroll")
@@ -350,51 +349,39 @@
 
 (use-package jsonrpc :ensure (:wait t) :defer t)
 
-(use-package eglot
-  :defer t
-  :ensure (:wait t)
-  :after (emacs exec-path-from-shell envrc)
-  :general
-  (ph/leader-key
-    "a" '(:ignore t :wk "actions")
-    "aR" '(eglot-rename :wk "rename")
-    "aa" '(eglot-code-actions :wk "code action")
-    "aq" '(eglot-code-action-quickfix :wk "quickfix")
-    "ae" '(eglot-code-action-extract :wk "extract")
-    "ai" '(eglot-code-action-organize-imports :wk "organize imports")
-    "aI" '(eglot-code-action-inline :wk "inline"))
-  :config
-  (setq eglot-sync-connect 1
-	eglot-autoreconnect t
-	eglot-send-changes-idle-time 0.5
-	eglot-auto-display-help-buffer nil
-	eglot-events-buffer-size 0
-	eglot-extend-to-xref nil
-	eglot-stay-out-of '(flymake)
-	eglot-ignored-server-capabilities
-	'(
-	  ;; :hoverProvider
-	  :documentHighlightProvider
-	  :documentFormattingProvider
-	  :documentRangeFormattingProvider
-	  ;; :documentOnTypeFormattingProvider
-	  :colorProvider
-	  ;; :foldingRangeProvider
-	  ))
-  (advice-add 'jsonrpc--log-event :override #'ignore))
+;; (use-package eglot
+;;   :defer t
+;;   :ensure (:wait t)
+;;   :after (emacs exec-path-from-shell envrc)
+;;   :general
+;;   (ph/leader-key
+;;     "a" '(:ignore t :wk "actions")
+;;     "aR" '(eglot-rename :wk "rename")
+;;     "aa" '(eglot-code-actions :wk "code action")
+;;     "aq" '(eglot-code-action-quickfix :wk "quickfix")
+;;     "ae" '(eglot-code-action-extract :wk "extract")
+;;     "ai" '(eglot-code-action-organize-imports :wk "organize imports")
+;;     "aI" '(eglot-code-action-inline :wk "inline"))
+;;   :config
+;;   (setq eglot-sync-connect 1
+;; 	eglot-autoreconnect t
+;; 	eglot-send-changes-idle-time 0.5
+;; 	eglot-auto-display-help-buffer nil
+;; 	eglot-events-buffer-size 0
+;; 	eglot-extend-to-xref nil
+;; 	eglot-stay-out-of '(flymake)
+;; 	eglot-ignored-server-capabilities
+;; 	'(
+;; 	  ;; :hoverProvider
+;; 	  :documentHighlightProvider
+;; 	  :documentFormattingProvider
+;; 	  :documentRangeFormattingProvider
+;; 	  ;; :documentOnTypeFormattingProvider
+;; 	  :colorProvider
+;; 	  ;; :foldingRangeProvider
+;; 	  ))
+;;   (advice-add 'jsonrpc--log-event :override #'ignore))
 
-(use-package eglot-x
-  :ensure (eglot-x :host github :repo "nemethf/eglot-x")
-  :after (eglot)
-  :config 
-  (with-eval-after-load 'eglot (require 'eglot-x))
-  :config
-  (eglot-x-setup)
-  (define-key eglot-mode-map (kbd "s-.") #'eglot-x-find-refs))
-
-
-(use-package consult-eglot
-  :ensure t)
 (use-package tempel
   :ensure t
   :bind (("M-+" . tempel-complete)
@@ -420,19 +407,7 @@
   (global-corfu-mode))
 
 (use-package cape
-  :ensure t
-  :after eglot
-  :init
-  (defun my/eglot-capf ()
-    (setq-local completion-at-point-functions
-		(list (cape-capf-super
-		       #'tempel-expand
-		       #'eglot-completion-at-point
-		       #'cape-file
-		       #'cape-dabbrev
-		       #'cape-keyword
-		       ))))
-  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
+  :ensure t)
 
 (use-package orderless
   :ensure t
@@ -569,13 +544,15 @@
   (setq ph/copilot-enabled nil)
   :config
   (setq copilot-completion-style 'overlay)
-  (setq copilot-node-executable "~/.guix-home/profile/bin/nodeq"))
+  (setq copilot-node-executable "~/.guix-home/profile/bin/node"))
 
 (use-package savehist
   :ensure nil
   :init
   (savehist-mode))
+
 (use-package consult
+  :ensure t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :general
   (ph/leader-key
@@ -993,3 +970,33 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     "xc" '(org-capture :wk "capture")
     "xn" '(org-roam-capture :wk "new note")
     "xf" '(org-roam-find-file :wk "find note")))
+
+(use-package lsp-mode
+  :ensure t
+  :custom
+  (lsp-completion-provider :none) 
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  (defun my/orderless-dispatch-flex-first (_pattern index _total)
+    (and (eq index 0) 'orderless-flex))
+
+  (defun my/lsp-mode-setup-completion ()
+    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+          '(orderless))
+    ;; Optionally configure the first word as flex filtered.
+    (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
+    ;; Optionally configure the cape-capf-buster.
+    (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         (rustic-mode . lsp)
+         ;; if you want which-key integration
+         (lsp-mode . lsp-enable-which-key-integration)
+	 (lsp-completion-mode . my/lsp-mode-setup-completion))
+  :commands lsp)
+
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode
+  :ensure t)
+
+(use-package consult-flycheck
+  :ensure t)
