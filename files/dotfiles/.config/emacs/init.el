@@ -992,4 +992,4 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     "x" '(:ignore t :wk "org")
     "xc" '(org-capture :wk "capture")
     "xn" '(org-roam-capture :wk "new note")
-    "xf" '(org-roam-find-file :wk "find note"))
+    "xf" '(org-roam-find-file :wk "find note")))
