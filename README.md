@@ -17,3 +17,4 @@ There are tasks to only reconfigure the _system_ or the _home_:
 
 - `make system`
 - `make home`
+check
