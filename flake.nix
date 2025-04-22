@@ -1,4 +1,5 @@
-{description = "PH's NixOS automate";
+{
+  description = "PH's NixOS automate";
 
   inputs = {
     # NixOS official package source, using the nixos-24.11 branch here
@@ -23,16 +24,16 @@
   };
 
   outputs = { self, nixpkgs, disko, home-manager, catppuccin, firefox-addons, ... }@inputs: {
-    nixpkgs.overlays = [ firefox-addons.overlays.default ];
-
     nixosConfigurations = builtins.listToAttrs(
       map(host: {
         name = host;
         value = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+
+
+            catppuccin.nixosModules.catppuccin
             disko.nixosModules.disko
-            catppuccin.homeModules.default
 
             ./hosts/${host}
 
@@ -40,8 +41,19 @@
             {
               home-manager.backupFileExtension = "backup";
               home-manager.extraSpecialArgs = { inherit inputs; };
-              # home-manager.users.ph = ./modules/home.nix;
+              home-manager.users.ph = {
+                nixpkgs.overlays = [ firefox-addons.overlays.default ];
+
+                imports = [
+                  catppuccin.homeModules.catppuccin
+                  ./modules/home.nix
+                ];
+              };
             }
+
+
+
+
           ];
         };
       })(builtins.attrNames (builtins.readDir ./hosts ))

@@ -1,7 +1,7 @@
-{ inputs, config, pkgs, lib, ... }: 
+{ inputs, catpuccin, config, pkgs, lib, ... }: 
 {
   home.file."${config.xdg.configHome}" = {
-    source = files/dotfiles/.config;
+    source = ../files/dotfiles/.config;
     recursive = true;
   };
 
@@ -634,8 +634,8 @@ bindswitch --reload --locked lid:off output $laptop enable
     ];
   };
 
-  inputs.catppuccin.flavor = "mocha";
-  inputs.catppuccin.enable = true;
+  catppuccin.flavor = "mocha";
+  catppuccin.enable = true;
 
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage
