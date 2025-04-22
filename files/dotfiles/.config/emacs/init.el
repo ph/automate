@@ -109,6 +109,8 @@
   (add-to-list 'default-frame-alist '(alpha-background . 95))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
   (add-to-list 'default-frame-alist '(font . "FiraCode 9"))
+  (set-frame-parameter nil 'alpha-background 95)
+  (add-to-list 'default-frame-alist '(alpha-background . 95))
   (require 'midnight))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
