@@ -634,8 +634,8 @@ bindswitch --reload --locked lid:off output $laptop enable
     ];
   };
 
-  catppuccin.flavor = "mocha";
-  catppuccin.enable = true;
+  inputs.catppuccin.flavor = "mocha";
+  inputs.catppuccin.enable = true;
 
   # This value determines the home Manager release that your
   # configuration is compatible with. This helps avoid breakage

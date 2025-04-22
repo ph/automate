@@ -1,5 +1,4 @@
-{
-  description = "PH's NixOS automate";
+{description = "PH's NixOS automate";
 
   inputs = {
     # NixOS official package source, using the nixos-24.11 branch here
@@ -24,50 +23,28 @@
   };
 
   outputs = { self, nixpkgs, disko, home-manager, catppuccin, firefox-addons, ... }@inputs: {
+    nixpkgs.overlays = [ firefox-addons.overlays.default ];
+
     nixosConfigurations = builtins.listToAttrs(
       map(host: {
         name = host;
         value = nixpkgs.lib.nixosSystem {
-          modules = [ ./hosts/${host} ];
+          system = "x86_64-linux";
+          modules = [
+            disko.nixosModules.disko
+            catppuccin.homeModules.default
+
+            ./hosts/${host}
+
+            home-manager.nixosModules.home-manager
+            {
+              home-manager.backupFileExtension = "backup";
+              home-manager.extraSpecialArgs = { inherit inputs; };
+              # home-manager.users.ph = ./modules/home.nix;
+            }
+          ];
         };
-      }) (builtins.attrNames (builtins.readDir ./hosts ))
+      })(builtins.attrNames (builtins.readDir ./hosts ))
     );
-
-    # nixosConfigurations = builtins.listToAttrs(
-    #   map (host: {
-    #     name = host;
-    #     value = nixpkgs.lib.nixosSystem {
-    #       specialArgs {
-    #         inherit inputs outputs libl;
-    #       };
-    #       modules = [ ./hosts/${host} ];
-    #     };
-    #   }) (builins.attrName (builtins.readDir ./hosts ))
-    # );
-    # nixosConfigurations.babayaga = nixpkgs.lib.nixosSystem {
-    #   system = "x86_64-linux";
-    #   modules = [
-    #     catppuccin.nixosModules.catppuccin
-
-    #     disko.nixosModules.disko
-    #     ./configuration.nix
-
-    #     home-manager.nixosModules.home-manager {
-    #       home-manager.backupFileExtension = "backup";
-    #       home-manager.extraSpecialArgs = { inherit inputs; };
-    #     }
-    #     {
-    #       home-manager.users.ph = {
-    #         nixpkgs.overlays = [ firefox-addons.overlays.default ];
-
-    #         imports = [
-    #           ./home.nix
-    #           catppuccin.homeModules.catppuccin
-    #         ];
-    #       };
-    #     }
-    #   ];
-    # };
-
   };
 }
