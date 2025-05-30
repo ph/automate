@@ -1,3 +1,4 @@
+# SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 # SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -8,6 +9,7 @@ User ph@heykimo.com
 PassCmd "pass ph@heykimo.com"
 AuthMechs LOGIN
 TLSType IMAPS
+TLSVersions +1.2
 CertificateFile /etc/ssl/certs/ca-certificates.crt
 
 IMAPStore gmail-remote
@@ -15,13 +17,63 @@ Account gmail
 
 MaildirStore gmail-local
 Subfolders Verbatim
-Path ~/.Mail/
-Inbox ~/.Mail/Inbox
+Path ~/.Mail/ph@heykimo.com/
+Inbox ~/.Mail/ph@heykimo.com/Inbox
 Subfolders Verbatim
 
-Channel gmail
-Far :gmail-remote:
-Near :gmail-local:
-Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Starred" "[Gmail]/All Mail" "[Gmail]/Trash"
+
+Channel gmail-inbox
+Far :gmail-remote:"INBOX"
+Near :gmail-local:"inbox"
+CopyArrivalDate yes
 Create Both
+Expunge Both
 SyncState *
+
+Channel gmail-trash
+Far :gmail-remote:"[Gmail]/Trash"
+Near :gmail-local:"trash"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
+Channel gmail-spam
+Far :gmail-remote:"[Gmail]/Spam"
+Near :gmail-local:"spam"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
+Channel gmail-all
+Far :gmail-remote:"[Gmail]/All Mail"
+Near :gmail-local:"archive"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
+Channel gmail-drafts
+Far :gmail-remote:"[Gmail]/Drafts"
+Near :gmail-local:"drafts"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
+Channel gmail-sent
+Far :gmail-remote:"Sent Mail"
+Near :gmail-local:"sent"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
+Group Gmail
+Channel gmail-inbox
+Channel gmail-trash
+Channel gmail-all
+Channel gmail-spam
+Channel gmail-drafts
+Channel gmail-sent

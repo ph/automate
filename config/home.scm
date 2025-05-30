@@ -10,6 +10,7 @@
   #:use-module (automate gnu home services zathura)
   #:use-module (automate gnu packages fish)
   #:use-module (automate gnu packages fonts)
+  #:use-module (automate gnu packages python)
   #:use-module (automate gnu packages rust-apps)
   #:use-module (automate gnu packages wayland)
   #:use-module (gnu home services desktop)
@@ -61,6 +62,7 @@
   #:use-module (gnu packages node)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages password-utils)
+  #:use-module (gnu packages pdf)
   #:use-module (gnu packages pulseaudio)
   #:use-module (gnu packages python)
   #:use-module (gnu packages qt)
@@ -109,8 +111,9 @@
 
 (define %dev
   (list
-   atuin
    fish-foreign-env
+   zathura-pdf-mupdf ;; should be added on the home service
+   atuin
    guile-gcrypt
    guile-readline
    guile-colorized))
@@ -155,6 +158,8 @@
 
 (define %mail
   (list
+   ;; notmuch
+   ;; python-lieer
    mu
    isync
    msmtp
@@ -259,6 +264,7 @@
     "smart_gaps on"
     "smart_borders on"
     "set $laptop eDP-1"
+    "floating_modifier $mod normal"
 
     ;; AFAIK this cannot be set with the sway configuration.
     "client.focused #e9e9f4 #62d6e8 #282936 #62d6e8 #62d6e8"
@@ -267,7 +273,7 @@
     "client.urgent #ea51b2 #ea51b2 #282936 #ea51b2 #ea51b2"
     "client.placeholder #000000 #0c0c0c #ffffff #000000 #0c0c0c"
     "client.background #ffffff"
-
+    "for_window [title=\"(?:Open|Save) (?:File|Folder|As)\"] floating enable, resize set width 1030 height 710"
     "bindswitch --reload --locked lid:on output $laptop disable"
     "bindswitch --reload --locked lid:off output $laptop enable"))
 
@@ -436,7 +442,7 @@
      "gsettings set org.gnome.desktop.interface font-name 'Fira Code 10'"
      "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway"
      "pgrep --uid $USER swayidle || swayidle  timeout 300 'sh $HOME/.config/sway/locker.sh' timeout 360 'swaymsg \"output * dpms off\"' resume 'swaymsg \"output * dpms on\"' timeout 600 'swaymsg \"output * dpms on\"; sleep 1; loginctl suspend' before-sleep 'sh $HOME/.config/sway/locker.sh'"
-     ))
+     "signal-desktop --use-tray-icon"))
    (modes
     (list
      (sway-mode
@@ -492,7 +498,7 @@
 		      (url "https://github.com/ph/guix-rusty"))))
     (service home-shepherd-service-type
 	     (home-shepherd-configuration
-	      (auto-start? #f))) ;; We will it from WM to have access to $DISPLAY.
+	      (auto-start? #f))) ;; Sadly we need to start shepherd in the sway boot process to make $WAYLAND_DISPLAY available.
     (service home-dbus-service-type)
     (service home-gpg-agent-service-type
 	     (home-gpg-agent-configuration
@@ -519,7 +525,7 @@
 	     `((".guile" ,%default-dotguile)))
     (service home-sway-service-type
 	     %swayish)
-    ;; (service home-mako-service-type)
+    (service home-mako-service-type)
     (service home-waybar-service-type)
     (service home-avizo-service-type)
     (service home-zathura-service-type)
@@ -539,7 +545,8 @@
 			"disable-fish-greetings" "set -U fish_greeting")
 		       (mixed-text-file
 			"enable-foreign-fish-env"
-			"set fish_function_path $fish_function_path $HOME/.guix-profile/share/fish/functions")
+			"set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
+fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
 		       (plain-file
 			"fish-hydro-config" "\
 set -g hydro_color_pwd \"brcyan\"
