@@ -6,19 +6,25 @@ ARGS := --verbosity=1
 
 HOST?=$(subst .local.heyk.org,,$(shell hostname))
 
+GUIX := guix
+
 default: help
 
 ## dry-run: Test home in a local container
 dry-run: ## - dry-run test home configuration in a local container
-	guix home container config/home.scm $< $(ARGS)
+	$(GUIX) home container config/home.scm $< $(ARGS)
+
+## pull: update packages
+pull: ## - update guix distributions
+	$(GUIX) pull --channels=channels.scm
 
 ## home: apply guix home configuration.
 home: ## - apply guix home configuration
-	guix home reconfigure config/home.scm $< $(ARGS)
+	$(GUIX) home reconfigure config/home.scm $< $(ARGS)
 
 ## system: apply guix system configuration.
 system: ## - apply guix system configuration
-	sudo -E guix system reconfigure config/$(HOST).scm $< $(ARGS)
+	sudo -E $(GUIX) system reconfigure config/$(HOST).scm $< $(ARGS)
 
 ## apply: apply guix configuration to local machine.
 apply: ## - apply guix configuration
@@ -27,11 +33,11 @@ apply: ## - apply guix configuration
 
 ## reuse: check for license header
 reuse: ## - check for license header
-	guix shell -m manifest.scm -- reuse lint
+	$(GUIX) shell -m manifest.scm -- reuse lint
 
 ## nrepl: run the nrepl
 nrepl: ## - run the nrepl for arei
-	guix shell guile-next guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
+	$(GUIX) shell guile-next guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
 
 ## check: run linters or any check on code
 check: reuse ## - check for license header
