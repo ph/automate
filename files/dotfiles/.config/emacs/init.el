@@ -1,10 +1,4 @@
-;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
-;;;
-;;; SPDX-License-Identifier: GPL-3.0-or-later
-
-;; Elpaca Installer -*- lexical-binding: t; -*-
-;; Copy below this line into your init.el
-(defvar elpaca-installer-version 0.10)
+(defvar elpaca-installer-version 0.11)
 (defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
@@ -39,13 +33,11 @@
   (unless (require 'elpaca-autoloads nil t)
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
+    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
 
-;; Install use-package support
 (elpaca elpaca-use-package
-  ;; Enable use-package :ensure support for Elpaca.
   (elpaca-use-package-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -108,7 +100,9 @@
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-to-list 'default-frame-alist '(alpha-background . 95))
   (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-  (add-to-list 'default-frame-alist '(font . "FiraCode 9"))
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 10"))
+  (set-frame-parameter nil 'alpha-background 95)
+  (add-to-list 'default-frame-alist '(alpha-background . 95))
   (require 'midnight))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -147,7 +141,6 @@
     :keymaps 'override
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC"))
-
 
 (defun ph/hjkl-only()
   (interactive)
@@ -188,8 +181,8 @@
   (evil-global-set-key 'motion (kbd "<up>") 'ph/hjkl-only)
   (ph/leader-key
     ;; "f" '(:ignore t :wk "flymake")
-    ;; "ff" '(consult-flymake :wk "toggle flymake")
-    "f" '(consult-flycheck :wk "toggle flycheck")
+    "f" '(consult-flymake :wk "toggle flymake")
+    ;;"f" '(consult-flycheck :wk "toggle flycheck")
 
     ;; window
     "w" '(:ignore t :wk "window")
@@ -316,8 +309,7 @@
   :after (inheritenv envrc eglot)
   :mode ("\\.rs\\'" . rustic-mode)
   :init
-  (setq rustic-lsp-client 'eglot)
-  )
+  (setq rustic-lsp-client 'eglot))
 
 (use-package ultra-scroll
   :ensure (ultra-scroll :host github :repo "jdtsmith/ultra-scroll")
@@ -350,10 +342,15 @@
 
 (use-package jsonrpc :ensure (:wait t) :defer t)
 
+(use-package flymake
+  :ensure t
+  :config
+  (flymake-mode))
+
 (use-package eglot
   :defer t
   :ensure (:wait t)
-  :after (emacs exec-path-from-shell envrc)
+  :after (emacs flymake exec-path-from-shell envrc)
   :general
   (ph/leader-key
     "a" '(:ignore t :wk "actions")
@@ -370,7 +367,7 @@
 	eglot-auto-display-help-buffer nil
 	eglot-events-buffer-size 0
 	eglot-extend-to-xref nil
-	eglot-stay-out-of '(flymake)
+	;;eglot-stay-out-of '(flymake)
 	eglot-ignored-server-capabilities
 	'(
 	  ;; :hoverProvider
@@ -392,9 +389,9 @@
   (eglot-x-setup)
   (define-key eglot-mode-map (kbd "s-.") #'eglot-x-find-refs))
 
-
 (use-package consult-eglot
   :ensure t)
+
 (use-package tempel
   :ensure t
   :bind (("M-+" . tempel-complete)
@@ -406,16 +403,25 @@
 
 (use-package corfu
   :ensure t
-  :custom
+  :config
   (setq corfu-auto t
-	corfu-auto-delay 0.5 
-	corfu-auto-prefix 3)
-  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
-  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
-  (corfu-preview-current nil)    ;; Disable current candidate preview
-  (corfu-preselect 'prompt)      ;; Preselect the prompt
-  (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+	corfu-auto-delay 0.1
+	corfu-auto-prefix 2
+	corfu-quit-no-match 'separator
+	corfu-count 16
+	corfu-max-width 120)
+
+  (add-hook 'evil-insert-state-exit-hook #'corfu-quit)
+  :custom
+  (corfu-cycle t)
+  (corfu-preview-current 'insert)
+  (corfu-preselect 'prompt)     
+  :bind
+  (:map corfu-map
+	("TAB" . corfu-next)
+	([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous))
   :init
   (global-corfu-mode))
 
@@ -426,12 +432,11 @@
   (defun my/eglot-capf ()
     (setq-local completion-at-point-functions
 		(list (cape-capf-super
-		       #'tempel-expand
 		       #'eglot-completion-at-point
 		       #'cape-file
 		       #'cape-dabbrev
-		       #'cape-keyword
-		       ))))
+		       #'cape-keyword))))
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
   (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
 
 (use-package orderless
@@ -442,6 +447,7 @@
   (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package catppuccin-theme
@@ -458,18 +464,45 @@
   (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
 ;; Spacious-padding: add more space around UI elements.
-(use-package spacious-padding
-  :ensure t
-  :custom
-  (setq spacious-padding-subtle-mode-line `(:mode-line-active 'default :mode-line-inactive vertical-border)
-	spacious-padding-widths `(:internal-border-width 0))
-  :init
-  (spacious-padding-mode 1))
+;; (use-package spacious-padding
+;;   :ensure t
+;;   :custom
+;;   (setq
+;;    ;; spacious-padding-subtle-mode-line `(:mode-line-active 'default :mode-line-inactive vertical-border)
+;;    spacious-padding-widths `(:internal-border-width 0))
+;;   :init
+;;   (spacious-padding-mode 1))
 
-(use-package mood-line
-  :ensure t
-  :init
-  (mood-line-mode))
+;; (use-package mood-line
+;;   :ensure t
+;;   :init
+;;   (mood-line-mode))
+
+(use-package lambda-line
+  :ensure (lambda-line :ensure t :host github :repo "lambda-emacs/lambda-line")
+  :custom
+  ;; (lambda-line-icon-time t) ;; requires ClockFace font (see below)
+  ;; (lambda-line-clockface-update-fontset "ClockFaceRect") ;; set clock icon
+  (lambda-line-position 'bottom) ;; Set position of status-line 
+  (lambda-line-abbrev t) ;; abbreviate major modes
+  (lambda-line-hspace "  ")  ;; add some cushion
+  (lambda-line-prefix t) ;; use a prefix symbol
+  (lambda-line-prefix-padding nil) ;; no extra space for prefix 
+  (lambda-line-status-invert nil)  ;; no invert colors
+  (lambda-line-gui-ro-symbol  " ⨂") ;; symbols
+  (lambda-line-gui-mod-symbol " ⬤") 
+  (lambda-line-gui-rw-symbol  " ◯") 
+  (lambda-line-vc-symbol "")
+  (lambda-line-space-top +.50)  ;; padding on top and bottom of line
+  (lambda-line-space-bottom -.50)
+  (lambda-line-symbol-position 0.1) ;; adjust the vertical placement of symbol
+  :config
+  ;; activate lambda-line 
+  (lambda-line-mode) 
+  ;; set divider line in footer
+  (when (eq lambda-line-position 'top)
+    (setq-default mode-line-format (list "%_"))
+    (setq mode-line-format (list "%_"))))
 
 (use-package vterm
   :ensure nil
@@ -575,6 +608,7 @@
   :ensure nil
   :init
   (savehist-mode))
+
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :general
@@ -610,7 +644,7 @@
          ;; ("M-y" . consult-yank-pop)                ;; orig. yank-pop
          ;; M-g bindings in `goto-map'
          ;; ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
+         ;;("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
          ;; ("M-g g" . consult-goto-line)             ;; orig. goto-line
          ;; ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
          ;; ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
@@ -838,9 +872,9 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	    (yes-or-no-p (format "`%s' is running; kill it? " proc)))
 	(condition-case ()
             (progn
-              (interrupt-process proc)
-              (sit-for 0.5)
-              (delete-process proc))
+	      (interrupt-process proc)
+	      (sit-for 0.5)
+	      (delete-process proc))
           (error nil))
       (unless no-error
 	(error "Cannot have two rust processes at once")))))
@@ -875,8 +909,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	;; Don't display parent/related refs in commit buffers; they are rarely
 	;; helpful and only add to runtime costs.
 	magit-revision-insert-related-refs nil
-	magit-no-confirm '(stage-all-changes unstage-all-changes)
-	)
+	magit-no-confirm '(stage-all-changes unstage-all-changes))
   :custom
   (git-commit-summary-max-length 50)
   (git-commit-fill-column 72)
@@ -936,41 +969,53 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 			      (:subject       .   nil)))
   (mu4e-thread-folding-mode))
 
-(require 'mu4e)
-
-(setq
- ;; set mu4e as default
- mail-user-agent 'mu4e-user-agent
- mu4e-drafts-folder "/[Gmail]/Drafts"
- mu4e-sent-folder   "/[Gmail]/Sent Mail"
- mu4e-trash-folder  "/[Gmail]/Trash"
- mu4e-refile-folder  "/Gmail/[Gmail]/Archive"
- mu4e-sent-messages-behavior 'delete
- mu4e-update-interval 300
- mu4e-compose-format-flowed t
- mu4e-index-lazy-check t
- mu4e-headers-date-format "%y.%m.%d"
- mu4e-search-include-related t
- mu4e-search-skip-duplicates t
- mu4e-get-mail-command "mbsync gmail"
- mu4e-change-filenames-when-moving t
- mu4e-confirm-quit nil
- ;; this is coming from base
- user-mail-address "ph@heykimo.com"
- user-full-name  "Pier-Hugues Pellerin"
- message-kill-buffer-on-exit t
- mu4e-compose-signature
- (concat
-  "Thanks\n"
-  "ph"))
-
+(use-package mu4e
+  :ensure nil
+  :config
+  (setq mail-user-agent 'mu4e-user-agent
+	mu4e-drafts-folder "/ph@heykimo.com/drafts"
+	mu4e-sent-folder   "/ph@heykimo.com/sent"
+	mu4e-trash-folder  "/ph@heykimo.com/trash"
+	mu4e-refile-folder  "/ph@heykimo.com/archive"
+	mu4e-sent-messages-behavior 'delete
+	mu4e-update-interval 300
+	mu4e-compose-format-flowed t
+	mu4e-use-fancy-chars t
+	mu4e-index-lazy-check t
+	mu4e-headers-date-format "%y.%m.%d"
+	mu4e-search-include-related t
+	mu4e-search-skip-duplicates t
+	mu4e-get-mail-command "mbsync gmail"
+	mu4e-change-filenames-when-moving t
+	mu4e-confirm-quit nil
+	;; this is coming from base
+	user-mail-address "ph@heykimo.com"
+	user-full-name  "Pier-Hugues Pellerin"
+	message-kill-buffer-on-exit t
+	mu4e-headers-draft-mark     '("D" . "💈")
+	mu4e-headers-flagged-mark   '("F" . "📍")
+	mu4e-headers-new-mark       '("N" . "🔥")
+	mu4e-headers-passed-mark    '("P" . "❯")
+	mu4e-headers-replied-mark   '("R" . "❮")
+	mu4e-headers-seen-mark      '("S" . "☑")
+	mu4e-headers-trashed-mark   '("T" . "💀")
+	mu4e-headers-attach-mark    '("a" . "📎")
+	mu4e-headers-encrypted-mark '("x" . "🔒")
+	mu4e-headers-signed-mark    '("s" . "🔑")
+	mu4e-headers-unread-mark    '("u" . "⎕")
+	mu4e-headers-list-mark      '("l" . "🔈")
+	mu4e-headers-personal-mark  '("p" . "👨")
+	mu4e-headers-calendar-mark  '("c" . "📅")
+	mu4e-compose-signature (concat "Thanks\n" "ph")))
 
 (require 'smtpmail)
 (setq sendmail-program (executable-find "msmtp")
+      mail-host-address "heykimo.com"
       send-mail-function #'smtpmail-send-it
       message-sendmail-f-is-evil t
       message-sendmail-extra-arguments '("--read-envelope-from")
       message-send-mail-function #'message-send-mail-with-sendmail)
+
 
 (use-package org-roam
   :ensure t
@@ -988,8 +1033,77 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (setq org-capture-templates
 	'(("t" "todo" entry (file "~/src/notes/inbox.org"))))
   :config
+  (setq org-todo-keywords
+	'((sequence "TODO(t)" "|" "PROGRESS(p)" "|" "DONE(d)")
+	  (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")
+	  (sequence "|" "CANCELED(c)")))
   (ph/leader-key
     "x" '(:ignore t :wk "org")
     "xc" '(org-capture :wk "capture")
     "xn" '(org-roam-capture :wk "new note")
     "xf" '(org-roam-find-file :wk "find note")))
+
+;; (use-package eglot-booster
+;;   :ensure (eglot-booster :host github :repo "jdtsmith/eglot-booster")
+;;   :after eglot
+;;   :config
+;;   (setq eglot-booster-io-only t)
+;;   (eglot-booster-mode))
+
+(use-package kind-icon
+  :ensure t
+  :after corfu
+					;:custom
+					; (kind-icon-blend-background t)
+					; (kind-icon-default-face 'corfu-default) ; only needed with blend-background
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+;;(use-package flycheck
+;;  :ensure t
+;;  :init (global-flycheck-mode))
+;;
+;;(use-package flycheck-eglot
+;;  :ensure t
+;;  :after (flycheck eglot)
+;;  :config (global-flycheck-eglot-mode 1))
+;;
+;;(use-package consult-flycheck
+;;  :ensure t)
+
+(use-package aidermacs
+  :ensure (aidermacs :host github :repo "MatthewZMD/aidermacs")
+  :bind (("C-c a" . aidermacs-transient-menu))
+  :config
+  (ph/leader-key
+    "ag" '(aidermacs-transient-menu :wk "AI"))
+  (add-hook 'aidermacs-before-run-backend-hook
+	    (lambda ()
+	      (setenv "OPENAI_API_KEY" (password-store-get "open_ai"))))
+  :custom
+  (aidermacs-use-architect-mode t)
+  (aidermacs-default-model "o3-mini"))
+
+(use-package jsonnet-mode
+  :ensure t)
+
+(push 'mu4e elpaca-ignored-dependencies)
+(use-package mu4e-dashboard
+  :ensure (:host github :repo "rougier/mu4e-dashboard" :build (:not elpaca--byte-compile))
+  :config
+  (setq mu4e-dashboard-file "~/.config/emacs/mu4e-dashboard.org")
+  :custom
+  (defun ph/open-dashboard ()
+    (interactive)
+    (with-current-buffer
+	(find-file mu4e-dashboard-file)
+      (mu4e-dashboard-mode 1))))
+
+(use-package flymake-guile
+  :ensure t
+  :hook (scheme-mode-hook . flymake-guile))
+
+(setq org-todo-keywords
+      '((sequence "TODO(t)" "|" "DONE(d)")
+        (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")
+        (sequence "|" "CANCELED(c)")))

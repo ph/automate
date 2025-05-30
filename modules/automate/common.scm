@@ -21,6 +21,7 @@
   #:use-module (gnu services desktop)
   #:use-module (gnu services docker)
   #:use-module (gnu services linux)
+  #:use-module (gnu services sysctl)
   #:use-module (gnu system shadow)
   #:use-module (gnu packages shells)
   #:use-module (nongnu packages video)
@@ -50,6 +51,8 @@
   mcron
   sddm
   xorg)
+
+(use-package-modules ssh)
 
 (define-public (btrfs-maintenance-jobs mount-point)
   (list
@@ -148,6 +151,12 @@
 
            fontconfig-file-system-service
 
+          ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+          (simple-service 'udp-buffer-size
+                          sysctl-service-type
+                          '(("net.core.rmem_max" . "7500000")
+                            ("net.core.wmem_max" . "7500000")))
+
            ;; NetworkManager and its applet.
            (service network-manager-service-type)
            (service wpa-supplicant-service-type)    ;needed by NetworkManager
@@ -179,7 +188,9 @@
            (service alsa-service-type)
 
 	   ;; (service earlyoom-service-type)
-	   (service openssh-service-type)
+	   (service openssh-service-type
+		    (openssh-configuration
+		     (openssh openssh-sans-x)))
 	   ;; (service cups-service-type
 	   ;; 	    (cups-configuration
 	   ;; 	     (web-interface? #t)
