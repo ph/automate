@@ -546,6 +546,7 @@
 		       (mixed-text-file
 			"enable-foreign-fish-env"
 			"set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
+set -g DIRENV_WARN_TIMEOUT 1m
 fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
 		       (plain-file
 			"fish-hydro-config" "\
