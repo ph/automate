@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 (define-module (automate gnu packages librefox-extensions)
   #:use-module (guix packages)
   #:use-module (guix download)
