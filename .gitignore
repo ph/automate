@@ -5,3 +5,5 @@
 *.go
 /wallpapers/
 /rpi/
+/deploy/
+/secrets/

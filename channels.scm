@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 (define %guix-channel
   (channel
    (name 'guix)
@@ -40,13 +44,16 @@
 (list
  (channel
   (inherit %guix-channel)
-  (url (if (file-exists? "~/src/guix") "~/src/guix"
-	     "https://git.guix.gnu.org/guix.git")))
+  (url (if (file-exists? "/home/ph/src/guix")
+	   "file:///home/ph/src/guix/"
+	   "https://git.guix.gnu.org/guix.git"))
+  (branch "trunk"))
 
  (channel
   (inherit %nonguix-channel)
-  (url (if (file-exists? "~/src/nonguix") "~/src/nonguix"
-	     "https://gitlab.com/nonguix/nonguix")))
+  (url (if (file-exists? "/home/ph/src/nonguix")
+	   "file:///home/ph/src/nonguix"
+	   "https://gitlab.com/nonguix/nonguix")))
 
  (channel
   (inherit %rosenthal-channel))

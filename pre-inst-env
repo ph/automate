@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+guix="$HOME/src/guix"
+nonguix="$HOME/src/nonguix"
+
+p=$guix:$nonguix
+
+GUILE_LOAD_PATH="$p${GUILE_LOAD_PATH:+:}$GUILE_LOAD_PATH"
+GUIX_PACKAGE_PATH="$p${GUIX_PACKAGE_PATH:+:}$GUIX_PACKAGE_PATH"
+export GUILE_LOAD_PATH GUIX_PACKAGE_PATH
+
+echo $GUILE_LOAD_PATH
+exec "$guix/pre-inst-env" "$@"
