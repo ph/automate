@@ -121,8 +121,6 @@
    "69-probe-rs.rules"
    (local-file "../../files/udev/69-probe-rs.rules")))
 
-(define %my-desktop-services %my-base-services)
-
 (define %my-base-services
   (modify-services %base-services
 		   (guix-service-type config => (guix-configuration
@@ -233,4 +231,4 @@
 		     (pam-limits-entry "@realtime" 'both 'rtprio 99)
 		     (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
 		     (pam-limits-entry "*" 'both 'nofile 524288))))
-	  %my-desktop-services))
+	  %my-base-services))
