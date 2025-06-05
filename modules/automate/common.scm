@@ -121,7 +121,9 @@
    "69-probe-rs.rules"
    (local-file "../../files/udev/69-probe-rs.rules")))
 
-(define %my-desktop-services
+(define %my-desktop-services %my-base-services)
+
+(define %my-base-services
   (modify-services %base-services
 		   (guix-service-type config => (guix-configuration
 						 (inherit config)
@@ -133,9 +135,13 @@
 							  %default-substitute-urls))
 						 (authorized-keys
 						  (append (list (plain-file "nonguix-signing-key.pub"
-									    "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))"))
+									    "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))")
+								(plain-file "babayaga-key.pub"
+									    "(public-key (ecc (curve Ed25519) (q #36C0C6FEDCD7DD8BE2C0F26487618395B69D1806CE07943179A1305978716AC7#)))"
+									    ))
 							  %default-authorized-guix-keys))))
 		   (delete console-font-service-type)))
+
 
 (define %my-system-services
   (append (list
