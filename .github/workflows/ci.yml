@@ -27,6 +27,8 @@ jobs:
 
       - name: Install Guix
         uses: PromyLOPh/guix-install-action@v1
+        with:
+          pullAfterInstall: false
 
       - uses: actions/cache/save@v3
         if: always()
