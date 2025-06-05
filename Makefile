@@ -16,7 +16,7 @@ dry-run: ## - dry-run test home configuration in a local container
 
 ## pull: update packages
 pull: ## - update guix distributions
-	$(GUIX) pull --channels=channels.scm
+	$(GUIX) pull --channels=channels.scm $(ARGS)
 
 ## home: apply guix home configuration.
 home: ## - apply guix home configuration

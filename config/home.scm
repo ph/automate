@@ -68,6 +68,7 @@
   #:use-module (gnu packages qt)
   #:use-module (gnu packages rsync)
   #:use-module (gnu packages rust-apps)
+  #:use-module (gnu packages scanner)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages shellutils)
   #:use-module (gnu packages terminals)
@@ -246,6 +247,11 @@
    ffmpeg
    kicad
    vlc))
+
+(define %scanner
+  (list
+   simple-scan
+   sane-airscan))
 
 (define %sway-extra-content
   '("font pango:monospace 8.0"
@@ -465,6 +471,7 @@
 	    %browsers
 	    %vcs
 	    %dev
+	    %scanner
 	    %tools
 	    %mail
 	    %editors
@@ -555,3 +562,8 @@ set -g fish_key_bindings fish_vi_key_bindings
 set -g fish_term24bit 1")
 		       ))))
     %base-home-services)))
+
+;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
+;; TODO: Create wrapper for this.
+;; LD_LIBRARY_PATH=/home/ph/.guix-home/profile/lib/sane
+;;  SANE_CONFIG_DIR=/home/ph/.guix-home/profile/etc/sane.d/ simple-scan
