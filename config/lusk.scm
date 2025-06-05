@@ -9,11 +9,16 @@
 	     (nongnu packages linux)
 	     (nongnu system linux-initrd)
 	     (rosenthal services networking))
-(use-service-modules cups desktop networking ssh xorg)
+(use-service-modules cups desktop networking ssh sysctl)
 
 
 (define %my-base-services
   (modify-services %base-services
+		   (sysctl-service-type config =>
+					(sysctl-configuration
+					 (settings (append '(("net.ipv4.ip_forward" . "1")
+							     ("net.ipv6.conf.all.forwarding" . "1"))
+							   %default-sysctl-settings))))
 		   (guix-service-type config => (guix-configuration
 						 (inherit config)
 						 (substitute-urls
