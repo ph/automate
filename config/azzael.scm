@@ -5,8 +5,19 @@
 (use-modules (gnu)
 	     (guix packages)
 	     (gnu services networking)
+	     (gnu services dbus)
+	     (gnu services docker)
+	     (gnu services linux)
+	     (rosenthal services web)
+	     (automate common)
 	     (gnu packages ssh))
-(use-service-modules cups desktop networking ssh sysctl)
+
+(use-service-modules cups
+		     desktop
+		     networking
+		     ssh
+		     sysctl
+		     virtualization)
 
 (define %my-base-services
   (modify-services %base-services
@@ -33,26 +44,83 @@
 							  %default-authorized-guix-keys))))
 		   (delete console-font-service-type)))
 
+(define %my-packages
+  (map specification->package (list
+			       "neovim"
+			       "rsync"
+			       "mosh")))
+
+(define %deploy-web
+  (user-account
+   (name "deploy-web")
+   (comment "deploy web")
+   (group "users")
+   (supplementary-groups '("caddy"))))
+
 (operating-system
- (host-name "azzael")
+ (host-name "azzael.supervoid.org")
  (timezone "America/Toronto")
  (locale "en_US.utf8")
  (bootloader (bootloader-configuration
 	      (bootloader grub-bootloader)
 	      (targets '("/dev/vda"))
 	      (terminal-outputs '(console))))
+ (groups (cons*
+	  (user-group (system? #t)
+		      (name "realtime"))
+
+	  (user-group (system? #t)
+		      (name "plugdev"))
+	  %base-groups))
+ (packages (append
+	    %my-packages
+	    %base-packages))
+
+ (users (cons* %ph
+	       %deploy-web
+	       %base-user-accounts))
 
  (file-systems (cons (file-system
 		      (mount-point "/")
-		      (device "/dev/vda1")
+		      (device "/dev/vda2")
 		      (type "ext4"))
 		     %base-file-systems))
  (services
-  (append (list (service dhcp-client-service-type)
-	   (service ntp-service-type)
-	   (service openssh-service-type
-		    (openssh-configuration
-		     (openssh openssh-sans-x)
-		     (permit-root-login 'prohibit-password)
-		     (allow-empty-passwords? #f))))
+  (append (list (service dhcpcd-service-type)
+		(service caddy-service-type
+			 (caddy-configuration
+			  (caddyfile (local-file "caddyfile"))))
+		(simple-service 'www activation-service-type
+				(with-imported-modules '((guix build utils))
+				  #~(begin
+				      (use-modules (guix build utils))
+
+				      (let* ((paths (list "/var/www"
+							  "/var/www/supervoid.org"))
+					     (pw (getpwnam "caddy"))
+					     (caddy-user (passwd:uid pw))
+					     (caddy-group (passwd:gid pw)))
+
+					     (for-each (lambda (p)
+							 (mkdir-p p)
+							 (chown p caddy-user caddy-group)
+							 (chmod p #o775)) paths)))))
+		(service nftables-service-type
+			 (nftables-configuration
+			  (ruleset (local-file "nftables.conf"))))
+		(service ntp-service-type)
+		(service containerd-service-type)
+		(service dbus-root-service-type)
+		(service docker-service-type)
+		(service elogind-service-type)
+		(service earlyoom-service-type)
+		(service openssh-service-type
+			 (openssh-configuration
+			  (openssh openssh-sans-x)
+			  (permit-root-login #f)
+			  (password-authentication? #f)
+			  (authorized-keys
+			   `(("root" ,(local-file "/home/ph/.ssh/id_rsa.pub"))
+			     ("ph" ,(local-file "/home/ph/.ssh/id_rsa.pub"))
+			     ("deploy-web" ,(local-file "../secrets/deploy.pub")))))))
 	  %my-base-services)))

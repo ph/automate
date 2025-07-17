@@ -1,0 +1,4 @@
+supervoid.org {
+    root * /var/www/supervoid.org
+    file_server
+}

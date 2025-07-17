@@ -47,7 +47,7 @@
   (url (if (file-exists? "/home/ph/src/guix")
 	   "file:///home/ph/src/guix/"
 	   "https://git.guix.gnu.org/guix.git"))
-  (branch "trunk"))
+  (branch "main"))
 
  (channel
   (inherit %nonguix-channel)

@@ -40,6 +40,7 @@
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages ghostscript)
+  #:use-module (gnu packages ssh)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
@@ -112,6 +113,7 @@
 
 (define %dev
   (list
+   mosh
    fish-foreign-env
    zathura-pdf-mupdf ;; should be added on the home service
    atuin
@@ -173,7 +175,7 @@
   (list
    emacs-pgtk
    emacs-guix
-   emacs-arei
+   ;; emacs-arei
    emacs-debbugs
    emacs-vterm
    emacs-geiser))
@@ -419,7 +421,9 @@
 		       "transform 270"
 		       "position 0 0")))
      (sway-output
-      (background (local-file "../wallpapers/sea-is-for-cookie.jpg")))))
+      ;; (background (local-file "../wallpapers/sea-is-for-cookie.jpg"))
+      (background (local-file "../wallpapers/kanagwa.jpg"))
+      )))
    (inputs
     (list
      (sway-input
@@ -470,6 +474,7 @@
  (packages (append
 	    %browsers
 	    %vcs
+	    %games
 	    %dev
 	    %scanner
 	    %tools
@@ -553,7 +558,7 @@
 		       (mixed-text-file
 			"enable-foreign-fish-env"
 			"set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
-set -g DIRENV_WARN_TIMEOUT 1m
+set -g DIRENV_WARN_TIMEOUT 10m
 fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
 		       (plain-file
 			"fish-hydro-config" "\

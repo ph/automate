@@ -7,10 +7,12 @@
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages)
+  #:use-module (gnu services docker)
   #:use-module (gnu)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (automate common)
+  #:use-module (rosenthal services networking)
   #:use-module (srfi srfi-1))
 
 (use-service-modules desktop
@@ -47,6 +49,7 @@
 	   (udev-rules-service
 	    'probe-rs %probe-rs-udev-rules)
 	   (service sane-service-type)
+	   (service tailscale-service-type)
 	   (service guix-publish-service-type
 		    (guix-publish-configuration
 		     (host "0.0.0.0")
