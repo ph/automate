@@ -5,7 +5,7 @@
 (define %guix-channel
   (channel
    (name 'guix)
-   (url "https://git.guix.gnu.org/guix.git")
+   (url "https://codeberg.org/guix/guix.git")
    (branch "master")
    (introduction
     (make-channel-introduction
@@ -46,7 +46,7 @@
   (inherit %guix-channel)
   (url (if (file-exists? "/home/ph/src/guix")
 	   "file:///home/ph/src/guix/"
-	   "https://git.guix.gnu.org/guix.git"))
+	   "https://codeberg.org/guix/guix.git"))
   (branch "main"))
 
  (channel
