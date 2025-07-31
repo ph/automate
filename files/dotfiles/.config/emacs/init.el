@@ -99,6 +99,7 @@
 
   (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path "~/src/automate"))
   (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path "~/src/guix"))
+  (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path "~/src/nonguix"))
 
   (defun ask-user-about-supersession-threat (fn) "ignore")
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
@@ -308,9 +309,14 @@
   :init
   (add-hook 'rustic-mode-hook 'cargo-minor-mode))
 
+(use-package rust-mode
+  :ensure t
+  :init
+  (setq rust-mode-treesitter-derive t))
+
 (use-package rustic
   :ensure (rustic :host github :repo "emacs-rustic/rustic")
-  :after (inheritenv envrc eglot)
+  :after (inheritenv envrc eglot rust-mode)
   :mode ("\\.rs\\'" . rustic-mode)
   :init
   (setq rustic-lsp-client 'eglot))
@@ -535,8 +541,9 @@
   (setq project-switch-commands #'project-find-file))
 
 (use-package arei
-  :ensure nil
+  :ensure (arei :ensure t :host github :repo "abcdw/emacs-arei")
   :after (project)
+  :config
   (setq arei-mode-auto t))
 
 (use-package lin

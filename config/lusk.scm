@@ -1,16 +1,24 @@
 ;;; SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
-
-(use-modules (gnu)
-	     (guix packages)
-	     (gnu services networking)
+ (use-modules (gnu)
+	     (automate common)
 	     (gnu packages ssh)
+	     (gnu services dbus)
+	     (gnu services docker)
 	     (nongnu packages linux)
 	     (nongnu system linux-initrd)
-	     (rosenthal services networking))
-(use-service-modules cups desktop networking ssh sysctl)
+	     (rosenthal services networking)
+	     (gnu services networking)
+	     (guix packages)
+	     (gnu packages ssh))
 
+(use-service-modules cups
+		     desktop
+		     networking
+		     ssh
+		     sysctl
+		     virtualization)
 
 (define %my-base-services
   (modify-services %base-services
@@ -37,6 +45,10 @@
 							  %default-authorized-guix-keys))))
 		   (delete console-font-service-type)))
 
+(define %my-packages
+  (map specification->package (list
+			       "mosh")))
+
 (operating-system
  (locale "en_CA.utf8")
  (timezone "America/Toronto")
@@ -45,14 +57,21 @@
  (kernel linux)
  (initrd microcode-initrd)
  (firmware (list linux-firmware))
- (users (cons*
-	 (user-account
-	  (name "ph")
-	  (comment "Pier-Hugues Pellerin")
-	  (group "users")
-	  (home-directory "/home/ph")
-	  (supplementary-groups '("wheel" "netdev" "audio" "video")))
-	 %base-user-accounts))
+
+ (users (cons* %ph
+	       %base-user-accounts))
+
+ (packages (append
+	    %my-packages
+	    %base-packages))
+
+ (groups (cons*
+	  (user-group (system? #t)
+		      (name "realtime"))
+
+	  (user-group (system? #t)
+		      (name "plugdev"))
+	  %base-groups))
 
  (services
   (append (list
@@ -63,13 +82,27 @@
                    (config-file (local-file "../secrets/lusk-wpa-supplicant.conf"))))
 	   (service ntp-service-type)
 	   (service tailscale-service-type)
-	   (service dhcp-client-service-type)
+	   (service dhcpcd-service-type)
+	   (service containerd-service-type)
+	   (service dbus-root-service-type)
+	   (service docker-service-type)
+	   (service oci-container-service-type
+		    (list
+		     (oci-container-configuration
+		      (image "jacobalberty/unifi:latest")
+		      (respawn? #t)
+		      (network "host")
+		      (environment
+		       '(("TZ" . "America/Toronto"))))))
+	   (service elogind-service-type)
 	   (service openssh-service-type
 		    (openssh-configuration
 		     (openssh openssh-sans-x)
-		     (permit-root-login #t)
-		     (allow-empty-passwords? #f))))
-          %my-base-services))
+		     (permit-root-login #f)
+		     (authorized-keys
+		      `(("ph"
+			 ,(local-file "/home/ph/.ssh/id_rsa.pub")))))))
+	  %my-base-services))
 
  (bootloader (bootloader-configuration
               (bootloader grub-efi-bootloader)
@@ -128,5 +161,4 @@
 		      (target "/.swap/swapfile")
 		      (dependencies (filter (file-system-mount-point-predicate "/.swap")
 					    file-systems))))))
-
 
