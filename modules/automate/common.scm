@@ -33,6 +33,7 @@
   #:use-module (gnu system setuid)
   #:use-module (guix channels)
   #:use-module (guix gexp)
+  #:use-module (rosenthal services networking)
   #:use-module (guix inferior)
   #:use-module (srfi srfi-1)
   #:export (%ph
@@ -208,6 +209,7 @@
 	   (udev-rules-service 'light light)
 	   (service thermald-service-type)
 	   (service nix-service-type)
+	   ;; (service tailscale-service-type)
 	   (service qemu-binfmt-service-type
 		    (qemu-binfmt-configuration
 		     (platforms (lookup-qemu-platforms "aarch64"))))

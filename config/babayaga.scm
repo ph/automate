@@ -45,7 +45,7 @@
 	   (udev-rules-service
 	    'probe-rs %probe-rs-udev-rules)
 	   (service sane-service-type)
-
+	   (service tailscale-service-type)
 	   (service guix-publish-service-type
 		    (guix-publish-configuration
 		     (host "0.0.0.0")

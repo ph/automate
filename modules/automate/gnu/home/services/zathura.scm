@@ -19,11 +19,11 @@
    "map <C--> zoom out"
    "set font \"Iosevka 14\""
    "set selection-clipboard clipboard"
-   "set default-bg rgba(0,43,53,0.8)"
-   "set recolor true"
+   ;; "set default-bg rgba(0,43,53,0.95)"
+   ;; "set recolor true"
    "set recolor-lightcolor rgba(0,43,53,0)"
    "set recolor-darkcolor rgb(131,148,150)"
-   "set adjust-open \"width\""))
+   "set adjust-window \"best-fit\""))
 
 (define-configuration/no-serialization home-zathura-configuration
   (zathura
