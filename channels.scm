@@ -42,21 +42,7 @@
    (branch "main")))
 
 (list
- (channel
-  (inherit %guix-channel)
-  (url (if (file-exists? "/home/ph/src/guix")
-	   "file:///home/ph/src/guix/"
-	   "https://codeberg.org/guix/guix.git"))
-  (branch "main"))
-
- (channel
-  (inherit %nonguix-channel)
-  (url (if (file-exists? "/home/ph/src/nonguix")
-	   "file:///home/ph/src/nonguix"
-	   "https://gitlab.com/nonguix/nonguix")))
-
- (channel
-  (inherit %rosenthal-channel))
-
- (channel
-  (inherit %guix-rusty-channel)))
+  %guix-channel
+  %nonguix-channel
+  %rosenthal-channel
+  %guix-rusty-channel)
