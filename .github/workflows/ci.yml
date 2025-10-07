@@ -42,6 +42,12 @@ jobs:
       - name: remove other files before linting
         run: rm guix-binary-nightly.x86_64-linux.tar.xz
 
+      - name: manually create the profile
+        run: sudo mkdir -p /var/guix/profiles/per-user/runner
+
+      - name: change user
+        run: sudo chown -R runner:users /var/guix/profiles/per-user/runner
+
       - name: install dependencies
         run: guix shell -m manifest.scm
 
