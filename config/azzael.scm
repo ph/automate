@@ -21,6 +21,7 @@
 	     (gnu packages disk)
 	     (gnu packages rsync)
 	     (rosenthal services web)
+	     (rosenthal services networking)
 	     (gnu packages cryptsetup)
 	     (gnu packages file-systems)
 	     (gnu packages linux))
@@ -173,6 +174,7 @@
      (service dbus-root-service-type)
      (service earlyoom-service-type)
      (service docker-service-type)
+     (service tailscale-service-type)
      (service fail2ban-service-type
 	      (fail2ban-configuration
 	       (extra-jails
