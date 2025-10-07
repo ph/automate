@@ -13,6 +13,7 @@
 	     (gnu services desktop)
 	     (gnu services docker)
 	     (gnu services virtualization)
+	     (gnu services security)
 	     (gnu system file-systems)
 	     (gnu system keyboard)
 	     (guix gexp)
@@ -172,6 +173,12 @@
      (service dbus-root-service-type)
      (service earlyoom-service-type)
      (service docker-service-type)
+     (service fail2ban-service-type
+	      (fail2ban-configuration
+	       (extra-jails
+		(list (fail2ban-jail-configuration
+		       (name "sshd")
+		       (enabled? #t))))))
      ;; build for aarch64
      (service qemu-binfmt-service-type
 	      (qemu-binfmt-configuration
