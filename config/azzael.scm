@@ -12,6 +12,7 @@
 	     (gnu services linux)
 	     (gnu services desktop)
 	     (gnu services docker)
+	     (gnu services virtualization)
 	     (gnu system file-systems)
 	     (gnu system keyboard)
 	     (guix gexp)
@@ -171,6 +172,10 @@
      (service dbus-root-service-type)
      (service earlyoom-service-type)
      (service docker-service-type)
+     ;; build for aarch64
+     (service qemu-binfmt-service-type
+	      (qemu-binfmt-configuration
+	       (platforms (lookup-qemu-platforms "aarch64"))))
      (service elogind-service-type)
      (service caddy-service-type
 	      (caddy-configuration
