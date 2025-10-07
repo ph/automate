@@ -162,7 +162,7 @@
      (service dhcpcd-service-type)
      (service nftables-service-type
 	      (nftables-configuration
-	       (ruleset (local-file "nftables.conf"))))
+	       (ruleset (local-file "../files/plain/nftables.conf"))))
      (service ntp-service-type)
      (service containerd-service-type)
      (service dbus-root-service-type)
@@ -171,7 +171,7 @@
      (service elogind-service-type)
      (service caddy-service-type
 	      (caddy-configuration
-	       (caddyfile (local-file "caddyfile"))))
+	       (caddyfile (local-file "../files/plain/caddyfile"))))
      (simple-service 'www activation-service-type
 		     (with-imported-modules '((guix build utils))
 					    #~(begin
@@ -193,10 +193,8 @@
 	       (password-authentication? #f)
 	       (port-number 4222)
 	       (authorized-keys
-		`(
-		  ("deploy" , (plain-file "deploy.pub" %user/deploy/key))
-		  ("deploy-web" , (local-file "../secrets/deploy.pub" ))
-		  ))))
+		`(("deploy" , (plain-file "deploy.pub" %user/deploy/key))
+		  ("deploy-web" , (local-file "../secrets/deploy.pub" ))))))
      %my-base-services))))
 
 %os-remote-install
