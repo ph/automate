@@ -30,6 +30,7 @@
 [user]
 	email = "phpellerin@gmail.com"
 	name = "Pier-Hugues Pellerin"
+	signingKey = "8703943BA35F230EE9BDC0D98BAEC3055E5388F2"
 
 [github]
 	user = "ph"

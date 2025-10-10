@@ -12,8 +12,10 @@
 	     (gnu services linux)
 	     (gnu services desktop)
 	     (gnu services docker)
+	     (gnu services cuirass)
 	     (gnu services virtualization)
 	     (gnu services security)
+	     (gnu services databases)
 	     (gnu system file-systems)
 	     (gnu system keyboard)
 	     (guix gexp)
@@ -86,7 +88,10 @@
 							   )
 							  %default-substitute-urls))
 						 (authorized-keys
-						  (append (list (plain-file "nonguix-signing-key.pub"
+						  (append (list
+							   (plain-file "lusk-key.pub"
+								       "(public-key (ecc (curve Ed25519) (q #4F4C0B9B2688822F4E0AD65C930EDD6FC56610B5077C917E053FEAE2D952046C#))) ")
+							   (plain-file "nonguix-signing-key.pub"
 									    "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))")
 								(plain-file "babayaga-key.pub"
 									    "(public-key (ecc (curve Ed25519) (q #36C0C6FEDCD7DD8BE2C0F26487618395B69D1806CE07943179A1305978716AC7#)))")
@@ -165,15 +170,105 @@
    (packages %packages)
    (services
     (cons*
+     (service postgresql-service-type
+	      (postgresql-configuration
+	       (postgresql (specification->package "postgresql@16"))
+	       (config-file
+		(postgresql-config-file
+		 (log-destination "stderr")
+		 (extra-config
+		  '(("max_connections" 500)
+		    ("shared_buffers" "16GB")
+		    ("effective_cache_size" "48GB")
+		    ("maintenance_work_mem" "2GB")
+		    ("checkpoint_completion_target" 0.9)
+		    ("wal_buffers" "16MB")
+		    ("default_statistics_target" 100)
+		    ("random_page_cost" 4)
+		    ("effective_io_concurrency" 2)
+		    ("work_mem" "80659kB")
+		    ("huge_pages" "try")
+		    ("min_wal_size" "1GB")
+		    ("max_wal_size" "4GB")
+		    ("max_worker_processes" 8)
+		    ("max_parallel_workers_per_gather" 4)
+		    ("max_parallel_workers" 8)
+		    ("max_parallel_maintenance_workers" 4)
+		    ("logging_collector" #t)
+		    ("log_directory" "/var/log/postgresql")))))))
+     (service avahi-service-type)
+     (service cuirass-service-type
+	      (cuirass-configuration
+	       (interval (* 3 3600)) ;; every 3 hours
+	       (parameters
+		(plain-file "cuirass-parameters"
+			    (call-with-output-string
+			      (lambda (port)
+				(write
+				 '(begin
+				    (%cuirass-url "https://ci.supervoid.org"))
+				 port)))))
+	       (remote-server
+		(cuirass-remote-server-configuration
+		 (trigger-url "http://localhost:49637")
+		 (publish? #f)))
+	       (port 17732)
+	       (specifications #~(list
+				  (specification
+				   (name "nonguix")
+				   (build '(channels nonguix))
+				   (channels
+				    (cons* (channel
+					    (name 'nonguix)
+					    (url "https://gitlab.com/nonguix/nonguix")
+					    (introduction
+					     (make-channel-introduction
+					      "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
+					      (openpgp-fingerprint
+					       "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
+					   %default-channels))
+				   (priority 3)
+				   (systems '("x86_64-linux" )))
+				  
+				  (specification
+				   (name "heyk")
+				   (build '(channels heyk))
+				   (channels
+				    (cons* (channel
+					    (name 'heyk)
+					    (url "https://github.com/ph/heyk")
+					    (branch "trunk")
+					    (introduction
+					     (make-channel-introduction
+					      "fa96f4b8e25dba3b5ea47f1365cbe9cf9ef0358c"
+					      (openpgp-fingerprint
+					       "AB8D 7699 282F 5F12 4949 547E C6CD 2C3D B524 1054"))))
+					   %default-channels))
+				   (priority 5)
+				   (systems '("x86_64-linux" "aarch64-linux")))
+			       ))))
+
+     (service cuirass-remote-worker-service-type
+	      (cuirass-remote-worker-configuration
+	       (publish-port 5558)
+	       (workers 1)
+	       (systems '("x86_64-linux"))
+	       (server "127.0.0.1:5555")
+	       (substitute-urls
+		`("https://ci.supervoid.org"
+		  ,@%default-substitute-urls))))
+
      (service dhcpcd-service-type)
      (service nftables-service-type
 	      (nftables-configuration
 	       (ruleset (local-file "../files/plain/nftables.conf"))))
      (service ntp-service-type)
      (service containerd-service-type)
-     (service dbus-root-service-type)
+     ;; (service dbus-root-service-type)
      (service earlyoom-service-type)
-     (service docker-service-type)
+     (service docker-service-type
+	      (docker-configuration
+	       (enable-iptables? #f)))
      (service tailscale-service-type)
      (service fail2ban-service-type
 	      (fail2ban-configuration

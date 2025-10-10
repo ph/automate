@@ -6,6 +6,8 @@
 	     (gnu packages ssh)
 	     (gnu services dbus)
 	     (gnu services docker)
+	     (gnu services cuirass)
+	     (gnu services avahi)
 	     (nongnu packages linux)
 	     (nongnu system linux-initrd)
 	     (rosenthal services networking)
@@ -36,12 +38,15 @@
 							   )
 							  %default-substitute-urls))
 						 (authorized-keys
-						  (append (list (plain-file "nonguix-signing-key.pub"
-									    "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))")
-								(plain-file "babayaga-key.pub"
-									    "(public-key (ecc (curve Ed25519) (q #36C0C6FEDCD7DD8BE2C0F26487618395B69D1806CE07943179A1305978716AC7#)))")
-								(plain-file "hellboy-key.pub"
-									    "(public-key (ecc (curve Ed25519) (q #9ED5CA01AED283053ACBF3D766D3A646D23EBF2A171DEFA92D29CA0485AC4DA7#)))"))
+						  (append (list
+							   (plain-file "azzael.pub"
+"(public-key (ecc (curve Ed25519) (q #3AD8F8EEE317921EA26D2D735751060057C9D7E48D579DF22C3ABD28D050D394#)))")
+							   (plain-file "nonguix-signing-key.pub"
+								       "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))")
+							   (plain-file "babayaga-key.pub"
+								       "(public-key (ecc (curve Ed25519) (q #36C0C6FEDCD7DD8BE2C0F26487618395B69D1806CE07943179A1305978716AC7#)))")
+							   (plain-file "hellboy-key.pub"
+								       "(public-key (ecc (curve Ed25519) (q #9ED5CA01AED283053ACBF3D766D3A646D23EBF2A171DEFA92D29CA0485AC4DA7#)))"))
 							  %default-authorized-guix-keys))))
 		   (delete console-font-service-type)))
 
@@ -53,7 +58,7 @@
  (locale "en_CA.utf8")
  (timezone "America/Toronto")
  (keyboard-layout (keyboard-layout "us"))
- (host-name "lusk.local.heyk.org")
+ (host-name "lusk")
  (kernel linux)
  (initrd microcode-initrd)
  (firmware (list linux-firmware))
@@ -75,6 +80,7 @@
 
  (services
   (append (list
+	   (service avahi-service-type)
 	   (service wpa-supplicant-service-type
                   (wpa-supplicant-configuration
                    (interface "wlp2s0")
@@ -95,6 +101,15 @@
 		      (environment
 		       '(("TZ" . "America/Toronto"))))))
 	   (service elogind-service-type)
+	   (service cuirass-remote-worker-service-type
+		    (cuirass-remote-worker-configuration
+		     (publish-port 5558)
+		     (workers 1)
+		     (systems '("x86_64-linux"))
+		     (server "100.71.180.83:5555")
+		     (substitute-urls
+		      `("https://ci.supervoid.org"
+			,@%default-substitute-urls))))
 	   (service openssh-service-type
 		    (openssh-configuration
 		     (openssh openssh-sans-x)

@@ -100,11 +100,12 @@
 			       "awesome"
 			       "bluez"
 			       "bluez-alsa"
-			       "cups-filters"
+			       "ghostscript"
 			       "dconf"
 			       "egl-wayland"
 			       "libfreeaptx"
 			       "ldacbt"
+			       "hplip"
 			       "git"
 			       "intel-vaapi-driver"
 			       "light"
@@ -199,12 +200,6 @@
 	   (service openssh-service-type
 		    (openssh-configuration
 		     (openssh openssh-sans-x)))
-	   ;; (service cups-service-type
-	   ;; 	    (cups-configuration
-	   ;; 	     (web-interface? #t)
-	   ;; 	     (default-paper-size "A4")
-	   ;; 	     (extensions
-	   ;; 	      (list cups-filters hplip-minimal))))
 	   (service tlp-service-type)
 	   (udev-rules-service 'light light)
 	   (service thermald-service-type)

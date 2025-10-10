@@ -25,15 +25,26 @@
       "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5")))))
 
 (define %rosenthal-channel
-      (channel
-        (name 'rosenthal)
-        (url "https://codeberg.org/hako/rosenthal.git")
-        (branch "trunk")
-        (introduction
-          (make-channel-introduction
-            "7677db76330121a901604dfbad19077893865f35"
-            (openpgp-fingerprint
-              "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7")))))
+  (channel
+   (name 'rosenthal)
+   (url "https://codeberg.org/hako/rosenthal.git")
+   (branch "trunk")
+   (introduction
+    (make-channel-introduction
+     "7677db76330121a901604dfbad19077893865f35"
+     (openpgp-fingerprint
+      "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7")))))
+
+(define %heyk-channel
+  (channel
+   (name 'heyk)
+   (url "https://github.com/ph/heyk")
+   (branch "trunk")
+   (introduction
+    (make-channel-introduction
+     "fa96f4b8e25dba3b5ea47f1365cbe9cf9ef0358c"
+     (openpgp-fingerprint
+      "AB8D 7699 282F 5F12 4949 547E C6CD 2C3D B524 1054")))))
 
 (define %guix-rusty-channel
   (channel
@@ -41,8 +52,7 @@
    (url "https://github.com/ph/guix-rusty")
    (branch "main")))
 
-(list
-  %guix-channel
-  %nonguix-channel
-  %rosenthal-channel
-  %guix-rusty-channel)
+(list %guix-channel
+      %nonguix-channel
+      %rosenthal-channel
+      %heyk-channel)

@@ -5,3 +5,15 @@ supervoid.org {
     root * /var/www/supervoid.org
     file_server
 }
+
+ci.supervoid.org {
+	@guix_publish {
+		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
+	}
+
+	handle @guix_publish {
+		reverse_proxy localhost:49637
+	}
+
+	reverse_proxy 127.0.0.1:17732
+}

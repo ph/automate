@@ -3,12 +3,12 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (home)
+  #:use-module (heyk gnu packages fish)
+  #:use-module (heyk gnu home services fish)
   #:use-module (automate gnu home services avizo)
-  #:use-module (automate gnu home services fish)
   #:use-module (automate gnu home services mako)
   #:use-module (automate gnu home services waybar)
   #:use-module (automate gnu home services zathura)
-  #:use-module (automate gnu packages fish)
   #:use-module (automate gnu packages fonts)
   #:use-module (automate gnu packages python)
   #:use-module (automate gnu packages rust-apps)
@@ -572,5 +572,4 @@ set -g fish_term24bit 1")
 
 ;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
 ;; TODO: Create wrapper for this.
-;; LD_LIBRARY_PATH=/home/ph/.guix-home/profile/lib/sane
-;;  SANE_CONFIG_DIR=/home/ph/.guix-home/profile/etc/sane.d/ simple-scan
+;; LD_LIBRARY_PATH=/home/ph/.guix-home/profile/lib/sane SANE_CONFIG_DIR=/home/ph/.guix-home/profile/etc/sane.d/ simple-scan

@@ -7,13 +7,16 @@
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
+  #:use-module (gnu packages cups)
   #:use-module (gnu packages)
   #:use-module (gnu)
   #:use-module (nongnu packages linux)
+  #:use-module (nongnu packages printers)
   #:use-module (nongnu system linux-initrd)
   #:use-module (srfi srfi-1))
 
 (use-service-modules desktop
+		     cups
 		     networking
 		     mcron
 		     linux)
@@ -45,6 +48,15 @@
 	   (udev-rules-service
 	    'probe-rs %probe-rs-udev-rules)
 	   (service sane-service-type)
+	   (service cups-service-type
+		    (cups-configuration
+		     (web-interface? #t)
+		     (log-level 'debug2)
+		     (extensions
+		      (list cups-filters
+			    foomatic-filters
+			    hplip-plugin))
+		     (default-paper-size "A4")))
 	   ;; (service tailscale-service-type)
 	   (service guix-publish-service-type
 		    (guix-publish-configuration
