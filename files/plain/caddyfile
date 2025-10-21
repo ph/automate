@@ -16,4 +16,24 @@ ci.supervoid.org {
 	}
 
 	reverse_proxy 127.0.0.1:17732
+
+
+	handle_path /admin/* {
+		respond "access denied" 403
+	}
+}
+
+
+
+
+substitutes.supervoid.org {
+    @guix_publish {
+	path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
+    }
+
+    handle @guix_publish {
+	reverse_proxy localhost:49637
+    }
+
+    redir / /signing-key.pub 302
 }

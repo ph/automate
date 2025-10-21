@@ -1,6 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
+(load "./shared.scm")
 (use-modules (gnu services avahi)
 	     (gnu services networking)
 	     (gnu services ssh)
@@ -28,79 +29,11 @@
 	     (gnu packages file-systems)
 	     (gnu packages linux))
 
-
-;; based on the list defined in guix/system/install.scm
-(define %installer-disk-utilities
-  (list parted
-	gptfdisk
-	ddrescue
-	lvm2-static
-	cryptsetup
-	mdadm
-	dosfstools
-	btrfs-progs
-	e2fsprogs
-	rsync
-	f2fs-tools
-	jfsutils
-	xfsprogs))
-
 (define %packages
   (append %installer-disk-utilities
 	  %base-packages))
 
-(define %user/deploy/key
-  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCiRJsoVbDvQYsRe94WC0kaRrru1+loCl6xZecdR4kEMfuJWz4NvyZNgD2q7KtXmQ+flvIdPuN0uxHbIzm+f1L500ZGoeOSo9GT2HPSJT8nUjgzLzKkwEs35uraxMQicjEnoUf9v+qx7s8Tv/mmKuMPrqMiNt337PlEL6llRkNtJ8srOd8pDXd40WOtHcPjRN0if78VnjESDTufAuqLoGs6yCe5j3QpcGlFneQ164AATwUMcuMQc9TVFc2pRjZRaWOFDSIAqF6NsaE3D4K6NvbTl8YIhi/seGKkvp6jfnv4T53JnY4TwbOEyPUS9dp3yfaz3NThy5r1AYAETz9s8mJC4KT2dKatShzU9tGGCyg409HNe/nOZQZrpBzfYLLwiBkxSZaCesJ0s4tyiKNW26asub0rM9DTnfCbcrEzzRtmCph3yZIC7yvNl3BAhKGIodsC07tk5zCR+kTyLntRBTIvev7Y98jz0/WA2Jaa3tQZCH8vhF0PCeiPh5c+z4A2z19ZdsLauKUs833Tj5amZg6H8t67pyFXGa2N8dptzsssk/BDEdO/YT6hohjEFI9kqtvNQbtTi6vwHjPCkpeV8MDRHWDNZsnLVz/2VR8oLH2suWDKGz4GlY0DfWRnmswu2rijGkD7U8eHt/6xrrtVxWZ9yJGnc90+RKz1LjwReRmkPw== openpgp:0xC6D3E079")
-
-(define %user/deploy
-  (user-account
-   (name "deploy")
-   (group "users")
-   (comment "deploy configuration")
-   (supplementary-groups '("audio" "video" "wheel"))
-   (shell (file-append (specification->package "bash") "/bin/bash"))))
-
-(define %user/root
-  (user-account
-    (inherit %root-account)
-    (password #f)))
-
-(define %user/deploy-web
-  (user-account
-   (name "deploy-web")
-   (comment "deploy web")
-   (group "users")
-   (supplementary-groups '("caddy"))))
-
-(define %my-base-services
-  (modify-services %base-services
-		   (sysctl-service-type config =>
-					(sysctl-configuration
-					 (settings (append '(("net.ipv4.ip_forward" . "1")
-							     ("net.ipv6.conf.all.forwarding" . "1"))
-							   %default-sysctl-settings))))
-		   (guix-service-type config => (guix-configuration
-						 (inherit config)
-						 (substitute-urls
-						  (append (list
-							   "https://nonguix-proxy.ditigal.xyz/"
-							   ;;"https://substitutes.nonguix.org"
-							   )
-							  %default-substitute-urls))
-						 (authorized-keys
-						  (append (list
-							   (plain-file "lusk-key.pub"
-								       "(public-key (ecc (curve Ed25519) (q #4F4C0B9B2688822F4E0AD65C930EDD6FC56610B5077C917E053FEAE2D952046C#))) ")
-							   (plain-file "nonguix-signing-key.pub"
-									    "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))")
-								(plain-file "babayaga-key.pub"
-									    "(public-key (ecc (curve Ed25519) (q #36C0C6FEDCD7DD8BE2C0F26487618395B69D1806CE07943179A1305978716AC7#)))")
-								(plain-file "hellboy-key.pub"
-									    "(public-key (ecc (curve Ed25519) (q #9ED5CA01AED283053ACBF3D766D3A646D23EBF2A171DEFA92D29CA0485AC4DA7#)))"))
-							  %default-authorized-guix-keys))))
-		   (delete console-font-service-type)))
-
-(define %os-remote-install
+(define %os
   (operating-system
    (host-name "azzael")
    (timezone "America/Toronto")
@@ -162,7 +95,6 @@
    (users (cons*
 	   %user/deploy
 	   %user/deploy-web
-	   ;; %user/root
 	   %base-user-accounts))
    (sudoers-file
     (plain-file
@@ -170,6 +102,22 @@
    (packages %packages)
    (services
     (cons*
+     (simple-service 'extend-sysctl
+		     sysctl-service-type
+		     '(("net.ipv4.ip_forward" . "1")
+		       ("net.ipv6.conf.all.forwarding" . "1")))
+
+     (simple-service 'extend-guix
+		     guix-service-type
+		     (guix-extension
+		      (substitute-urls
+		       (append (list "https://substitutes.nonguix.org"
+				     "https://ci.supervoid.org")
+			       %default-substitute-urls))
+		      (authorized-keys
+		       (append %guix-keyring-all
+			       %default-authorized-guix-keys))))
+
      (service postgresql-service-type
 	      (postgresql-configuration
 	       (postgresql (specification->package "postgresql@16"))
@@ -199,7 +147,6 @@
      (service avahi-service-type)
      (service cuirass-service-type
 	      (cuirass-configuration
-	       (interval (* 3 3600)) ;; every 3 hours
 	       (parameters
 		(plain-file "cuirass-parameters"
 			    (call-with-output-string
@@ -214,6 +161,38 @@
 		 (publish? #f)))
 	       (port 17732)
 	       (specifications #~(list
+				  (specification
+				   (name "rosenthal")
+				   (build '(channels rosenthal))
+				   (channels
+				    (cons* (channel
+					    (name 'rosenthal)
+					    (url "https://codeberg.org/hako/rosenthal.git")
+					    (branch "trunk")
+					    (introduction
+					     (make-channel-introduction
+					      "7677db76330121a901604dfbad19077893865f35"
+					      (openpgp-fingerprint
+					       "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
+					   %default-channels))
+				   (priority 5)
+				   (systems '("x86_64-linux" "aarch64-linux")))
+				  (specification
+				   (name "emacs-master")
+				   (build '(channels emacs-master))
+				   (channels
+				    (cons* (channel
+					    (name 'emacs-master)
+					    (url "https://github.com/gs-101/emacs-master.git")
+					    (branch "main")
+					    (introduction
+					     (make-channel-introduction
+					      "568579841d0ca41a9d222a2cfcad9a7367f9073b"
+					      (openpgp-fingerprint
+					       "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
+					   %default-channels))
+				   (priority 5)
+				   (systems '("x86_64-linux")))
 				  (specification
 				   (name "nonguix")
 				   (build '(channels nonguix))
@@ -245,8 +224,7 @@
 					       "AB8D 7699 282F 5F12 4949 547E C6CD 2C3D B524 1054"))))
 					   %default-channels))
 				   (priority 5)
-				   (systems '("x86_64-linux" "aarch64-linux")))
-			       ))))
+				   (systems '("x86_64-linux" "aarch64-linux")))))))
 
      (service cuirass-remote-worker-service-type
 	      (cuirass-remote-worker-configuration
@@ -257,6 +235,16 @@
 	       (substitute-urls
 		`("https://ci.supervoid.org"
 		  ,@%default-substitute-urls))))
+
+  (service guix-publish-service-type
+    (guix-publish-configuration
+      (port 49637)
+      (compression '(("zstd" 19)))
+      (cache "/var/cache/guix/publish")
+      ;; 6 months
+      (ttl (* 6 30 24 3600))
+      ;; 2 minutes
+      (negative-ttl (* 2 60))))
 
      (service dhcpcd-service-type)
      (service nftables-service-type
@@ -307,6 +295,6 @@
 	       (authorized-keys
 		`(("deploy" , (plain-file "deploy.pub" %user/deploy/key))
 		  ("deploy-web" , (local-file "../secrets/deploy.pub" ))))))
-     %my-base-services))))
+     %base-services))))
 
-%os-remote-install
+%os

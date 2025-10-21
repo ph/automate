@@ -1,7 +1,8 @@
 ;;; SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
- (use-modules (gnu)
+(load "./shared.scm")
+(use-modules (gnu)
 	     (automate common)
 	     (gnu packages ssh)
 	     (gnu services dbus)
@@ -21,34 +22,6 @@
 		     ssh
 		     sysctl
 		     virtualization)
-
-(define %my-base-services
-  (modify-services %base-services
-		   (sysctl-service-type config =>
-					(sysctl-configuration
-					 (settings (append '(("net.ipv4.ip_forward" . "1")
-							     ("net.ipv6.conf.all.forwarding" . "1"))
-							   %default-sysctl-settings))))
-		   (guix-service-type config => (guix-configuration
-						 (inherit config)
-						 (substitute-urls
-						  (append (list
-							   "https://nonguix-proxy.ditigal.xyz/"
-							   ;;"https://substitutes.nonguix.org"
-							   )
-							  %default-substitute-urls))
-						 (authorized-keys
-						  (append (list
-							   (plain-file "azzael.pub"
-"(public-key (ecc (curve Ed25519) (q #3AD8F8EEE317921EA26D2D735751060057C9D7E48D579DF22C3ABD28D050D394#)))")
-							   (plain-file "nonguix-signing-key.pub"
-								       "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))")
-							   (plain-file "babayaga-key.pub"
-								       "(public-key (ecc (curve Ed25519) (q #36C0C6FEDCD7DD8BE2C0F26487618395B69D1806CE07943179A1305978716AC7#)))")
-							   (plain-file "hellboy-key.pub"
-								       "(public-key (ecc (curve Ed25519) (q #9ED5CA01AED283053ACBF3D766D3A646D23EBF2A171DEFA92D29CA0485AC4DA7#)))"))
-							  %default-authorized-guix-keys))))
-		   (delete console-font-service-type)))
 
 (define %my-packages
   (map specification->package (list
@@ -80,26 +53,27 @@
 
  (services
   (append (list
+	   (simple-service 'extend-sysctl
+			   sysctl-service-type
+			   '(("net.ipv4.ip_forward" . "1")
+			     ("net.ipv6.conf.all.forwarding" . "1")))
+	   (simple-service 'extend-guix
+			   guix-service-type
+			   (guix-extension
+			    (substitute-urls
+			     (append (list "https://substitutes.nonguix.org"
+					   "https://ci.supervoid.org")
+				     %default-substitute-urls))
+			    (authorized-keys
+			     (append %guix-keyring-all
+				     %default-authorized-guix-keys))))
 	   (service avahi-service-type)
-	   (service wpa-supplicant-service-type
-                  (wpa-supplicant-configuration
-                   (interface "wlp2s0")
-                   (dbus? #f)
-                   (config-file (local-file "../secrets/lusk-wpa-supplicant.conf"))))
 	   (service ntp-service-type)
 	   (service tailscale-service-type)
 	   (service dhcpcd-service-type)
 	   (service containerd-service-type)
 	   (service dbus-root-service-type)
 	   (service docker-service-type)
-	   (service oci-container-service-type
-		    (list
-		     (oci-container-configuration
-		      (image "jacobalberty/unifi:latest")
-		      (respawn? #t)
-		      (network "host")
-		      (environment
-		       '(("TZ" . "America/Toronto"))))))
 	   (service elogind-service-type)
 	   (service cuirass-remote-worker-service-type
 		    (cuirass-remote-worker-configuration
@@ -117,7 +91,7 @@
 		     (authorized-keys
 		      `(("ph"
 			 ,(local-file "/home/ph/.ssh/id_rsa.pub")))))))
-	  %my-base-services))
+	  %base-services))
 
  (bootloader (bootloader-configuration
               (bootloader grub-efi-bootloader)

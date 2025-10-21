@@ -42,16 +42,15 @@
 	    %my-system-services
 	    btrfs-maintenance-service))
 
- (use-service-modules
-  cups
-  desktop
-  virtualization
-  networking
-  linux
-  ssh
-  mcron
-  sddm
-  xorg)
+(use-service-modules cups
+		     desktop
+		     virtualization
+		     networking
+		     linux
+		     ssh
+		     mcron
+		     sddm
+		     xorg)
 
 (use-package-modules ssh)
 
@@ -84,8 +83,7 @@
    (group "users")
    (home-directory "/home/ph")
    (supplementary-groups
-    '(
-      "lp"
+    '("lp"
       "kvm"
       "wheel"
       "netdev"
@@ -96,75 +94,54 @@
       "realtime"))))
 
 (define %my-packages
-  (map specification->package (list
-			       "awesome"
-			       "bluez"
-			       "bluez-alsa"
-			       "ghostscript"
-			       "dconf"
-			       "egl-wayland"
-			       "libfreeaptx"
-			       "ldacbt"
-			       "hplip"
-			       "git"
-			       "intel-vaapi-driver"
-			       "light"
-			       "mesa"
-			       "nix"
-			       "intel-media-driver-nonfree"
-			       "openssh"
-			       "sway"
-			       "swaylock-effects"
-			       "xorg-server-xwayland"
-			       "chili-sddm-theme")))
+  (map specification->package (list "awesome"
+				    "bluez"
+				    "bluez-alsa"
+				    "ghostscript"
+				    "dconf"
+				    "egl-wayland"
+				    "libfreeaptx"
+				    "ldacbt"
+				    "hplip"
+				    "git"
+				    "intel-vaapi-driver"
+				    "light"
+				    "mesa"
+				    "nix"
+				    "intel-media-driver-nonfree"
+				    "openssh"
+				    "sway"
+				    "swaylock-effects"
+				    "xorg-server-xwayland"
+				    "chili-sddm-theme")))
 
 (define %probe-rs-udev-rules
   (file->udev-rule
    "69-probe-rs.rules"
    (local-file "../../files/udev/69-probe-rs.rules")))
 
-(define %my-base-services
-  (modify-services %base-services
-		   (guix-service-type config => (guix-configuration
-						 (inherit config)
-						 (substitute-urls
-						  (append (list
-							   "https://nonguix-proxy.ditigal.xyz/"
-							   ;;"https://substitutes.nonguix.org"
-							   )
-							  %default-substitute-urls))
-						 (authorized-keys
-						  (append (list (plain-file "nonguix-signing-key.pub"
-									    "(public-key (ecc (curve ed25519) (q #c1fd53e5d4ce971933ec50c9f307ae2171a2d3b52c804642a7a35f84f3a4ea98#)))")
-								(plain-file "babayaga-key.pub"
-									    "(public-key (ecc (curve Ed25519) (q #36C0C6FEDCD7DD8BE2C0F26487618395B69D1806CE07943179A1305978716AC7#)))"
-									    ))
-							  %default-authorized-guix-keys))))
-		   (delete console-font-service-type)))
-
-
 (define %my-system-services
   (append (list
-	   (service console-font-service-type
-		    (map (lambda (tty)
-			   ;; Use a larger font for HIDPI screens
-			   (cons tty (file-append
-				      font-terminus
-				      "/share/consolefonts/ter-132n")))
-			 '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
+	   ;; (service console-font-service-type
+	   ;; 	    (map (lambda (tty)
+	   ;; 		   ;; Use a larger font for HIDPI screens
+	   ;; 		   (cons tty (file-append
+	   ;; 			      font-terminus
+	   ;; 			      "/share/consolefonts/ter-132n")))
+	   ;; 		 '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
 
 	   (simple-service 'blueman dbus-root-service-type (list blueman))
            (simple-service 'mtp udev-service-type (list libmtp))
            (service sane-service-type)
            polkit-wheel-service
-
            fontconfig-file-system-service
 
-          ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-          (simple-service 'udp-buffer-size
-                          sysctl-service-type
-                          '(("net.core.rmem_max" . "7500000")
-                            ("net.core.wmem_max" . "7500000")))
+
+           ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+           (simple-service 'udp-buffer-size
+                           sysctl-service-type
+                           '(("net.core.rmem_max" . "7500000")
+                             ("net.core.wmem_max" . "7500000")))
 
            ;; NetworkManager and its applet.
            (service network-manager-service-type)
@@ -196,7 +173,6 @@
            (service pulseaudio-service-type)
            (service alsa-service-type)
 
-	   ;; (service earlyoom-service-type)
 	   (service openssh-service-type
 		    (openssh-configuration
 		     (openssh openssh-sans-x)))
@@ -204,7 +180,6 @@
 	   (udev-rules-service 'light light)
 	   (service thermald-service-type)
 	   (service nix-service-type)
-	   ;; (service tailscale-service-type)
 	   (service qemu-binfmt-service-type
 		    (qemu-binfmt-configuration
 		     (platforms (lookup-qemu-platforms "aarch64"))))
@@ -216,7 +191,6 @@
 		     (using-setuid? #f)))
 	   (service sddm-service-type
 		    (sddm-configuration
-		     ;;(display-server "wayland")
 		     (sddm sddm-qt5)
 		     (theme "chili")
 		     (xorg-configuration
@@ -228,4 +202,4 @@
 		     (pam-limits-entry "@realtime" 'both 'rtprio 99)
 		     (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
 		     (pam-limits-entry "*" 'both 'nofile 524288))))
-	  %my-base-services))
+	  %base-services))

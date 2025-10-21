@@ -15,6 +15,8 @@
   #:use-module (nongnu system linux-initrd)
   #:use-module (srfi srfi-1))
 
+(load "./shared.scm")
+
 (use-service-modules desktop
 		     cups
 		     networking
@@ -57,12 +59,23 @@
 			    foomatic-filters
 			    hplip-plugin))
 		     (default-paper-size "A4")))
-	   ;; (service tailscale-service-type)
+
 	   (service guix-publish-service-type
 		    (guix-publish-configuration
 		     (host "0.0.0.0")
 		     (port 8181)
 		     (advertise? #t)))
+
+	   (simple-service 'extend-guix
+			   guix-service-type
+			   (guix-extension
+			    (substitute-urls
+			     (append (list "https://substitutes.nonguix.org"
+					   "https://ci.supervoid.org")
+				     %default-substitute-urls))
+			    (authorized-keys
+			     (append %guix-keyring-all
+				     %default-authorized-guix-keys))))
 
 	   (service zram-device-service-type
 		    (zram-device-configuration
