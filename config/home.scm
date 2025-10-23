@@ -5,14 +5,12 @@
 (define-module (home)
   #:use-module (heyk gnu packages fish)
   #:use-module (heyk gnu home services fish)
-  #:use-module (automate gnu home services avizo)
-  #:use-module (automate gnu home services mako)
-  #:use-module (automate gnu home services waybar)
-  #:use-module (automate gnu home services zathura)
-  #:use-module (automate gnu packages fonts)
-  #:use-module (automate gnu packages python)
-  #:use-module (automate gnu packages rust-apps)
-  #:use-module (automate gnu packages wayland)
+  #:use-module (heyk gnu home services avizo)
+  #:use-module (heyk gnu home services mako)
+  #:use-module (heyk gnu home services waybar)
+  #:use-module (heyk gnu home services zathura)
+  #:use-module (heyk gnu packages fonts)
+  #:use-module (heyk gnu packages wayland)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
@@ -488,28 +486,7 @@
    (cons*
     (simple-service 'additional-channels-service
 		    home-channels-service-type
-		    (list
-		     (channel
-		      (name 'nonguix)
-		      (url "https://gitlab.com/nonguix/nonguix")
-		      (introduction
-		       (make-channel-introduction
-			"897c1a470da759236cc11798f4e0a5f7d4d59fbc"
-			(openpgp-fingerprint
-			 "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
-		     (channel
-		      (name 'rosenthal)
-		      (url "https://codeberg.org/hako/rosenthal.git")
-		      (branch "trunk")
-		      (introduction
-		       (make-channel-introduction
-			"7677db76330121a901604dfbad19077893865f35"
-			(openpgp-fingerprint
-			 "13E7 6CD6 E649 C28C 3385  4DF5 5E5A A665 6149 17F7"))))
-		     (channel
-		      (name 'guix-rusty)
-		      (branch "main")
-		      (url "https://github.com/ph/guix-rusty"))))
+		    (load "../channels.scm"))
     (service home-shepherd-service-type
 	     (home-shepherd-configuration
 	      (auto-start? #f))) ;; Sadly we need to start shepherd in the sway boot process to make $WAYLAND_DISPLAY available.
