@@ -244,6 +244,8 @@
 
 (define %multimedia
   (list
+   libwacom
+   xournalpp
    blender
    inkscape
    ffmpeg
