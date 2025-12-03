@@ -191,8 +191,26 @@
 					      (openpgp-fingerprint
 					       "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
 					   %default-channels))
-				   (priority 5)
+				   (priority 3)
 				   (systems '("x86_64-linux")))
+
+				  (specification
+				   (name "guix")
+				   (build '(channels guix))
+				   (channels
+				    (cons*
+				     (channel
+				      (name 'guix)
+				      (url "https://codeberg.org/guix/guix.git")
+				      (branch "master")
+				      (introduction
+				       (make-channel-introduction
+					"9edb3f66fd807b096b48283debdcddccfea34bad"
+					(openpgp-fingerprint
+					 "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA")))) %default-channels))
+				   (priority 0)
+				   (systems '("x86_64-linux" )))
+
 				  (specification
 				   (name "nonguix")
 				   (build '(channels nonguix))
@@ -206,7 +224,7 @@
 					      (openpgp-fingerprint
 					       "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
 					   %default-channels))
-				   (priority 3)
+				   (priority 0)
 				   (systems '("x86_64-linux" )))
 				  
 				  (specification
@@ -235,6 +253,19 @@
 	       (substitute-urls
 		`("https://ci.supervoid.org"
 		  ,@%default-substitute-urls))))
+
+
+  (simple-service 'extend-kernel-module-loader
+		  kernel-module-loader-service-type
+		  '("sch_fq_pie" "tcp_bbr"))
+
+  (simple-service 'extend-sysctl
+		  sysctl-service-type
+		  '(("net.core.default_qdisc" . "fq_pie")
+		    ("net.ipv4.tcp_congestion_control" . "bbr")
+		    ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+		    ("net.core.rmem_max" . "7500000")
+		    ("net.core.wmem_max" . "7500000")))
 
   (service guix-publish-service-type
     (guix-publish-configuration

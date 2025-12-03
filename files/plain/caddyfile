@@ -1,12 +1,53 @@
 # SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
+
+{
+metrics
+log {
+		output file /var/log/caddy/caddy.log
+		# anonymize ips
+		format filter {
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			wrap json
+		}
+	}
+}
+
+(logging) {
+	log {
+		output file /var/log/caddy/{args[0]}.log
+		format filter {
+			wrap json
+			request>remote_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+			request>client_ip ip_mask {
+				ipv4 20
+				ipv6 44
+			}
+		}
+	}
+}
+
+
+
 supervoid.org {
+    import logging supervoid.org
     root * /var/www/supervoid.org
     file_server
 }
 
 ci.supervoid.org {
+    import logging ci.supervoid.org
 	@guix_publish {
 		path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
 	}
@@ -18,15 +59,16 @@ ci.supervoid.org {
 	reverse_proxy 127.0.0.1:17732
 
 
+	# Need to lookup client auth for caddy
 	handle_path /admin/* {
 		respond "access denied" 403
 	}
 }
 
 
-
-
 substitutes.supervoid.org {
+    import logging substitutes.supervoid.org
+
     @guix_publish {
 	path /*.narinfo || /file/* || /nar/* || /nix-cache-info || /signing-key.pub
     }
