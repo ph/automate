@@ -7,6 +7,7 @@
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
+  #:use-module (gnu services sysctl)
   #:use-module (gnu packages cups)
   #:use-module (gnu packages)
   #:use-module (gnu)
@@ -60,18 +61,32 @@
 			    hplip-plugin))
 		     (default-paper-size "A4")))
 
-	   (service guix-publish-service-type
-		    (guix-publish-configuration
-		     (host "0.0.0.0")
-		     (port 8181)
-		     (advertise? #t)))
+	 (service guix-publish-service-type
+		  (guix-publish-configuration
+		    (port 49637)
+		    (compression '(("zstd" 19)))
+		    (cache "/var/cache/guix/publish")
+		    (ttl (* 180 24 3600))
+		    (negative-ttl (* 2 60))))
+
+  (simple-service 'extend-kernel-module-loader
+		  kernel-module-loader-service-type
+		  '("sch_fq_pie" "tcp_bbr"))
+
+  (simple-service 'extend-sysctl
+		  sysctl-service-type
+		  '(("net.core.default_qdisc" . "fq_pie")
+		    ("net.ipv4.tcp_congestion_control" . "bbr")
+		    ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+		    ("net.core.rmem_max" . "7500000")
+		    ("net.core.wmem_max" . "7500000")))
 
 	   (simple-service 'extend-guix
 			   guix-service-type
 			   (guix-extension
 			    (substitute-urls
 			     (append (list "https://substitutes.nonguix.org"
-					   "https://ci.supervoid.org")
+					   "https://substitutes.supervoid.org")
 				     %default-substitute-urls))
 			    (authorized-keys
 			     (append %guix-keyring-all

@@ -315,11 +315,15 @@
   (setq rust-mode-treesitter-derive t))
 
 (use-package rustic
-  :ensure (rustic :host github :repo "emacs-rustic/rustic")
+  :ensure t
   :after (inheritenv envrc eglot rust-mode)
-  :mode ("\\.rs\\'" . rustic-mode)
   :init
-  (setq rustic-lsp-client 'eglot))
+  (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
+  :config
+  (setq rustic-lsp-client 'eglot)
+  (setq rustic-format-on-save nil)
+  :custom
+  (rustic-cargo-use-last-stored-arguments t))
 
 (use-package ultra-scroll
   :ensure (ultra-scroll :host github :repo "jdtsmith/ultra-scroll")
@@ -1054,13 +1058,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     "xn" '(org-roam-capture :wk "new note")
     "xf" '(org-roam-find-file :wk "find note")))
 
-;; (use-package eglot-booster
-;;   :ensure (eglot-booster :host github :repo "jdtsmith/eglot-booster")
-;;   :after eglot
-;;   :config
-;;   (setq eglot-booster-io-only t)
-;;   (eglot-booster-mode))
-
 (use-package kind-icon
   :ensure t
   :after corfu
@@ -1070,17 +1067,17 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :config
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
-;;(use-package flycheck
-;;  :ensure t
-;;  :init (global-flycheck-mode))
+(use-package flycheck
+  :ensure t
+  :init (global-flycheck-mode))
 ;;
-;;(use-package flycheck-eglot
-;;  :ensure t
-;;  :after (flycheck eglot)
-;;  :config (global-flycheck-eglot-mode 1))
-;;
-;;(use-package consult-flycheck
-;;  :ensure t)
+(use-package flycheck-eglot
+  :ensure t
+  :after (flycheck eglot)
+  :config (global-flycheck-eglot-mode 1))
+
+(use-package consult-flycheck
+  :ensure t)
 
 (use-package aidermacs
   :ensure (aidermacs :host github :repo "MatthewZMD/aidermacs")
@@ -1114,7 +1111,36 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :ensure t
   :hook (scheme-mode-hook . flymake-guile))
 
+(use-package centaur-tabs
+  :ensure t
+  :config
+  (centaur-tabs-mode t)
+  (setq centaur-tab-style "rounded")
+  :bind
+  ("C-<prior>" . centaur-tabs-backward)
+  ("C-<next>" . centaur-tabs-forward))
+
 (setq org-todo-keywords
       '((sequence "TODO(t)" "|" "DONE(d)")
         (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")
         (sequence "|" "CANCELED(c)")))
+
+(use-package gptel
+  :ensure (:host github :repo "karthink/gptel")
+  :after (pass)
+  :config
+  (setq gptel-api-key (lambda (&rest _) (password-store-get "openai/api-key"))))
+
+(use-package llm-tool-collection
+  :ensure (:host github :repo "skissue/llm-tool-collection")
+  :after (gptel)
+  :init
+  (mapcar (apply-partially #'apply #'gptel-make-tool)
+	  (llm-tool-collection-get-all)))
+
+(use-package gptel-agent
+  :ensure (:host github :repo "karthink/gptel-agent")
+  :after (gptel)
+  :config (gptel-agent-update))
+
+;;; init.el ends here

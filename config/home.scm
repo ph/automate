@@ -32,6 +32,7 @@
   #:use-module (gnu packages curl)
   #:use-module (gnu packages docker)
   #:use-module (gnu packages emacs)
+  #:use-module (emacs-master)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages emulators)
   #:use-module (gnu packages engineering)
@@ -173,7 +174,7 @@
 
 (define %emacs
   (list
-   emacs-pgtk
+   emacs-master-pgtk
    emacs-guix
    ;; emacs-arei
    emacs-debbugs
