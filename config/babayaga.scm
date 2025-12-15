@@ -7,16 +7,130 @@
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
+  #:use-module (guix records)
+  #:use-module (gnu services)
+  #:use-module (gnu services admin)
   #:use-module (gnu services sysctl)
+  #:use-module (gnu services configuration)
+  #:use-module (gnu services containers)
+  #:use-module (gnu services shepherd)
   #:use-module (gnu packages cups)
   #:use-module (gnu packages)
+  #:use-module (guix modules)
   #:use-module (gnu)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages printers)
   #:use-module (nongnu system linux-initrd)
-  #:use-module (srfi srfi-1))
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26))
 
 (load "./shared.scm")
+
+;;
+
+(define (user-or-group-id? val)
+  (or (integer? val)
+      (eqv? val #f)))
+
+(define-configuration/no-serialization  docker-arm-configuration
+  (data-directory
+   (string "/var/lib/docker-arm")
+   "Directory to store Docker ARM data.")
+  (log-file
+   (string "/var/log/docker-arm.log")
+   "Path to log file.")
+  (shepherd-requirement
+   (list-of-symbols '())
+   "List of Shepherd service dependencies.")
+  (group-id
+   (user-or-group-id 1001)
+   "Group ID/GID")
+  (user-id
+   (user-or-group-id 1001)
+   "User ID/UID")
+  (image
+   (string "automaticrippingmachine/automatic-ripping-machine:latest")
+   "Image to user for docker, default will use the latest")
+  (options
+   (alist '(
+	    ))
+   "Alist of Docker ARM configuration.  See also
+@url{https://github.com/automatic-ripping-machine/automatic-ripping-machine/wiki/docker}.")
+  (extra-arguments
+   (list '())
+   "List of extra Docker arguments."))
+
+(define arm-account
+  (match-record-lambda <docker-arm-configuration>
+		       (group-id user-id data-directory)
+		       (list (user-group
+			      (name "arm")
+			      (id group-id)
+			      (system? #t))
+			     (user-account
+			      (name "arm")
+			      (group "arm")
+			      (uid user-id)
+			      (system? #t)
+			      (comment "Automatic Ripping Machine user")
+			      (home-directory data-directory)))))
+
+(define arm-activation
+  (match-record-lambda <docker-arm-configuration>
+		       (data-directory)
+		       (with-imported-modules
+			(source-module-closure '((guix build utils)
+						 (gnu build activation)))
+			#~(begin
+			    (use-modules (srfi srfi-26)
+					 (guix build utils)
+					 (gnu build activation))
+			    (let ((user (getpwnam "arm"))
+				  (home-dir (cut string-append #$data-directory <>)))
+			      (mkdir-p/perms (home-dir "") user #o750)
+			      (mkdir-p/perms (home-dir "/music") user #o755)
+			      (mkdir-p/perms (home-dir "/logs") user #o755)
+			      (mkdir-p/perms (home-dir "/media") user #o755)
+			      (mkdir-p/perms (home-dir "/config") user #o755))))))
+
+(define docker-arm-oci
+  (match-record-lambda <docker-arm-configuration>
+		       (data-directory log-file shepherd-requirement image options extra-arguments user-id group-id)
+		       (let ((docker-arm-path (cut string-append data-directory <>)))
+			 (oci-extension
+			  (containers
+			   (list (oci-container-configuration
+				  (provision "docker-arm")
+				  (network "host")
+				  (environment `(("ARM_UID" . ,(number->string user-id))
+						 ("ARM_GID" . ,(number->string group-id))
+						 ,@options))
+				  (log-file log-file)
+				  (requirement shepherd-requirement)
+				  (image image)
+				  (volumes
+				   `((,(docker-arm-path "") . "/home/arm")
+				     (,(docker-arm-path "/music") . "/home/arm/music")
+				     (,(docker-arm-path "/logs") . "/home/arm/logs")
+				     (,(docker-arm-path "/media") . "/home/arm/media")
+				     (,(docker-arm-path "/config") . "/etc/arm/config")))
+				  (extra-arguments extra-arguments))))))))
+
+(define docker-arm-service-type
+  (service-type
+   (name 'docker-arm)
+   (extensions
+    (list
+     (service-extension account-service-type
+			arm-account)
+     (service-extension activation-service-type
+			arm-activation)
+     (service-extension oci-service-type
+			     docker-arm-oci)
+	  (service-extension log-rotation-service-type
+			     (compose list docker-arm-configuration-log-file))))
+   (default-value (docker-arm-configuration))
+   (description "Run Docker Automatic Ripping Machine.")))
 
 (use-service-modules desktop
 		     cups
@@ -69,41 +183,45 @@
 		    (ttl (* 180 24 3600))
 		    (negative-ttl (* 2 60))))
 
-  (simple-service 'extend-kernel-module-loader
-		  kernel-module-loader-service-type
-		  '("sch_fq_pie" "tcp_bbr"))
+	 (service docker-arm-service-type
+		  (docker-arm-configuration
+		   (options '("TZ" . "Toronto"))))
 
-  (simple-service 'extend-sysctl
-		  sysctl-service-type
-		  '(("net.core.default_qdisc" . "fq_pie")
-		    ("net.ipv4.tcp_congestion_control" . "bbr")
-		    ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-		    ("net.core.rmem_max" . "7500000")
-		    ("net.core.wmem_max" . "7500000")))
+	 (simple-service 'extend-kernel-module-loader
+			 kernel-module-loader-service-type
+			 '("sch_fq_pie" "tcp_bbr"))
 
-	   (simple-service 'extend-guix
-			   guix-service-type
-			   (guix-extension
-			    (substitute-urls
-			     (append (list "https://substitutes.nonguix.org"
-					   "https://substitutes.supervoid.org")
-				     %default-substitute-urls))
-			    (authorized-keys
-			     (append %guix-keyring-all
-				     %default-authorized-guix-keys))))
+	 (simple-service 'extend-sysctl
+			 sysctl-service-type
+			 '(("net.core.default_qdisc" . "fq_pie")
+			   ("net.ipv4.tcp_congestion_control" . "bbr")
+			   ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+			   ("net.core.rmem_max" . "7500000")
+			   ("net.core.wmem_max" . "7500000")))
 
-	   (service zram-device-service-type
-		    (zram-device-configuration
-		     (size "128G")
-		     (compression-algorithm 'zstd)
-		     (priority 100)))
+	 (simple-service 'extend-guix
+			 guix-service-type
+			 (guix-extension
+			  (substitute-urls
+			   (append (list "https://substitutes.nonguix.org"
+					 "https://substitutes.supervoid.org")
+				   %default-substitute-urls))
+			  (authorized-keys
+			   (append %guix-keyring-all
+				   %default-authorized-guix-keys))))
 
-	   (service bluetooth-service-type
-		    (bluetooth-configuration
-		     (bluez bluez)
-		     (name host-name)
-		     (auto-enable? #t)
-		     (multi-profile 'multiple)))
+	 (service zram-device-service-type
+		  (zram-device-configuration
+		   (size "128G")
+		   (compression-algorithm 'zstd)
+		   (priority 100)))
+
+	 (service bluetooth-service-type
+		  (bluetooth-configuration
+		   (bluez bluez)
+		   (name host-name)
+		   (auto-enable? #t)
+		   (multi-profile 'multiple)))
 
 	   (udev-rules-service 'steam-devices steam-devices-udev-rules)
 	   (btrfs-maintenance-service '("/")))
