@@ -96,13 +96,6 @@
   #:use-module (nongnu packages mozilla)
   #:use-module (rosenthal packages rust-apps))
 
-(define rofi/wayland
-  (package-input-rewriting/spec
-   `(("rofi" . ,(const rofi-wayland)))))
-
-(define-public pinentry-rofi/wayland
-  (rofi/wayland pinentry-rofi))
-
 (define %user "ph")
 
 (define %vcs
@@ -114,6 +107,7 @@
 (define %dev
   (list
    mosh
+   jujutsu
    fish-foreign-env
    zathura-pdf-mupdf ;; should be added on the home service
    atuin
@@ -124,8 +118,7 @@
 (define %browsers
   (list
    ;; firefox
-	librewolf
-	ungoogled-chromium))
+	librewolf))
 
 (define %tools
   (list htop
@@ -147,7 +140,6 @@
 	libnotify
 	qemu
 	nmap
-	docker-compose
 	udiskie
 	jq
 	unzip
@@ -314,7 +306,7 @@
      (list qtwayland-5
            sway
 	   swayidle
-	   rofi-wayland
+	   rofi
 	   rofi-themes-collection
            wl-clipboard
 	   foot
@@ -364,7 +356,7 @@
       ($mod+a . "focus parent")
       ($mod+b . "splith")
 
-      ($mod+d . ,#~(string-append "exec " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
+      ($mod+d . ,#~(string-append "exec " #$rofi "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
       ;; ($mod+d . ,#~(string-append "exec XDG_DATA_DIRS=\"$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share\" " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
 
       ($mod+Shift+d . ,#~(string-append "exec " #$mako "/bin/makoctl dismiss -a"))
@@ -496,7 +488,7 @@
     (service home-dbus-service-type)
     (service home-gpg-agent-service-type
 	     (home-gpg-agent-configuration
-	      (pinentry-program (file-append pinentry-rofi/wayland "/bin/pinentry-rofi"))
+	      (pinentry-program (file-append pinentry-rofi "/bin/pinentry-rofi"))
 	      (ssh-support? #t)))
     ;; Make flatpak applications available for rofi.
     (simple-service 'some-useful-env-vars-service

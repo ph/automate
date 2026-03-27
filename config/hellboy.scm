@@ -11,9 +11,13 @@
   #:use-module (gnu)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
+  #:use-module (nongnu packages firmware)
   #:use-module (automate common)
+  ;; #:use-module (automate services fwupd)
   #:use-module (rosenthal services networking)
   #:use-module (srfi srfi-1))
+
+(load "./shared.scm")
 
 (use-service-modules desktop
 		     networking
@@ -21,7 +25,7 @@
 		     linux)
 
 (operating-system
- (kernel linux-xanmod)
+ (kernel linux)
  (initrd microcode-initrd)
  (firmware (list
 	    linux-firmware
@@ -46,8 +50,24 @@
 	    %base-packages))
  (services
   (append (list
+	   (simple-service 'extend-guix
+			   guix-service-type
+			   (guix-extension
+			    (substitute-urls
+			     (append (list
+				      ;; "https://substitutes.nonguix.org"
+				      "https://substitutes.supervoid.org"
+				      "https://cache-cdn.guix.moe")
+				     %default-substitute-urls))
+			    (authorized-keys
+			     (append %guix-keyring-all
+				     %default-authorized-guix-keys))))
 	   (udev-rules-service
 	    'probe-rs %probe-rs-udev-rules)
+	   ;; TODO: sync gpg keys
+	   ;; (service fwupd-service-type
+	   ;; 	    (fwupd-configuration
+	   ;; 	     (fwupd fwupd-nonfree)))
 	   (service sane-service-type)
 	   (service tailscale-service-type)
 	   (service guix-publish-service-type

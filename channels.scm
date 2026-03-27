@@ -5,7 +5,8 @@
 (define %guix-channel
   (channel
    (name 'guix)
-   (url "https://codeberg.org/guix/guix.git")
+    (url "https://git.guix.gnu.org/guix.git")
+;;   (url "https://github.com/Millak/guix.git")
    (branch "master")
    (introduction
     (make-channel-introduction
@@ -27,7 +28,8 @@
 (define %rosenthal-channel
   (channel
    (name 'rosenthal)
-   (url "https://codeberg.org/hako/rosenthal.git")
+   ;; (url "https://codeberg.org/hako/rosenthal.git")
+   (url "https://github.com/rakino/Rosenthal")
    (branch "trunk")
    (introduction
     (make-channel-introduction

@@ -179,7 +179,10 @@
 	   (service tlp-service-type)
 	   (udev-rules-service 'light light)
 	   (service thermald-service-type)
-	   (service nix-service-type)
+	   (service nix-service-type
+		    (nix-configuration
+		     (extra-config '("trusted-users = ph\n"
+				     "extra-platforms = aarch64-linux arm-linux"))))
 	   (service qemu-binfmt-service-type
 		    (qemu-binfmt-configuration
 		     (platforms (lookup-qemu-platforms "aarch64"))))

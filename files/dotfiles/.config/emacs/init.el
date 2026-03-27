@@ -365,6 +365,8 @@
   :defer t
   :ensure (:wait t)
   :after (emacs flymake exec-path-from-shell envrc)
+  :hook
+  (nix-mode . eglot-ensure)
   :general
   (ph/leader-key
     "a" '(:ignore t :wk "actions")
@@ -375,6 +377,7 @@
     "ai" '(eglot-code-action-organize-imports :wk "organize imports")
     "aI" '(eglot-code-action-inline :wk "inline"))
   :config
+  (add-to-list 'eglot-server-programs '(nix-mode . ("nixd")))
   (setq eglot-sync-connect 1
 	eglot-autoreconnect t
 	eglot-send-changes-idle-time 0.5
@@ -1124,23 +1127,5 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
       '((sequence "TODO(t)" "|" "DONE(d)")
         (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")
         (sequence "|" "CANCELED(c)")))
-
-(use-package gptel
-  :ensure (:host github :repo "karthink/gptel")
-  :after (pass)
-  :config
-  (setq gptel-api-key (lambda (&rest _) (password-store-get "openai/api-key"))))
-
-(use-package llm-tool-collection
-  :ensure (:host github :repo "skissue/llm-tool-collection")
-  :after (gptel)
-  :init
-  (mapcar (apply-partially #'apply #'gptel-make-tool)
-	  (llm-tool-collection-get-all)))
-
-(use-package gptel-agent
-  :ensure (:host github :repo "karthink/gptel-agent")
-  :after (gptel)
-  :config (gptel-agent-update))
 
 ;;; init.el ends here

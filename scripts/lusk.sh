@@ -21,7 +21,7 @@ DISK1=nvme0n1
 sgdisk --zap-all /dev/$DISK1
 
 sgdisk -og /dev/$DISK1
-sgdisk -n 1:0:+512M -t 1:EF00 /dev/$DISK1
+sgdisk -n 1:0:+1024M -t 1:EF00 /dev/$DISK1
 sgdisk -n 2:0:0 -t 2:8300 /dev/$DISK1
 
 # raid
@@ -39,12 +39,12 @@ btrfs subvol create /mnt/tmp/@swap
 
 umount /mnt/tmp
 
-mkfs.vfat -F32 /dev/${DISK1}p1
+mkfs.vfat -F32 -n EFI /dev/${DISK1}p1
 
 mkdir -p /mnt/newroot
 mount -o subvol=@ /dev/${DISK1}p2 /mnt/newroot
 
-mkdir -p /mnt/newroot/boot/efi
+mkdir -p /mnt/newroot/efi
 mkdir -p /mnt/newroot/home
 mkdir -p /mnt/newroot/gnu
 mkdir -p /mnt/newroot/nix
@@ -58,7 +58,7 @@ mount -o subvol=@gnu /dev/${DISK1}p2 /mnt/newroot/gnu
 mount -o subvol=@nix /dev/${DISK1}p2 /mnt/newroot/nix
 mount -o subvol=@log /dev/${DISK1}p2 /mnt/newroot/var/log
 mount -o subvol=@swap /dev/${DISK1}p2 /mnt/newroot/.swap
-mount /dev/${DISK1}p1 /mnt/newroot/boot/efi
+mount /dev/${DISK1}p1 /mnt/newroot/efi
 
 # cp /etc/channels.scm /mnt/newroot/etc
 # cp config.scm /mnt/newroot/etc

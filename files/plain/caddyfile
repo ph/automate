@@ -39,7 +39,6 @@ log {
 }
 
 
-
 supervoid.org {
     import logging supervoid.org
     root * /var/www/supervoid.org

@@ -111,8 +111,10 @@
 		     guix-service-type
 		     (guix-extension
 		      (substitute-urls
-		       (append (list "https://substitutes.nonguix.org"
-				     "https://ci.supervoid.org")
+		       (append (list
+				"https://cache-cdn.guix.moe"
+				;; "https://substitutes.nonguix.org"
+				"https://ci.supervoid.org")
 			       %default-substitute-urls))
 		      (authorized-keys
 		       (append %guix-keyring-all
@@ -144,6 +146,17 @@
 		    ("max_parallel_maintenance_workers" 4)
 		    ("logging_collector" #t)
 		    ("log_directory" "/var/log/postgresql")))))))
+
+     (simple-service 'extend-guix
+		     guix-service-type
+		     (guix-extension
+		      (substitute-urls
+		       (append (list "https://cache-cdn.guix.moe"
+				     "https://substitutes.supervoid.org")
+			       %default-substitute-urls))
+		      (authorized-keys
+		       (append %guix-keyring-all
+			       %default-authorized-guix-keys))))
      (service avahi-service-type)
      (service cuirass-service-type
 	      (cuirass-configuration
@@ -327,5 +340,4 @@
 		`(("deploy" , (plain-file "deploy.pub" %user/deploy/key))
 		  ("deploy-web" , (local-file "../secrets/deploy.pub" ))))))
      %base-services))))
-
 %os
