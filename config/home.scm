@@ -21,6 +21,7 @@
   #:use-module (gnu home services sound)
   #:use-module (gnu home services sway)
   #:use-module (gnu home services syncthing)
+  #:use-module (gnu home services niri)
   #:use-module (gnu home services)
   #:use-module (gnu home)
   #:use-module (gnu packages admin)
@@ -60,6 +61,7 @@
   #:use-module (gnu packages music)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages node)
+  #:use-module (gnu packages xorg)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages password-utils)
   #:use-module (gnu packages pdf)
@@ -94,7 +96,9 @@
   #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
-  #:use-module (rosenthal packages rust-apps))
+  #:use-module (rosenthal packages rust-apps)
+  #:use-module (rosenthal services desktop)
+  #:use-module (rosenthal utils file))
 
 (define %user "ph")
 
@@ -166,7 +170,7 @@
 
 (define %emacs
   (list
-   emacs-master-pgtk
+   emacs-next-pgtk
    emacs-guix
    ;; emacs-arei
    emacs-debbugs
@@ -509,11 +513,21 @@
 	       '("../files/dotfiles"))))
     (service home-files-service-type
 	     `((".guile" ,%default-dotguile)))
-    (service home-sway-service-type
-	     %swayish)
+    ;; (service home-sway-service-type
+    ;; 	     %swayish)
+    (service home-niri-service-type
+	     (home-niri-configuration
+	      (config
+	       (computed-substitution-with-inputs
+		"niri.kdl"
+		(local-file "../files/plain/niri.kdl")
+		(list xwayland-satellite)))))
+
     (service home-mako-service-type)
-    (service home-waybar-service-type)
-    (service home-avizo-service-type)
+    ;; (service home-waybar-service-type)
+    ;; (service home-avizo-service-type)
+    (service home-noctalia-shell-service-type)
+    (service home-polkit-gnome-service-type)
     (service home-zathura-service-type)
     (service home-pipewire-service-type)
     (service home-batsignal-service-type)

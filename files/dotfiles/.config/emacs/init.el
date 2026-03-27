@@ -42,7 +42,7 @@
 (elpaca `(,@elpaca-order))
 
 (elpaca elpaca-use-package
-  (elpaca-use-package-mode))
+	(elpaca-use-package-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -351,8 +351,8 @@
 (defvar global-eldoc-mode nil)
 
 (elpaca eldoc
-  (require 'eldoc)
-  (global-eldoc-mode)) ;; This is usually enabled by default by Emacs
+	(require 'eldoc)
+	(global-eldoc-mode)) ;; This is usually enabled by default by Emacs
 
 (use-package jsonrpc :ensure (:wait t) :defer t)
 
@@ -1127,5 +1127,8 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
       '((sequence "TODO(t)" "|" "DONE(d)")
         (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")
         (sequence "|" "CANCELED(c)")))
+
+(use-package kdl-ts-mode
+  :ensure (:host github, :repo "merrickluo/kdl-ts-mode"))
 
 ;;; init.el ends here
