@@ -35,6 +35,8 @@
   }
 
   layout {
+      gaps 4
+
       background-color "transparent"
       focus-ring {
           off
