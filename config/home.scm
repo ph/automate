@@ -443,7 +443,7 @@
    (gestures '())
    (startup-programs
     (list
-     "pgrep --uid $USER shepherd > /dev/null || shepherd"
+     ;; "pgrep --uid $USER shepherd > /dev/null || shepherd"
      "gsettings set org.gnome.desktop.interface cursor-theme 'Yaru'"
      "gsettings set org.gnome.desktop.interface cursor-size '24'"
      "gsettings set org.gnome.desktop.interface gtk-theme 'Matcha-dark-azul'"
@@ -486,7 +486,7 @@
     (simple-service 'additional-channels-service
 		    home-channels-service-type
 		    (load "../channels.scm"))
-    (service home-shepherd-service-type
+(service home-shepherd-service-type
 	     (home-shepherd-configuration
 	      (auto-start? #f))) ;; Sadly we need to start shepherd in the sway boot process to make $WAYLAND_DISPLAY available.
     (service home-dbus-service-type)
@@ -512,9 +512,10 @@
 	      (directories
 	       '("../files/dotfiles"))))
     (service home-files-service-type
-	     `((".guile" ,%default-dotguile)))
-    ;; (service home-sway-service-type
-    ;; 	     %swayish)
+	     `((".guile" ,%default-dotguile)
+	       (".face" ,(local-file "../files/plain/ph.jpg"))))
+    (service home-sway-service-type
+	     %swayish)
     (service home-niri-service-type
 	     (home-niri-configuration
 	      (config

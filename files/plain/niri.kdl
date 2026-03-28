@@ -11,15 +11,22 @@
       skip-at-startup
   }
 
+  // noctalia: https://docs.noctalia.dev/getting-started/compositor-settings/niri/
   window-rule {
       geometry-corner-radius 5
       clip-to-geometry true
+  }
+
+  debug {
+      // Allows notification actions and window activation from Noctalia.
+      honor-xdg-activation-with-invalid-serial
   }
 
   layer-rule {
     match namespace="^noctalia-wallpaper*"
     place-within-backdrop true
   }
+  // end of noctalia
 
   overview {
     workspace-shadow {
@@ -66,7 +73,7 @@ output "DP-1" {
 
 output "DP-3" {
     scale 1.4
-    transform 270
+    transform "270"
     position x=0 y=0
 }
 
