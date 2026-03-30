@@ -1,0 +1,420 @@
+#+TITLE: Home manager configuration
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
+
+* Templates
+#+begin_src scheme :tangle ../target/tangled/home.scm :noweb yes :mkdirp yes
+  (define-module (home))
+
+  (use-modules
+   (gnu home)
+   <<modules>>)
+
+  <<utils>>
+
+  (home-environment
+   (packages (list
+	    <<packages>>))
+   (services
+    (cons*
+     <<home-services>>
+     %base-home-services)))
+#+end_src
+
+* Packages
+
+** GUI
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages glib)
+  (gnu packages networking)
+  (gnu packages image-viewers)
+  (nongnu packages messaging)
+  (gnu packages video)
+  (gnu packages pulseaudio)
+  (gnu packages music)
+  (gnu packages gnome-xyz)
+  (gnu packages gnome)
+  (gnu packages xdisorg)
+  (gnu packages graphics)
+  (gnu packages inkscape)
+  (gnu packages engineering)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+  `(,glib "bin")
+  blueman
+  imv
+  signal-desktop
+  mpv
+  pamixer
+  pulseaudio
+  pavucontrol
+  playerctl
+  yaru-theme
+  matcha-theme
+  adwaita-icon-theme
+  hicolor-icon-theme
+  papirus-icon-theme
+  libwacom
+  xournalpp
+  blender
+  inkscape
+  ffmpeg
+  kicad
+  vlc
+#+end_src
+
+** Librewolf
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages librewolf)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+    librewolf
+#+end_src
+
+** Shells
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages ssh)
+  (rosenthal packages rust-apps)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+   mosh
+   atuin
+#+end_Src
+
+** VCS
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages version-control)
+  (gnu packages rust-apps)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+  git
+  jujutsu
+  `(,git "send-email")
+#+end_src
+
+** Guiles deps
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages guile)
+  (gnu packages guile-xyz)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+   guile-gcrypt
+   guile-readline
+   guile-colorized
+#+end_src
+
+** Tools
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages dns)
+  (gnu packages bash)
+  (gnu packages curl)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+  `(,isc-bind "utils")
+  fish-hydro
+  bash
+  curl
+  b4
+  reuse
+  flatpak
+  flatpak-xdg-utils
+  fd
+  aspell
+  aspell-dict-en
+  pandoc
+  shellcheck
+  ispell
+  gnutls 
+  libnotify
+  qemu
+  nmap
+  udiskie
+  jq
+  unzip
+  zip
+  ripgrep
+  rsync
+  xdot
+  gcr
+  python
+  bc
+  tree
+  password-store
+	#+end_src
+
+** Mail
+
+#+begin_src scheme :noweb-ref packages
+   mu
+   isync
+   msmtp
+#+end_src
+
+** Vim
+
+#+begin_src scheme :noweb-ref modules
+(gnu packages vim)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+  neovim
+#+end_src
+
+** Emacs
+#+begin_src scheme :noweb-ref packages
+  emacs-next-pgtk
+  emacs-guix
+  emacs-debbugs
+  emacs-vterm
+  emacs-geiser
+  direnv ;; This is required by envrc-mode
+  node-lts
+  tree-sitter-bash
+  tree-sitter-scheme
+  tree-sitter-rust
+  tree-sitter-python
+  tree-sitter-go
+  tree-sitter-gomod
+  tree-sitter-dockerfile
+  tree-sitter-c
+  tree-sitter-css
+  tree-sitter-org
+  tree-sitter-json
+  tree-sitter-typescript
+  tree-sitter-javascript
+  tree-sitter-ruby
+#+end_src
+
+** Fonts
+
+#+begin_src scheme :noweb-ref packages
+  font-dejavu
+  font-fira-code-nerd
+  font-fira-code
+  font-fira-code-regular-symbols
+  font-iosevka
+  font-fira-mono
+  font-fira-sans
+  font-opendyslexic
+  font-google-noto
+  font-awesome
+  font-google-material-design-icons
+  font-google-roboto
+  font-montserrat
+  font-google-noto
+  font-google-noto-emoji
+  font-ghostscript
+#+end_src
+
+** Games
+
+#+begin_src scheme :noweb-ref modules
+  (nongnu packages game-client)
+  #+end_src
+
+ #+begin_src scheme :noweb-ref packages
+   scummvm
+   bsnes
+   steam
+#+end_src
+
+** Scanner
+
+#+begin_src scheme :noweb-ref packages
+  simple-scan
+  sane-airscan
+#+end_src
+
+* Home services
+
+** Shepherd
+#+begin_src scheme :noweb-ref home-services
+  ;; Disable the auto-start of shepherd and launch it via
+  ;; the window manager instead to make $WAYLAND_DISPLAY available to user
+  ;; defined services.
+  (service home-shepherd-service-type
+  	 (home-shepherd-configuration
+  	  (auto-start? #f)))
+#+end_src
+
+** DBus
+
+#+begin_src scheme :noweb-ref modules
+  (gnu home services desktop)
+ #+end_src
+
+  #+begin_src scheme :noweb-ref home-services
+  (service home-dbus-service-type)
+#+end_src
+
+** GPG Agent
+#+begin_src scheme :noweb-ref modules
+  (gnu home services gnupg)
+  (gnu packages gnupg) ;; for pinentry-rofi
+ #+end_src
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-gpg-agent-service-type
+	   (home-gpg-agent-configuration
+	    (pinentry-program (file-append pinentry-rofi "/bin/pinentry-rofi"))
+	    (ssh-support? #t)))
+	      #+end_src
+
+** XDG Configuration
+#+begin_src scheme :noweb-ref utils
+  (define-public (activate-rofi-theme name)
+    `("rofi/config.rasi" ,(mixed-text-file "config.rasi"
+					   "@import '" rofi-theme-catppuccin "/share/themes/catppuccin-macchiato'\n"
+					   "@theme '" rofi-theme-catppuccin "/share/themes/catppuccin-default'")))
+  #+end_src
+
+  #+begin_src scheme :noweb-ref home-services
+    (service home-xdg-configuration-files-service-type
+	 `(("gdb/gdbinit" ,%default-gdbinit)
+	   (".Xdefaults" ,%default-xdefaults)
+	   ("nano/nanorc" ,%default-nanorc)
+	   ,(activate-rofi-theme "nord")))
+	       #+end_src
+
+** Syncthing
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-syncthing-service-type
+	 (for-home
+	  (syncthing-configuration
+	   (user "ph"))))
+	       #+end_src
+
+** Dotfiles
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-dotfiles-service-type
+	 (home-dotfiles-configuration
+	  (directories
+	   '("../files/dotfiles"))))
+	       #+end_src
+
+** Other Files in home directory
+
+#+begin_src scheme :noweb-ref home-services
+    (service home-files-service-type
+	     `((".guile" ,%default-dotguile)
+	       (".face" ,(local-file "../files/plain/ph.jpg"))))
+	       #+end_src
+	       
+** Niri
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages xorg)
+  (rosenthal services desktop)
+  #+end_src
+
+ #+begin_src scheme :noweb-ref home-services
+   (service home-niri-service-type
+	 (home-niri-configuration
+	  (config
+	   (computed-substitution-with-inputs
+	    "niri.kdl"
+	    (local-file "../files/plain/niri.kdl")
+	    (list xwayland-satellite)))))
+#+end_src
+
+** Mako
+
+#+begin_src scheme :noweb-ref modules
+  (heyk gnu home services mako)
+#+end_src
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-mako-service-type)
+#+end_src
+
+** Noctalia
+
+#+begin_src scheme :noweb-ref modules
+  (rosenthal packages wm)
+#+end_src
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-noctalia-shell-service-type)
+#+end_src
+
+** Polkit
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-polkit-gnome-service-type)
+#+end_src
+
+** Zathura
+
+#+begin_src scheme :noweb-ref modules
+  (gnu packages pdf)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+  zathura-pdf-mupdf ;; should be added on the home service
+  #+end_src
+
+ #+begin_src scheme :noweb-ref home-services
+    (service home-zathura-service-type)
+#+end_src
+
+** Pipewire
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-pipewire-service-type)
+#+end_src
+
+** Batsignal
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-batsignal-service-type)
+#+end_src
+
+** Fish shell
+
+#+begin_src scheme :noweb-ref modules
+  (heyk gnu packages fish)
+  (heyk gnu home services fish)
+  (heyk gnu packages fish)
+  #+end_src
+
+#+begin_src scheme :noweb-ref packages
+   fish-foreign-env
+  #+end_src
+
+#+begin_src scheme :noweb-ref home-services
+  (service home-fish-hydro-service-type)
+  (service home-fish-service-type
+	   (home-fish-configuration
+	    (config (list
+		     (mixed-text-file
+		      "fish-config-direnv"
+		      direnv "/bin/direnv hook fish | source")
+		     (mixed-text-file
+		      "fish-config-atuin"
+		      atuin "/bin/atuin init fish | source")
+		     (mixed-text-file
+		      "disable-fish-greetings" "set -U fish_greeting")
+		     (mixed-text-file
+		      "enable-foreign-fish-env"
+		      "set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
+  set -g DIRENV_WARN_TIMEOUT 10m
+  fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
+		     (plain-file
+		      "fish-hydro-config" "\
+  set -g hydro_color_pwd \"brcyan\"
+  set -g fish_key_bindings fish_vi_key_bindings
+  set -g fish_term24bit 1")))))
+#+end_src

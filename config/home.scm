@@ -111,13 +111,13 @@
 (define %dev
   (list
    mosh
-   jujutsu
    fish-foreign-env
    zathura-pdf-mupdf ;; should be added on the home service
    atuin
    guile-gcrypt
    guile-readline
-   guile-colorized))
+   guile-colorized
+   ))
 
 (define %browsers
   (list
@@ -163,7 +163,8 @@
    mu
    isync
    msmtp
-   password-store))
+   password-store
+   ))
 
 (define %vim
   (list neovim))
@@ -175,7 +176,8 @@
    ;; emacs-arei
    emacs-debbugs
    emacs-vterm
-   emacs-geiser))
+   emacs-geiser
+   ))
 
 (define %editors
   (append
@@ -197,7 +199,8 @@
     tree-sitter-json
     tree-sitter-typescript
     tree-sitter-javascript
-    tree-sitter-ruby)))
+    tree-sitter-ruby
+    )))
 
 (define %fonts
   (list font-dejavu
@@ -303,6 +306,11 @@
   `("rofi/config.rasi" ,(mixed-text-file "config.rasi"
 					 "@import '" rofi-theme-catppuccin "/share/themes/catppuccin-macchiato'\n"
 					 "@theme '" rofi-theme-catppuccin "/share/themes/catppuccin-default'")))
+
+
+(define %emacs
+
+  )
 
 (define %swayish 
   (sway-configuration
@@ -548,7 +556,8 @@ set -g hydro_color_pwd \"brcyan\"
 set -g fish_key_bindings fish_vi_key_bindings
 set -g fish_term24bit 1")
 		       ))))
-    %base-home-services)))
+    %base-home-services
+    )))
 
 ;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
 ;; TODO: Create wrapper for this.
