@@ -170,7 +170,8 @@
 
 (define %emacs
   (list
-   emacs-next-pgtk
+   ;; emacs-next-pgtk
+   emacs-master-pgtk
    emacs-guix
    ;; emacs-arei
    emacs-debbugs
