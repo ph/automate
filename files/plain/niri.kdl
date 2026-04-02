@@ -51,7 +51,11 @@
       keyboard {
           repeat-delay 180
           repeat-rate 20
-      }
+	  xkb {
+		layout "us,ca(fr)"
+		options "ctrl:nocaps,grp:win_space_toggle"
+	    }
+	  }
 
       touchpad {
           tap
