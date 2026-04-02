@@ -6,7 +6,7 @@
   #:use-module (heyk gnu packages fish)
   #:use-module (heyk gnu home services fish)
   #:use-module (heyk gnu home services avizo)
-  #:use-module (heyk gnu home services mako)
+  ;; #:use-module (heyk gnu home services mako)
   #:use-module (heyk gnu home services waybar)
   #:use-module (heyk gnu home services zathura)
   #:use-module (heyk gnu packages fonts)
@@ -39,6 +39,7 @@
   #:use-module (gnu packages engineering)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages electronics)
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages glib)
@@ -371,7 +372,7 @@
       ($mod+d . ,#~(string-append "exec " #$rofi "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
       ;; ($mod+d . ,#~(string-append "exec XDG_DATA_DIRS=\"$HOME/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:$HOME/.guix-home/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share:$HOME/.guix-profile/share:/run/current-system/profile/share\" " #$rofi-wayland "/bin/rofi -modi drun -show drun -show-icons -matching fuzzy"))
 
-      ($mod+Shift+d . ,#~(string-append "exec " #$mako "/bin/makoctl dismiss -a"))
+      ;; ($mod+Shift+d . ,#~(string-append "exec " #$mako "/bin/makoctl dismiss -a"))
 
       ($mod+e . "layout toggle split")
       ($mod+f . "fullscreen toggle")
@@ -527,7 +528,7 @@
 		"niri.kdl"
 		(local-file "../files/plain/niri.kdl")
 		(list xwayland-satellite)))))
-    (service home-mako-service-type)
+    ;; (service home-mako-service-type)
     (service home-noctalia-shell-service-type)
     (service home-polkit-gnome-service-type)
     (service home-zathura-service-type)
