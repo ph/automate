@@ -149,3 +149,18 @@ output "DP-3" {
       Ctrl+Print                     { screenshot-screen; }
       Alt+Print                      { screenshot-window; }
   }
+
+window-rule {
+  match app-id="signal"
+  match title="Signal"
+  open-floating true
+  min-width 400
+  min-height 400
+}
+
+window-rule {
+    match app-id="zoom"
+    open-floating true
+}
+
+spawn-at-startup "signal-desktop --use-tray-icon"
