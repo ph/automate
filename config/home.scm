@@ -527,7 +527,8 @@
 	       (computed-substitution-with-inputs
 		"niri.kdl"
 		(local-file "../files/plain/niri.kdl")
-		(list xwayland-satellite)))))
+		(list xwayland-satellite
+		      signal-desktop)))))
     ;; (service home-mako-service-type)
     (service home-noctalia-shell-service-type)
     (service home-polkit-gnome-service-type)
