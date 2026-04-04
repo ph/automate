@@ -42,7 +42,7 @@
 (elpaca `(,@elpaca-order))
 
 (elpaca elpaca-use-package
-	(elpaca-use-package-mode))
+  (elpaca-use-package-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -351,8 +351,8 @@
 (defvar global-eldoc-mode nil)
 
 (elpaca eldoc
-	(require 'eldoc)
-	(global-eldoc-mode)) ;; This is usually enabled by default by Emacs
+  (require 'eldoc)
+  (global-eldoc-mode)) ;; This is usually enabled by default by Emacs
 
 (use-package jsonrpc :ensure (:wait t) :defer t)
 
@@ -467,13 +467,35 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package catppuccin-theme
+;; (use-package catppuccin-theme
+;;   :ensure t
+;;   :config
+;;   ;; (setq catppuccin-flavor 'latte) ;; or 'latte, 'macchiato, or 'mocha
+;;   (setq catppuccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
+;;   (load-theme 'catppuccin :no-confirm)
+;;   (catppuccin-reload))
+
+(use-package ef-themes
   :ensure t
+  :init
+  ;; This makes the Modus commands listed below consider only the Ef
+  ;; themes.  For an alternative that includes Modus and all
+  ;; derivative themes (like Ef), enable the
+  ;; `modus-themes-include-derivatives-mode' instead.  The manual of
+  ;; the Ef themes has a section that explains all the possibilities:
+  ;;
+  ;; - Evaluate `(info "(ef-themes) Working with other Modus themes or taking over Modus")'
+  ;; - Visit <https://protesilaos.com/emacs/ef-themes#h:6585235a-5219-4f78-9dd5-6a64d87d1b6e>
+  (ef-themes-take-over-modus-themes-mode 1)
   :config
-  ;; (setq catppuccin-flavor 'latte) ;; or 'latte, 'macchiato, or 'mocha
-  (setq catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
-  (load-theme 'catppuccin :no-confirm)
-  (catppuccin-reload))
+  ;; All customisations here.
+  (setq modus-themes-mixed-fonts t)
+  (setq modus-themes-italic-constructs t)
+
+  ;; Finally, load your theme of choice (or a random one with
+  ;; `modus-themes-load-random', `modus-themes-load-random-dark',
+  ;; `modus-themes-load-random-light').
+  (modus-themes-load-theme 'ef-spring))
 
 (use-package highlight-parentheses
   :ensure t

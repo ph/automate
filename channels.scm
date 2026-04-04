@@ -65,8 +65,22 @@
 	(openpgp-fingerprint
 	  "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4")))))
 
+;; Expose BLUE - Build Language User Extensible. A generic build-system crafted
+;; entirely in Guile. 
+(define %bluebox-channel
+  (channel
+   (name 'bluebox)
+   (branch "main")
+   (url "https://codeberg.org/lapislazuli/bluebox")
+   (introduction
+    (make-channel-introduction
+     "63350484aaacc362aea28fb14236019fced4050f"
+     (openpgp-fingerprint
+      "5132 3571 CEED 988F 52FC 467C 6F98 DBF3 EA7F 4B37")))))
+
 (list %guix-channel
       %nonguix-channel
       %rosenthal-channel
       %heyk-channel
-      %emacs-master-channel)
+      %emacs-master-channel
+      %bluebox-channel)

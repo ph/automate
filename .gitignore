@@ -10,3 +10,4 @@
 *.qcow2
 /target/
 /tangle-test/
+/.blue-store/

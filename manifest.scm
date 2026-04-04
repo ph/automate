@@ -8,5 +8,6 @@
 
 (specifications->manifest (list "cmake"
 				"reuse"
+				"blue"
 				"guile-next"
 				"guile-ares-rs"))

@@ -1,0 +1,88 @@
+#+TITLE: Emacs configuration
+#+PROPERTY: header-args :mkdirp yes :noweb-prefix no
+
+* Templates
+
+** Emacs
+
+#+begin_src emacs-lisp :tangle ../target/tangled/early-init.el :noweb yes :mkdirp yes
+  ;;; -*- lexical-binding: t; -*- 
+  <<early-init-el>>
+  ;;; early-init.el ends here
+#+end_src
+
+#+begin_src emacs-lisp :tangle ../target/tangled/init.el :noweb yes :mkdirp yes
+  ;;; -*- lexical-binding: t; -*- 
+  <<init.el>>
+  ;;; early-init.el ends here
+#+end_src
+
+** Guix packages
+
+#+begin_src scheme :tangle ../target/tangled/emacs.scm :noweb yes :mkdirp yes
+  (define %emacs-packages
+    <<packages>>)
+#+end_src
+
+
+* Configuration
+
+** Early disable stuff
+
+#+begin_src emacs-lisp :tangle :noweb-ref early-init.el
+  (setq inhibit-splash-screen t ;; Replaced by my own.
+	use-file-dialog nil) ;; make the UI cleaner.
+#+end_src
+
+** Keep track of the load time
+
+Simple sanity check to see if my configuration is just growing out of control.
+
+#+begin_src emacs-lisp :noweb-ref early-init.el
+  (add-hook 'emacs-startup-hook
+	  (lambda ()
+	    (message "Configuration loaded in %s."
+		     (emacs-init-time))))
+#+end_src
+
+** Set a custom file
+
+#+begin_src emacs-lisp :noweb-ref init.el
+  (setopt custom-file (locate-user-emacs-file "custom.el"))
+  (if (not (file-exists-p custom-file))
+      (make-empty-file custom-file)
+    (load custom-file))
+    #+end_src
+
+** no-littering
+
+Ensure paths used to store configurations files and persistent
+data are consistent.
+
+url: https://github.com/emacscollective/no-littering
+
+#+begin_src scheme :noweb-ref packages
+  "emacs-no-littering"
+#+end_src
+
+  #+begin_src emacs-lisp :noweb-ref init.el
+    (use-package no-littering
+      :config
+      (no-littering-theme-backups))
+#+end_src
+
+** GCMH
+
+Enforce a sneaky Garbage Collection strategy to minimize GC interference with user activity.
+
+url :https://github.com/emacsmirror/gcmh
+
+#+begin_src scheme :noweb-ref packages
+  "emacs-gcmh"
+  #+end_src
+
+  #+begin_src emacs-lisp :noweb-ref init.el
+    (use-package gcmh
+      :config
+      (gcmh-mode 1))
+#+end_src

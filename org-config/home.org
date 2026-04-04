@@ -164,7 +164,7 @@
 ** Vim
 
 #+begin_src scheme :noweb-ref modules
-(gnu packages vim)
+  (gnu packages vim)
   #+end_src
 
 #+begin_src scheme :noweb-ref packages
@@ -322,12 +322,13 @@
 
  #+begin_src scheme :noweb-ref home-services
    (service home-niri-service-type
-	 (home-niri-configuration
-	  (config
-	   (computed-substitution-with-inputs
-	    "niri.kdl"
-	    (local-file "../files/plain/niri.kdl")
-	    (list xwayland-satellite)))))
+   	 (home-niri-configuration
+   	  (config
+   	   (computed-substitution-with-inputs
+   	    "niri.kdl"
+   	    (local-file "../files/plain/niri.kdl")
+   	    (list xwayland-satellite
+   		  signal-desktop)))))
 #+end_src
 
 ** Mako
@@ -367,19 +368,13 @@
   #+end_src
 
  #+begin_src scheme :noweb-ref home-services
-    (service home-zathura-service-type)
+   (service home-zathura-service-type)
 #+end_src
 
 ** Pipewire
 
 #+begin_src scheme :noweb-ref home-services
   (service home-pipewire-service-type)
-#+end_src
-
-** Batsignal
-
-#+begin_src scheme :noweb-ref home-services
-  (service home-batsignal-service-type)
 #+end_src
 
 ** Fish shell

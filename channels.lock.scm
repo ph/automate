@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "cfbc7247fe5585cc370c43582e2d3ea66969df90")
+       (commit "02c36a8ad87a4018d310fde26d5e0cd07fa7066b")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "29815e5cf927032960e0b6f22bb62a9f7e531bc9")
+       (commit "64abd7d6722596fc61ec1e12446e7ad4a81cae9a")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,7 +22,7 @@
        (name 'rosenthal)
        (url "https://github.com/rakino/Rosenthal")
        (branch "trunk")
-       (commit "9d95263fcf4d0158477ccbb51712b17f2b642eb5")
+       (commit "93c76b13ae1a1f3b48229ee4e25c95ac0bdd9b47")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
@@ -47,6 +47,16 @@
         (make-channel-introduction
          "568579841d0ca41a9d222a2cfcad9a7367f9073b"
          (openpgp-fingerprint
-          "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4")))))
+          "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
+      (channel
+       (name 'bluebox)
+       (url "https://codeberg.org/lapislazuli/bluebox")
+       (branch "main")
+       (commit "f7f3b1565d626099dd68aae20abb36371ab8a9af")
+       (introduction
+        (make-channel-introduction
+         "63350484aaacc362aea28fb14236019fced4050f"
+         (openpgp-fingerprint
+          "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37")))))
 
 ;; warning: GUIX_PACKAGE_PATH="/home/ph/src/automate/modules:"
