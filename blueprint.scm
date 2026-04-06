@@ -1,64 +1,69 @@
 (use-modules
- (blue oop)
  (blue build)
- (blue subprocess)
  (blue computation)
+ (blue configuration find)
+ (blue configuration states)
+ (blue file-system path)
+ (blue configuration find)
+ (blue oop)
  (blue preferences)
+ (blue stencils standard configuration)
+ (blue types blueprint)
  (blue types buildable)
  (blue types configuration)
  (blue types variable)
- (blue types blueprint)
+ (blue utils strings)
+ (srfi srfi-1)
  (oop goops))
 
-;; Based on https://codeberg.org/lapislazuli/blue/src/branch/main/blue/stencils/tarball.scm
 (define-preferences
   (blue.stencils.tangle:emacs
-   #:default (const (delay (or (getenv "EMACS-PROGRAM") "emacs")))
+   #:default (const (delay (or (getenv "EMACS") (find-binary "emacs"))))
    #:valid-values string?
-   #:documentation "The binary to use for emacs, 'EMACS' if the environment is defined otherwise 'emacs'"))
+   #:documentation "The binary to use for `emacs(1)`.  `emacs' if the environment is defined, otherwise
+`emacs'."))
 
 (define-blue-class <tangle> (<buildable>)
-  (options
-   #:getter tangle-options
-   #:init-value '()
-   #:init-keyword #:options
-   #:type (list-of? string?))
-  (emacs-program
-   #:getter tangle-emacs-program
-   #:init-value #%~#%?EMACS-PROGRAM
-   #:init-keyword #:options
-   #:type (list-of? string?)))
+  (executable
+   #:getter tangle-executable
+   #:init-value #%~#%?EMACS
+   #:init-keyword #:executable
+   #:type string?))
 
 (define %tangle-configuration
   (configuration
    (variables
     (list
      (variable
-      (name "EMACS-PROGRAM")
-      (value (delay (blue.stencils.tangle:emacs-program))))))))
+      (name "EMACS")
+      (value (delay (blue.stencils.tangle:emacs))))))))
 
-(define-method (ask-build-configuration (this <tangle>))
+(define-method (ask-build-configurations (this <tangle>))
   (list %tangle-configuration))
 
-(define-method (ask-build-manifest (this <tangle>)
-				   (input <string>)
-				   (output <string>))
+(define-method (ask-build-manifest (this <tangle>) (inputs <list>) (outputs <list>))
   (make-build-manifest
-   (format #f "TANGLE\t~a to ~a" input output)
-   (lambda ()
-     `(popen "emacs"
-	     ("--quick"
-	      "--batch"
-	      "--load" "ob-tangle"
-	      "--eval" "(setopt org-babel-load-languages '((shell . t)))"
-	      "--eval" "(setopt org-confirm-babel-evaluate nil)"
-	      "--eval" "(setopt org-id-track-globally nil)"
-	      "--eval" ,(format #f "(org-babel-tangle-file ~s)" input))))))
+   (format #f "TANGLE ~a to ~a" (string-join inputs ",") (string-join outputs ","))
+   (lambda()
+     `((tangle-executable this) ,@(emacs-arguments (first inputs))))))
 
-(define tangle-home
+(define (emacs-arguments file)
+  `(list "--quick"
+	 "--batch"
+	 "--load" "ob-tangle"
+	 "--eval" "(setopt org-babel-load-languages '((shell . t)))"
+	 "--eval" "(setopt org-confirm-babel-evaluate nil)"
+	 "--eval" "(setopt org-id-track-globally nil)"
+	 "--eval" ,(format #f "(org-babel-tangle-file ~s)" file)))
+
+(define %guix-emacs-minimal
+  "guix shell emacs-minimal -- emacs")
+
+(define tangle-emacs
   (tangle
-   (inputs (list "org-config/home.org"))
-   (outputs (list "target/tangled/home.scm"))))
+   (inputs '("org-config/home.org"))
+   (outputs '("home.scm"))
+   (executable %guix-emacs-minimal)))
 
 (blueprint
- (buildables (list tangle-home)))
+ (buildables (list tangle-emacs)))
