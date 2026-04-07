@@ -3,43 +3,49 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (automate common)
-  #:use-module (gnu)
   #:use-module (gnu packages display-managers)
+  #:use-module (gnu packages fonts)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages libusb)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages networking)
-  #:use-module (gnu packages fonts)
   #:use-module (gnu packages nfs)
+  #:use-module (gnu packages shells)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages)
-  #:use-module (guix packages)
-  #:use-module (gnu services)
   #:use-module (gnu services avahi)
   #:use-module (gnu services base)
   #:use-module (gnu services dbus)
   #:use-module (gnu services desktop)
   #:use-module (gnu services docker)
   #:use-module (gnu services linux)
-  #:use-module (gnu services sysctl)
-  #:use-module (gnu system shadow)
-  #:use-module (gnu packages shells)
-  #:use-module (nongnu packages video)
+  #:use-module (gnu services mcron)
   #:use-module (gnu services nix)
   #:use-module (gnu services pm)
-  #:use-module (gnu services mcron)
   #:use-module (gnu services sound)
+  #:use-module (gnu services sysctl)
   #:use-module (gnu services xorg)
+  #:use-module (gnu services)
   #:use-module (gnu system setuid)
+  #:use-module (gnu system shadow)
+  #:use-module (gnu system accounts)
+  #:use-module (gnu system)
+  #:use-module (gnu)
   #:use-module (guix channels)
   #:use-module (guix gexp)
-  #:use-module (rosenthal services networking)
   #:use-module (guix inferior)
+  #:use-module (guix packages)
+  #:use-module (nongnu packages video)
+  #:use-module (rosenthal services networking)
   #:use-module (srfi srfi-1)
   #:export (%ph
 	    %my-packages
 	    %probe-rs-udev-rules
 	    %my-system-services
+	    %sudoers-default-content
+	    sudoers-content-for-users
+	    sudoers-content-for-username
+	    sudoers-content-for-groups
 	    btrfs-maintenance-service))
 
 (use-service-modules cups
@@ -73,12 +79,23 @@
 	    (jobs
 	     (apply append (map btrfs-maintenance-jobs mount-points))))))
 
+(define (sudoers-content-for-account-names names)
+  (map  (lambda (name) (format #f "~a ALL=(ALL) ALL" name)) names))
+
+(define (sudoers-content-for-groups groups)
+  (map  (lambda (group) (format #f "%~a ALL=(ALL) ALL" group)) groups))
+
+(define (sudoers-content-for-users users)
+  (sudoers-content-for-account-names (map user-account-name users)))
+
+(define %sudoers-default-content
+  (append (sudoers-content-for-account-names (list "root"))
+	  (sudoers-content-for-groups (list "wheel"))))
 
 (define %ph
   (user-account
    (name "ph")
    (comment "Pier-Hugues Pellerin")
-   ;; (shell (file-append zsh "/bin/zsh"))
    (shell (file-append fish "/bin/fish"))
    (group "users")
    (home-directory "/home/ph")

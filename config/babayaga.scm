@@ -53,6 +53,13 @@
 	  %base-groups))
  (users (cons* %ph
 	       %base-user-accounts))
+
+ (sudoers-file
+  (plain-file "sudoers"
+	      (string-join
+	       (append %sudoers-default-content
+		       (sudoers-content-for-users (list %ph)))
+	       "\n")))
  (packages (append
 	    %my-packages
 	    %base-packages))
