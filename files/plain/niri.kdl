@@ -80,7 +80,7 @@ output "DP-1" {
 
 output "DP-3" {
     scale 1.4
-    transform "270"
+    transform "90"
     position x=0 y=0
 }
 
