@@ -1061,7 +1061,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :ensure t
   :after (org)
   :init
-  (setq org-roam-v2-ack t)
+  ;; (setq org-roam-v2-ack t)
   :custom
   (org-roam-directory "~/src/notes/roam")
   (org-roam-setup))
@@ -1070,22 +1070,31 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :mode
   ("\\.org\\'" . org-mode)
   :config
-  (setq org-capture-templates
-	'(("t" "Todo" entry (file+headline "~/notes/inbox.org" "Inbox")
-	   "* TODO %?\n  %i\n  %a")))
-  (setq org-todo-keywords
-	'((sequence "TODO(t)" "|" "WIP(w)" "|" "DONE(d)")
-	  (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")
-	  (sequence "|" "CANCELED(c)")))
 
-  (defun ph/capture-todo ()
-    (interactive)
-    (org-capture nil "t"))
+  (setq org-directory (expand-file-name "src/notes" (getenv "HOME")))
+  (setq org-agenda-files (list org-directory))
+
+  (setq org-capture-templates
+	`(("i" "📥 Inbox" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
+	   "**  %?\n%i\n%a" :preprend t :jump-to-captured t)))
+
+  (setq org-todo-keywords
+	'((sequence "TODO(t)" "|" "NEXT(n)"  "|" "PROGRESS(p)" "|" "WAIT(w)" "|" "HOLD(h)" "|" "DELEGATED(l)" "|" "DONE(d)" "|" "KILL(k)")))
+  
+  (setq org-refile-targets
+	`((,(expand-file-name "todo.org" org-directory) :maxlevel . 1))
+	org-refile-use-outline-path 'file
+	org-outline-path-complete-in-steps nil)
+
+  (setq org-archive-location (concat (expand-file-name "archives.org" org-directory) "::datetree/* Archived Tasks"))
+
+  ;; ensure files is saved after refile
+  (add-hook 'org-after-refile-insert-hook #'save-buffer)
 
   (ph/leader-key
     "x" '(:ignore t :wk "org")
     "xc" '(org-capture :wk "capture")
-    "xt" '(ph/capture-todo :wk "capture todo")
+    "xi" '((lambda () (interactive) (org-capture nil "i")) :wk "capture todo")
     "xn" '(org-roam-capture :wk "new note")
     "xf" '(org-roam-find-file :wk "find note")))
 
@@ -1150,10 +1159,5 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :bind
   ("C-<prior>" . centaur-tabs-backward)
   ("C-<next>" . centaur-tabs-forward))
-
-(setq org-todo-keywords
-      '((sequence "TODO(t)" "|" "DONE(d)")
-        (sequence "REPORT(r)" "BUG(b)" "KNOWNCAUSE(k)" "|" "FIXED(f)")
-        (sequence "|" "CANCELED(c)")))
 
 ;;; init.el ends here
