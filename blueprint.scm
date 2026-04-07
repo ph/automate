@@ -12,6 +12,7 @@
  (blue types buildable)
  (blue types configuration)
  (blue types variable)
+ (blue types command)
  (blue utils strings)
  (blue subprocess)
  (srfi srfi-1)
@@ -54,7 +55,6 @@
   (make-build-manifest
    (format #f "TANGLE ~a to ~a" (string-join inputs ",") (string-join outputs ","))
    (lambda()
-
      (run (append (tangle-executable this)
 		  (emacs-arguments (first inputs)))))))
 
@@ -67,15 +67,32 @@
 	"--eval" "(setopt org-id-track-globally nil)"
 	"--eval" (format #f "(org-babel-tangle-file ~s)" file)))
 
+(define %channels "channels.lock.scm")
+
 (define %guix-emacs-minimal
-  '("guix" "shell" "emacs-minimal" "--" "emacs"))
+  (list "guix" "shell" "emacs-minimal" "--" "emacs"))
+
+(define ($guix arguments)
+  (run `("guix" "time-machine" "-C" ,%channels "--load-path=modules" "--" ,@arguments)))
 
 (define tangle-emacs
   (tangle
    (inputs '("org-config/home.org"))
    (outputs '("home.scm"))
-   ;; (executable '("emacs"))
-   ))
+   (executable %guix-emacs-minimal)))
+
+(define %machines
+  `( "deploy/azzael.scm"
+    "deploy/lusk.scm"))
+
+(define-command (deploy-command arguments)
+  ((invoke "deploy")
+   (category 'machines)
+   (synopsis (format #f "deploy to ~a" "deploy/lusk.scm")))
+  (map (lambda (file)
+	 ($guix `("deploy" ,file)))
+       %machines))
 
 (blueprint
+ (commands (list deploy-command))
  (buildables (list tangle-emacs)))
