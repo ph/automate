@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "894c4324caaec6abf086b671af73e14ebca2e82c")
+       (commit "7f849f7ba295a29889c361933bae187a1eb751e7")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "1ceaab0101dbcd6fd359cb40432d3a782363a97f")
+       (commit "c4541fdb0b472664dafe5d7b1ec2e51e4ef7b772")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,7 +22,7 @@
        (name 'rosenthal)
        (url "https://github.com/rakino/Rosenthal")
        (branch "trunk")
-       (commit "e899a34d8ede41fd0face974634392b2afec8c48")
+       (commit "a2fee8a41553036f8e57876c75341c7d4b394a0a")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
@@ -42,11 +42,21 @@
        (name 'emacs-master)
        (url "https://github.com/gs-101/emacs-master.git")
        (branch "main")
-       (commit "a4c7113329460ab1ef2fc902716e0598195d542f")
+       (commit "33ba2fd98d577e9c4f9c86222c7f07451a70dc21")
        (introduction
         (make-channel-introduction
          "568579841d0ca41a9d222a2cfcad9a7367f9073b"
          (openpgp-fingerprint
-          "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4")))))
+          "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
+      (channel
+       (name 'bluebox)
+       (url "https://codeberg.org/lapislazuli/bluebox")
+       (branch "main")
+       (commit "f7f3b1565d626099dd68aae20abb36371ab8a9af")
+       (introduction
+        (make-channel-introduction
+         "63350484aaacc362aea28fb14236019fced4050f"
+         (openpgp-fingerprint
+          "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37")))))
 
 ;; warning: GUIX_PACKAGE_PATH="/home/ph/src/automate/modules:"
