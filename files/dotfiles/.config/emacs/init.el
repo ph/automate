@@ -502,21 +502,6 @@
   :config
   (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
-;; Spacious-padding: add more space around UI elements.
-;; (use-package spacious-padding
-;;   :ensure t
-;;   :custom
-;;   (setq
-;;    ;; spacious-padding-subtle-mode-line `(:mode-line-active 'default :mode-line-inactive vertical-border)
-;;    spacious-padding-widths `(:internal-border-width 0))
-;;   :init
-;;   (spacious-padding-mode 1))
-
-;; (use-package mood-line
-;;   :ensure t
-;;   :init
-;;   (mood-line-mode))
-
 (use-package lambda-line
   :ensure (lambda-line :ensure t :host github :repo "lambda-emacs/lambda-line")
   :custom
@@ -617,32 +602,6 @@
 
 (use-package protobuf-mode
   :ensure t)
-
-(use-package copilot
-  :ensure (copilot :ensure t :host github :repo "zerolfx/copilot.el")
-  :hook
-  (prog-mode . (lambda () (when ph/copilot-enabled (copilot-mode))))
-  :general
-  (ph/leader-key
-    "cc" '(lambda()
-	    (interactive)
-	    (setq ph/copilot-enabled (not ph/copilot-enabled))
-	    (message (if ph/copilot-enabled "Enabled copilot-mode" "Disabled copilot-mode"))
-	    (copilot-mode (if ph/copilot-enabled 1 -1))))
-  :bind
-  (:map copilot-completion-map
-	("<right>" . 'copilot-accept-completion)
-	("C-<return>" . 'copilot-accept-completion)
-	("S-TAB" . 'copilot-accept-completion-by-word)
-	("S-<tab>" . 'copilot-accept-completion-by-word)
-	("C-g" . #'copilot-clear-overlay)
-	("C-n" . #'copilot-next-completion)
-	("C-p" . #'copilot-previous-completion))
-  :init
-  (setq ph/copilot-enabled nil)
-  :config
-  (setq copilot-completion-style 'overlay)
-  (setq copilot-node-executable "~/.guix-home/profile/bin/nodeq"))
 
 (use-package savehist
   :ensure nil
@@ -956,7 +915,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :general
   :config
   (add-hook 'after-save-hook 'magit-after-save-refresh-status t)
-  ;; (add-to-list 'git-commit-finish-query-functions #'my-git-commit-check-style-conventions)
   (ph/leader-key
     "g"  '(:ignore t :wk "magit")
     "gg" '(magit :wk "magit status")
@@ -967,7 +925,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 (use-package forge
   :ensure t
   :after magit)
-
 
 (use-package circe
   :ensure t
@@ -1056,7 +1013,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
       message-sendmail-extra-arguments '("--read-envelope-from")
       message-send-mail-function #'message-send-mail-with-sendmail)
 
-
 (use-package org-roam
   :ensure t
   :after (org)
@@ -1119,19 +1075,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 (use-package consult-flycheck
   :ensure t)
 
-(use-package aidermacs
-  :ensure (aidermacs :host github :repo "MatthewZMD/aidermacs")
-  :bind (("C-c a" . aidermacs-transient-menu))
-  :config
-  (ph/leader-key
-    "ag" '(aidermacs-transient-menu :wk "AI"))
-  (add-hook 'aidermacs-before-run-backend-hook
-	    (lambda ()
-	      (setenv "OPENAI_API_KEY" (password-store-get "open_ai"))))
-  :custom
-  (aidermacs-use-architect-mode t)
-  (aidermacs-default-model "o3-mini"))
-
 (use-package jsonnet-mode
   :ensure t)
 
@@ -1150,14 +1093,4 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 (use-package flymake-guile
   :ensure t
   :hook (scheme-mode-hook . flymake-guile))
-
-(use-package centaur-tabs
-  :ensure t
-  :config
-  (centaur-tabs-mode t)
-  (setq centaur-tab-style "rounded")
-  :bind
-  ("C-<prior>" . centaur-tabs-backward)
-  ("C-<next>" . centaur-tabs-forward))
-
 ;;; init.el ends here
