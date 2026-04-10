@@ -132,7 +132,8 @@
     (run-with-idle-timer 15 t
 			 (lambda ()
                            (message "Garbage Collector has run for %.06fsec"
-                                    (k-time (garbage-collect)))))))
+                                    (k-time (garbage-collect))))))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; keybinds
@@ -1049,6 +1050,9 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
   (ph/leader-key
     "x" '(:ignore t :wk "org")
+    "xo" '((lambda ()
+	     (interactive)
+	     (find-file-other-window (expand-file-name "todo.org" org-directory))) :wk "open todo" )
     "xc" '(org-capture :wk "capture")
     "xi" '((lambda () (interactive) (org-capture nil "i")) :wk "capture todo")
     "xn" '(org-roam-capture :wk "new note")
