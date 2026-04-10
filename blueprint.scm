@@ -19,6 +19,9 @@
  (ice-9 match)
  (oop goops))
 
+
+;; based on Blue's team fosdem presentation
+;; see: https://fosdem.org/2026/schedule/event/3A7VGM-blue/
 (define-preferences
   (blue.stencils.tangle:emacs
    #:default (const (delay (list (or (getenv "EMACS")
@@ -82,7 +85,7 @@
    (executable %guix-emacs-minimal)))
 
 (define %machines
-  `( "deploy/azzael.scm"
+  `("deploy/azzael.scm"
     "deploy/lusk.scm"))
 
 (define-command (deploy-command arguments)

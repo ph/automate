@@ -221,10 +221,4 @@
 		 (options "size=40G")
 		 (check? #f))
 
-		(file-system
-		 (mount-point "/mnt/music")
-		 (device "192.168.1.152:volume1/Music")
-		 (create-mount-point? #t)
-		 (type "nfs4"))
-
 		%base-file-systems)))

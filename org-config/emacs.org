@@ -56,7 +56,7 @@ Simple sanity check to see if my configuration is just growing out of control.
 
 ** no-littering
 
-Ensure paths used to store configurations files and persistent
+Ensure paths used to store configurations files and persisted
 data are consistent.
 
 url: https://github.com/emacscollective/no-littering
@@ -84,5 +84,93 @@ url :https://github.com/emacsmirror/gcmh
   #+begin_src emacs-lisp :noweb-ref init.el
     (use-package gcmh
       :config
-      (gcmh-mode 1))
+      (gcmh-mode 1)
+      (defmacro k-time (&rest body)
+	"Measure and return the time it takes evaluating BODY."
+	`(let ((time (current-time)))
+	   ,@body
+	   (float-time (time-since time))))
+
+      ;; Set garbage collection threshold to 1GB.
+      (setq gc-cons-threshold #x40000000)
+
+      ;; When idle for 15sec run the GC no matter what.
+      (defvar k-gc-timer
+        (run-with-idle-timer 15 t
+    			 (lambda ()
+                               (message "Garbage Collector has run for %.06fsec"
+                                        (k-time (garbage-collect)))))))
+	   #+end_src
+
+** Emacs
+
+#+begin_src emacs-lisp :noweb-ref init.el
+   (use-package emacs
+     :custom
+     ;; TAB cycle if there are only few candidates
+     ;; (completion-cycle-threshold 3)
+
+     ;; Enable indentation+completion using the TAB key.
+     ;; `completion-at-point' is often bound to M-TAB.
+     (tab-always-indent 'complete)
+
+     ;; Emacs 30 and newer: Disable Ispell completion function.
+     ;; Try `cape-dict' as an alternative.
+     (text-mode-ispell-word-completion nil)
+
+     ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+     ;; commands are hidden, since they are not used via M-x. This setting is
+     ;; useful beyond Corfu.
+     (read-extended-command-predicate #'command-completion-default-include-p)
+     (add-hook 'scheme-mode-hook 'guix-devel-mode)
+
+     (fset 'yes-or-no-p 'y-or-n-p)
+     :config
+     (setq
+      ;; evil-want-keybinding nil
+      custom-file null-device
+      compilation-always-kill t
+      byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local)
+      compilation-ask-about-save nil
+      native-comp-async-report-warnings-errors nil
+      load-prefer-newer t
+      backup-directory-alist '((".*" . (expand-file-name (getenv "HOME") ".config/emacs-backup"))
+      revert-without-query '(".*")
+      make-backup-files nil
+      inhibit-splash-screen t
+      create-lockfiles nil
+      auto-save-default nil
+      make-backup-files nil
+      minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt)
+      enable-recursive-minibuffers t
+      bidi-inhibit-bpa t
+      bidi-paragraph-direction 'left-to-right)
+     (tool-bar-mode -1)
+     (menu-bar-mode -1)
+     (scroll-bar-mode -1)
+     (electric-pair-mode 1)
+     (global-auto-revert-mode 1)
+     (global-hl-line-mode)
+     (global-display-line-numbers-mode t)
+     (pixel-scroll-precision-mode)
+     (transient-mark-mode 1)
+     src-directory (expand-file-name (getenv "HOME") "src")
+
+     ;; configure geiser, do not start it automatically because I prefer arei,
+     ;; buts make sure the path are configured.
+     geiser-mode-auto-p nil
+     (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path (expand-file-name src-directory "automate/modules")))
+     (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path (expand-file-name src-directory "guix")))
+     (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path (expand-file-name src-directory "nonguix")))
+
+     (defun ask-user-about-supersession-threat (fn) "ignore")
+     (add-hook 'prog-mode-hook 'display-line-numbers-mode)
+     (add-to-list 'default-frame-alist '(alpha-background . 95))
+     (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+     (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 10"))
+     (set-frame-parameter nil 'alpha-background 95)
+     (add-to-list 'default-frame-alist '(alpha-background . 95))
+     (require 'midnight))
 #+end_src
+
+** Keybinds
