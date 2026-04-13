@@ -1,8 +1,8 @@
 (list (channel
        (name 'guix)
-       (url "https://git.guix.gnu.org/guix.git")
+       (url "https://codeberg.org/guix/guix.git")
        (branch "master")
-       (commit "02c36a8ad87a4018d310fde26d5e0cd07fa7066b")
+       (commit "5fe112e4fa22537a50a6264d4e19969bacda620a")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "64abd7d6722596fc61ec1e12446e7ad4a81cae9a")
+       (commit "5d8b56d6a07cdc1aa3022737c32ccb95f08aef08")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -20,9 +20,9 @@
           "2A39 3FFF 68F4 EF7A 3D29  12AF 6F51 20A0 22FB B2D5"))))
       (channel
        (name 'rosenthal)
-       (url "https://github.com/rakino/Rosenthal")
+       (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "93c76b13ae1a1f3b48229ee4e25c95ac0bdd9b47")
+       (commit "54137b18ef1a56fe4065f4298f971d411a15c151")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
@@ -42,7 +42,7 @@
        (name 'emacs-master)
        (url "https://github.com/gs-101/emacs-master.git")
        (branch "main")
-       (commit "cf704de4b2aca385c693e4aa5d4e645c4480aca4")
+       (commit "4450a0c9230a6db5a3eaaf81fcf8f0bf64a798e9")
        (introduction
         (make-channel-introduction
          "568579841d0ca41a9d222a2cfcad9a7367f9073b"
