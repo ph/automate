@@ -94,7 +94,6 @@
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix store)
-  #:use-module (nongnu packages game-client)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
   #:use-module (rosenthal packages rust-apps)
@@ -242,7 +241,8 @@
 (define %games
   (list scummvm
 	bsnes
-	steam))
+	;; steam
+	))
 
 (define %multimedia
   (list
