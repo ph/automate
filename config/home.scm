@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (home)
+  #:use-module ((guix licenses) #:prefix license:)
   #:use-module (heyk gnu packages fish)
   #:use-module (heyk gnu home services fish)
   #:use-module (heyk gnu home services avizo)
@@ -91,6 +92,7 @@
   #:use-module (gnu system keyboard)
   #:use-module (gnu system shadow)
   #:use-module (guix channels)
+  #:use-module (guix build-system emacs)
   #:use-module (guix gexp)
   #:use-module (guix packages)
   #:use-module (guix store)
@@ -98,7 +100,145 @@
   #:use-module (nongnu packages mozilla)
   #:use-module (rosenthal packages rust-apps)
   #:use-module (rosenthal services desktop)
-  #:use-module (rosenthal utils file))
+  #:use-module (rosenthal utils file)
+  #:use-module (guix git-download))
+
+;; Use git version for emacs-evil so it can run on emacs 31.
+(define emacs-evil/ph
+  (let ((revision  "0")
+	(commit "729d9a58b387704011a115c9200614e32da3cefc")
+	(sha "0scdws40fg4k9lqyznjghnn8svn7l0c6mq7h2aq5pzkm6hanzqn3"))
+    (package
+     (inherit emacs-evil)
+     (name "emacs-evil-ph")
+     (version (git-version "1.15.0" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/emacs-evil/evil")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 sha))))
+      (arguments
+       `(
+	 ;; Turning off the suite since the test suite required eask-cli
+	 ;; to run them. This is a nodejs application which are notoriously hard to package.
+	 ;; There is an open PR at https://codeberg.org/guix/guix/pulls/2792
+	 #:tests? #f
+         #:phases
+         (modify-phases %standard-phases
+           (add-before 'check 'fix-test-helpers
+             (lambda _
+               (substitute* "evil-test-helpers.el"
+                 (("\\(undo-tree-mode 1\\)") ""))
+               #t))
+           (add-before 'install 'make-info
+             (lambda _
+               (with-directory-excursion "doc/build/texinfo"
+                   (invoke "makeinfo" "--no-split"
+                           "-o" "evil.info" "evil.texi"))))))))))
+
+(define emacs-evil-collection/ph
+  (let ((revision "0")
+	(commit "4ad1646964638322302dfb167aec40a2455bfb78")
+	(sha "0ajb81dp7qfn5x0bjgjqmwqqvqfmwfpk2rpkd6dl0h0j7bbl1v51"))
+    (package
+     (inherit emacs-evil-collection)
+     (name "emacs-evil-collection-ph")
+     (version (git-version "0.0.10" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/emacs-evil/evil-collection")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 sha)))))))
+
+(define emacs-modus-catppuccin-themes/ph
+  (let ((commit "e1810f7a854aa5e5dff7d68e6c3c628777d22d4d")
+	(revision "0")
+	(sha "1g1zhcdk3j8sc187xl2qr87cvjl88s4fq1i1m6is094ra4grf7zg"))
+    (package
+     (inherit emacs-modus-catppuccin-themes)
+     (name "emacs-modus-catppuccin-themes-ph")
+     (version (git-version "0.0.1" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/xuchengpeng/catppuccin-themes")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 sha)))))))
+
+
+(define emacs-lambda-line
+  ;; no tags or version available in the git repository.
+  (let ((commit "0ca6b32b591f6201c342d6c5ef14577aea7cfb49")
+	(revision "0"))
+    (package
+     (name "emacs-lambda-line")
+     (version (git-version "0.0.1" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/Lambda-Emacs/lambda-line")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "1kdk1zfk61qc0r9pfg91bb4gxfjh8wzd2936zzk3dnrc1b6cqrfl"))))
+     (build-system emacs-build-system)
+     (arguments (list #:tests? #f))   ;; no tests.
+     (propagated-inputs
+      (list emacs-modus-themes))
+     (home-page "https://github.com/Lambda-Emacs/lambda-line")
+     (synopsis "Lambda-line a configurable status line for Emacs")
+     (description "Lambda-line is a custom status-line (or “mode-line) for Emacs.
+ It is configurable for use either as a header-line or as a footer-line.")
+     (license license:gpl3+))))
+
+(define %emacs-packages
+  (list emacs-evil/ph
+	emacs-evil-collection/ph
+	emacs-evil-commentary
+	emacs-evil-surround
+	emacs-magit
+	emacs-forge
+	emacs-modus-catppuccin-themes/ph
+	emacs-gcmh
+	emacs-corfu
+	emacs-cape
+	emacs-kind-icon
+	emacs-orderless
+	emacs-eglot-x
+	emacs-nix-mode
+	emacs-yaml-mode
+	emacs-json-mode
+	emacs-go-mode
+	emacs-org-modern
+	emacs-org-roam
+	emacs-pass
+	emacs-password-store
+	emacs-auth-source-pass
+	emacs-envrc
+	emacs-inheritenv
+	emacs-circe
+	emacs-git-gutter
+	emacs-git-gutter-fringe
+	emacs-ligature
+	emacs-helpful
+	emacs-apheleia
+	emacs-exec-path-from-shell
+	emacs-ultra-scroll
+	emacs-tempel
+	emacs-shackle
+	emacs-lambda-line))
 
 (define %user "ph")
 
@@ -116,8 +256,7 @@
    atuin
    guile-gcrypt
    guile-readline
-   guile-colorized
-   ))
+   guile-colorized))
 
 (define %browsers
   (list
@@ -489,6 +628,7 @@
 	    %tools
 	    %mail
 	    %editors
+	    %emacs-packages
 	    %wm
 	    %fonts))
  (services
