@@ -1,6 +1,4 @@
-;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
-;;;
-;;; SPDX-License-Identifier: GPL-3.0-or-later
+;; -*- lexical-binding: t; -*-o
 
 (setq package-enable-at-startup nil)
 (add-hook 'emacs-startup-hook

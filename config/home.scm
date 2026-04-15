@@ -1,4 +1,3 @@
-;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -7,7 +6,6 @@
   #:use-module (heyk gnu packages fish)
   #:use-module (heyk gnu home services fish)
   #:use-module (heyk gnu home services avizo)
-  ;; #:use-module (heyk gnu home services mako)
   #:use-module (heyk gnu home services waybar)
   #:use-module (heyk gnu home services zathura)
   #:use-module (heyk gnu packages fonts)
@@ -94,12 +92,17 @@
   #:use-module (guix channels)
   #:use-module (guix build-system emacs)
   #:use-module (guix gexp)
+  #:use-module (guix profiles)
   #:use-module (guix packages)
   #:use-module (guix store)
+  #:use-module (guix transformations)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
+  #:use-module (nonguix utils)
   #:use-module (rosenthal packages rust-apps)
+  #:use-module (rosenthal packages emacs-xyz)
   #:use-module (rosenthal services desktop)
+  #:use-module (rosenthal home services emacs)
   #:use-module (rosenthal utils file)
   #:use-module (guix git-download))
 
@@ -176,7 +179,6 @@
        (sha256
 	(base32 sha)))))))
 
-
 (define emacs-lambda-line
   ;; no tags or version available in the git repository.
   (let ((commit "0ca6b32b591f6201c342d6c5ef14577aea7cfb49")
@@ -195,20 +197,83 @@
 	(base32 "1kdk1zfk61qc0r9pfg91bb4gxfjh8wzd2936zzk3dnrc1b6cqrfl"))))
      (build-system emacs-build-system)
      (arguments (list #:tests? #f))   ;; no tests.
-     (propagated-inputs
-      (list emacs-modus-themes))
      (home-page "https://github.com/Lambda-Emacs/lambda-line")
      (synopsis "Lambda-line a configurable status line for Emacs")
      (description "Lambda-line is a custom status-line (or “mode-line) for Emacs.
  It is configurable for use either as a header-line or as a footer-line.")
      (license license:gpl3+))))
 
+(define-public emacs-arei/ph
+  (let ((commit "c348103a4562e183a3c094dc945fc2af8bf0b704")
+	(revision "0"))
+    (package
+     (inherit emacs-arei)
+     (name "emacs-arei-ph")
+     (version (git-version "0.9.6" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://git.sr.ht/~abcdw/emacs-arei")
+	     (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32
+	 "1m8ic5pcshz2y2maxvbgg70n4k2kgxvj98zisqal15j7djz0hzji")))))))
+
+(define emacs-mu4e-thread-folding
+  ;; no tags or version available in the git repository.
+  (let ((commit "0575994abb4827e93b7f31b7871f89b888f3e51c")
+	(revision "0"))
+    (package
+     (name "emacs-mu4e-thread-folding")
+     (version (git-version "0.0.1" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/rougier/mu4e-thread-folding")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "1kqlxr56lljxj1xm3n42r1mxw190zj6ja3kvp0a8dczlz5546gd0"))))
+     (build-system emacs-build-system)
+     (propagated-inputs
+      (list mu))
+     (arguments (list #:tests? #f))   ;; no tests.
+     (home-page "https://github.com/rougier/mu4e-thread-folding")
+     (synopsis "mu4e-thread-folding are functions for folding threads in mu4e headers view")
+     (description "mu4e-thread-folding.el is a small library to enable threads folding in mu4e. This works by using overlays with an invisible property and setting hooks at the right place. It is possible to configure colors to better highlight a thread and also to have a prefix string indicating if a thread is folded or not. Note that when a thread is folded, any unread child remains visible.")
+     (license license:gpl3+))))
+
+(define emacs-rustic/ph
+  (let ((commit "b6c7e095145bb1fd0dc9cfb90ce36884e944556d")
+	(revision "0"))
+    (package
+     (inherit emacs-rustic)
+     (name "emacs-rustic-ph")
+     (version (git-version "3.5" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/emacs-rustic/rustic")
+	     (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "1kbhad1lc7jy7frp3lk14ch8g53zh28rwy8v7nb8fixlxbla0jml")))))))
+
 (define %emacs-packages
   (list emacs-evil/ph
 	emacs-evil-collection/ph
+	emacs-rustic/ph
 	emacs-evil-commentary
 	emacs-evil-surround
+	emacs-general
 	emacs-magit
+	emacs-eat/dolly
+	emacs-lin
+	emacs-hl-todo
 	emacs-forge
 	emacs-modus-catppuccin-themes/ph
 	emacs-gcmh
@@ -220,6 +285,10 @@
 	emacs-nix-mode
 	emacs-yaml-mode
 	emacs-json-mode
+	emacs-arei/ph
+	emacs-terraform-mode
+	emacs-restclient
+	emacs-dockerfile-mode
 	emacs-go-mode
 	emacs-org-modern
 	emacs-org-roam
@@ -237,8 +306,15 @@
 	emacs-exec-path-from-shell
 	emacs-ultra-scroll
 	emacs-tempel
+	emacs-popper
 	emacs-shackle
-	emacs-lambda-line))
+	emacs-lambda-line
+	emacs-marginalia
+	emacs-vertico
+	emacs-consult
+	emacs-consult-eglot
+	mu ;; mu4e and mu cli
+	emacs-mu4e-thread-folding))
 
 (define %user "ph")
 
@@ -308,21 +384,19 @@
 (define %vim
   (list neovim))
 
-(define %emacs
-  (list
-   emacs-next-pgtk
-   ;; emacs-master-pgtk
-   emacs-guix
-   ;; emacs-arei
-   emacs-debbugs
-   emacs-vterm
-   emacs-geiser
-   ))
+;; (define %emacs
+;;   (list
+;;    ;; emacs-next-pgtk
+;;    ;; emacs-master-pgtk
+;;    ;; emacs-guix
+;;    ;; emacs-arei
+;;    ;; emacs-debbugs
+;;    ;; emacs-vterm
+;;    ;; emacs-geiser))
 
 (define %editors
   (append
    %vim
-   %emacs
    (list
     direnv
     node-lts
@@ -628,7 +702,7 @@
 	    %tools
 	    %mail
 	    %editors
-	    %emacs-packages
+	    ;; %emacs-packages
 	    %wm
 	    %fonts))
  (services
@@ -676,6 +750,35 @@
     (service home-zathura-service-type)
     (service home-pipewire-service-type)
     (service home-batsignal-service-type)
+
+    ;; emacs
+    (simple-service 'emacs-environment home-environment-variables-service-type
+		    `(("EDITOR" . "emacsclient")
+		      ("VISUAL" . "$EDITOR")
+		      ("ESHELL" . ,(file-append fish "/bin/fish"))))
+
+    (service home-emacs-service-type
+	     (home-emacs-configuration
+	      (emacs emacs-pgtk)
+	      (packages
+	       (with-transformation
+		(compose (options->transformation
+			  '((without-tests . "emacs-el-mock")))
+			 (package-input-rewriting
+			  `((,(@ (gnu packages emacs) emacs)         . ,emacs)
+			    (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
+			    (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs))))
+		(packages->manifest %emacs-packages)))
+	      (shepherd-requirement '(graphical-session))))
+
+    (simple-service 'fish-emacs-eat home-fish-service-type
+		    (home-fish-extension
+		     (config
+		      (list (plain-file "emacs-eat.fish" "\
+  if test -n \"$EAT_SHELL_INTEGRATION_DIR\"
+      source $EAT_SHELL_INTEGRATION_DIR/fish
+  end\n")))))
+
     (service home-fish-hydro-service-type)
     (service home-fish-service-type
 	     (home-fish-configuration

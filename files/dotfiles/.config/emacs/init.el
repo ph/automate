@@ -1,59 +1,36 @@
-;;; SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
-;;;
-;;; SPDX-License-Identifier: GPL-3.0-or-later
+;; -*- lexical-binding: t; -*-o
 
-(defvar elpaca-installer-version 0.11)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-                              :ref nil :depth 1 :inherit ignore
-                              :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (<= emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                  ,@(when-let* ((depth (plist-get order :depth)))
-                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                  ,(plist-get order :repo) ,repo))))
-                  ((zerop (call-process "git" nil buffer t "checkout"
-                                        (or (plist-get order :ref) "--"))))
-                  (emacs (concat invocation-directory invocation-name))
-                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                  ((require 'elpaca))
-                  ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
+;; records use-package time to reduce startup time.
+(setq use-package-compute-statistics t)
 
-(elpaca elpaca-use-package
-  (elpaca-use-package-mode))
+(use-package gcmh
+  :init
+  (gcmh-mode 1)
+  (defmacro k-time (&rest body)
+    "Measure and return the time it takes evaluating BODY."
+    `(let ((time (current-time)))
+       ,@body
+       (float-time (time-since time))))
+  
+  ;; Set garbage collection threshold to 1GB.
+  (setq gc-cons-threshold #x40000000)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; When idle for 15sec run the GC no matter what.
+  (defvar k-gc-timer
+    (run-with-idle-timer 15 t
+			 (lambda ()
+			   (let ((gc-time (k-time (garbage-collect))))
+			     (message "Garbage Collector has run for %.06fsec" gc-time))))))
+
 (use-package emacs
   :custom
   ;; TAB cycle if there are only few candidates
-  ;; (completion-cycle-threshold 3)
+  (completion-cycle-threshold 3)
 
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
   (tab-always-indent 'complete)
+
 
   ;; Emacs 30 and newer: Disable Ispell completion function.
   ;; Try `cape-dict' as an alternative.
@@ -63,106 +40,130 @@
   ;; commands are hidden, since they are not used via M-x. This setting is
   ;; useful beyond Corfu.
   (read-extended-command-predicate #'command-completion-default-include-p)
-  (add-hook 'scheme-mode-hook 'guix-devel-mode)
 
+  ;; Less keys to type on confirmation.
   (fset 'yes-or-no-p 'y-or-n-p)
+
+
+  ;; Highlight matching paren.
+  (show-paren-mode 1)
+  ;; Three options for paren-style: 'expression, 'parenthesis, and
+  ;; 'mixed The first one highlights the complete region between
+  ;; parens, the second only highlights the matching paren, the third
+  ;; does 'expression when the matching paren is not visible.
+  (show-paren-style 'mixed)
+
   :config
   (setq
-   ;; evil-want-keybinding nil
+   ;; Disable customs files
    custom-file null-device
-   geiser-mode-auto-p nil
+
+   ;; When recompiling kill current process, in rust case it
+   ;; could be `cargo run` or `cargo test`.
    compilation-always-kill t
+
+   ;; Reduce elisp compilation warning in the buffers on startup.
    byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local)
-   compilation-ask-about-save nil
    native-comp-async-report-warnings-errors nil
+
+   ;; Dont' bug me to save.
+   compilation-ask-about-save nil
+   
+   ;; If new changes load them.
    load-prefer-newer t
+
+   ;; Opinions how backups are done.
    backup-directory-alist '((".*" . "~/.config/emacs-backup"))
    revert-without-query '(".*")
    make-backup-files nil
-   inhibit-splash-screen t
    create-lockfiles nil
    auto-save-default nil
-   make-backup-files nil
+
+   ;; Minibuffer options
    minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt)
    enable-recursive-minibuffers t
-   bidi-inhibit-bpa t
-   bidi-paragraph-direction 'left-to-right)
+
+   ;; Load the squash buffer directly.
+   inhibit-splash-screen t
+
+   ;; Skip Fontification During Input
+   ;; Delay syntax highlight to after we are done typing.
+   redisplay-skip-fontification-on-input t
+
+   ;; Only edit left-to-right files so we can make reduce runtime cost.
+   ;; This is not really visible in small buffer but in large yes.
+   bidi-display-reordering 'left-to-right
+   bidi-paragraph-direction 'left-to-right
+   bidi-inhibit-bpa t)
+
+  ;; Make the UI less clunky.
   (tool-bar-mode -1)
   (menu-bar-mode -1)
   (scroll-bar-mode -1)
+  (add-to-list 'default-frame-alist '(alpha-background . 95))
+  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+  (set-frame-parameter nil 'alpha-background 95)
+
+  ;; Fonts
+  ;; TODO(ph): more work is needed here
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 10"))
+
+  ;; Create a closing pair automatically
   (electric-pair-mode 1)
   (global-auto-revert-mode 1)
   (global-hl-line-mode)
   (global-display-line-numbers-mode t)
   (pixel-scroll-precision-mode)
   (transient-mark-mode 1)
+  ;; Change obsolete buffer behavior to just ignore.
+  (defun ask-user-about-supersession-threat (fn)
+    "ignore"))
 
-  (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path "~/src/automate"))
-  (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path "~/src/guix"))
-  (with-eval-after-load 'geiser-guile   (add-to-list 'geiser-guile-load-path "~/src/nonguix"))
-
-  (defun ask-user-about-supersession-threat (fn) "ignore")
-  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-  (add-to-list 'default-frame-alist '(alpha-background . 95))
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 10"))
-  (set-frame-parameter nil 'alpha-background 95)
-  (add-to-list 'default-frame-alist '(alpha-background . 95))
-  (require 'midnight))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(use-package gcmh
-  :ensure (gcmh :host gitlab :repo "koral/gcmh")
-  :init
-  (gcmh-mode 1)
-  (defmacro k-time (&rest body)
-    "Measure and return the time it takes evaluating BODY."
-    `(let ((time (current-time)))
-       ,@body
-       (float-time (time-since time))))
-
-  
-  ;; Set garbage collection threshold to 1GB.
-  (setq gc-cons-threshold #x40000000)
-
-  ;; When idle for 15sec run the GC no matter what.
-  (defvar k-gc-timer
-    (run-with-idle-timer 15 t
-			 (lambda ()
-                           (message "Garbage Collector has run for %.06fsec"
-                                    (k-time (garbage-collect))))))
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; keybinds
-(use-package general
-  :ensure (:wait t)
-  :demand t
+;; Clean old buffers.
+(use-package midnight
   :config
-  (general-evil-setup) ;
+  (midnight-delay-set 'midnight-delay "3:00am"))
+
+;; Save history of commands.
+(use-package savehist
+  :init
+  (savehist-mode))
+
+(use-package general
+  :config
+  (general-evil-setup)
   (general-create-definer ph/leader-key
     :states '(normal insert visual emacs)
     :keymaps 'override
     :prefix "SPC" ;; set leader
     :global-prefix "M-SPC"))
 
-(defun ph/hjkl-only()
-  (interactive)
-  (message "hjkl only"))
-
+;; VIM keybinding
 (use-package evil
-  :after (general)
-  :ensure t
+  :after general
   :init
-  (setq evil-want-integration t
+  (setq evil-want-integration 1
 	evil-want-keybinding nil
 	evil-want-C-u-scroll t
 	evil-want-C-i-jump nil)
-  
+
   :config
   (evil-mode 1)
+
+  (defun ph/hjkl-only
+      (interactive)
+    (message "hjkl only"))
+
+  ;; Disable non-vim-like movements keys
+  (define-key evil-normal-state-map (kbd "<left>") 'ph/hjk-only)
+  (define-key evil-normal-state-map (kbd "<right>") 'ph/hjkl-only)
+  (define-key evil-normal-state-map (kbd "<down>") 'ph/hjkl-only)
+  (define-key evil-normal-state-map (kbd "<up>") 'ph/hjkl-only)
+
+  (evil-global-set-key 'motion (kbd "<left>") 'ph/hjkl-only)
+  (evil-global-set-key 'motion (kbd "<right>") 'ph/hjkl-only)
+  (evil-global-set-key 'motion (kbd "<down>") 'ph/hjkl-only)
+  (evil-global-set-key 'motion (kbd "<up>") 'ph/hjkl-only)
 
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
@@ -175,16 +176,6 @@
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
-  ;; Disable arrow keys in normal and visual modes
-  (define-key evil-normal-state-map (kbd "<left>") 'ph/hjk-only)
-  (define-key evil-normal-state-map (kbd "<right>") 'ph/hjkl-only)
-  (define-key evil-normal-state-map (kbd "<down>") 'ph/hjkl-only)
-  (define-key evil-normal-state-map (kbd "<up>") 'ph/hjkl-only)
-
-  (evil-global-set-key 'motion (kbd "<left>") 'ph/hjkl-only)
-  (evil-global-set-key 'motion (kbd "<right>") 'ph/hjkl-only)
-  (evil-global-set-key 'motion (kbd "<down>") 'ph/hjkl-only)
-  (evil-global-set-key 'motion (kbd "<up>") 'ph/hjkl-only)
   (ph/leader-key
     ;; "f" '(:ignore t :wk "flymake")
     "f" '(consult-flymake :wk "toggle flymake")
@@ -203,8 +194,6 @@
 
     ;; applications
     "o" '(:ignore t :wk "apps")
-    "om" '(mu4e :wk "mail")
-    "oi" '(circe :wk "irc")
 
     ;; search relates functions
     "s" '(:ignore t :wk "search & replace")
@@ -215,156 +204,295 @@
     "bp" '(previous-buffer :wk "previous buffer")
     "bn" '(next-buffer :wk "next buffer")))
 
+;; Improved termibal experience
+(use-package eat
+  :custom
+  (eat-kill-buffer-on-exit t)
+  (eshell-visual-commands nil)
+  :hook
+  (eshell-load . eat-eshell-mode)
+  :general
+  (ph/leader-key
+    "pv" '(eat :wk "open term")))
+
+;; Add vim-like-command to common libraries.
 (use-package evil-collection
-  :ensure (evil-collection :host github :repo "emacs-evil/evil-collection")
-  :after (evil)
-  :init
-  (setq evil-want-keybinding nil)
-  :config
+  :after evil
+  :custom
+  ;; TODO: we need to go back here and lazy enable them per mode.
+  ;; https://github.com/emacs-evil/evil-collection?tab=readme-ov-file#installation
   (evil-collection-init))
 
+;; Make emacs commenting behave as vim.
+(use-package evil-commentary
+  :after (evil)
+  :config
+  (evil-commentary-mode))
+
+;; Manipulate inside of quote or brackets easily, this is a port of evil-surround.
+(use-package evil-surround
+  :config
+  (global-evil-surround-mode 1))
+
+;; Display bindings.
 (use-package which-key
-  :ensure t
   :after (evil)
   :init (which-key-mode)
   :config
   (which-key-setup-minibuffer))
 
-(use-package org-modern
-  :ensure t
+;; The best git client ever created.
+(use-package magit
+  :custom
+  (setq transient-default-level 5
+	;; show diff in selected hunk of code.
+	magit-diff-refine-hunk t
+	;; Don't autosave repository buffers, let the uses do it.
+	magit-save-repository-buffers nil
+	;; hide related parent refs in the commit buffers, reduce runtime costs.
+	magit-revision-insert-related-refs nil
+	;; trust the user.
+	magit-no-confirm '(stage-all-changes unstage-all-changes))
+  ;; propagate projects into magit windows.
+  (add-hook 'after-save-hook 'magit-after-save-refresh-status t)
+  :general
+  (ph/leader-key
+    "g"  '(:ignore t :wk "magit")
+    "gg" '(magit :wk "status")
+    "gG" '(magit-status-here :wk "git status here")
+    "gB" '(magit-blame-addition :wk "blame")
+    "gl" '(magit-log-current :wk "log"))
+  :hook
+  (after-init . magit))
+
+;; Allow magit to interact with web forge like github.
+(use-package forge
+  :after magit)
+
+;; Manage project in emacs.
+(use-package project
+  :general
+  (general-define-key :states 'normal
+		      "SPC SPC" '(project-find-file :wk "find file"))
+  (ph/leader-key
+    "p" '(:ignore t :wk "project")
+    "pp" '(project-switch-project :wk "switch project")
+    "p!" '(project-shell-command :wk "shell command")
+    "p&" '(project-async-shell-command :wk "async command")
+    "pD" '(project-dired :wk "dired")
+    "pc" '(project-compile :wk "compile")
+    "px" '(project-execute-extended-command :wk "extended command"))
   :config
-  (add-hook 'org-mode-hook #'org-modern-mode)
-  (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
+  (setq project-switch-commands #'project-find-file))
 
-(use-package evil-commentary
-  :ensure t
-  :after (evil)
+(use-package git-gutter
+  :hook (prog-mode . git-gutter-mode)
   :config
-  (evil-commentary-mode))
+  (setq git-gutter:update-interval 0))
 
-(use-package evil-easymotion
-  :ensure t
+(use-package git-gutter-fringe
+  :after git-gutter
   :config
-  (evilem-default-keybindings "`"))
+  ;; this is from doom emacs
+  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 
-(use-package evil-surround
-  :ensure t
+
+;; Reformat the current buffer at point.
+(use-package apheleia
   :config
-  (global-evil-surround-mode 1))
+  (setq apheleia-hide-log-buffers t)
+  (apheleia-global-mode +1))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package yaml-mode
-  :ensure t
-  :mode "\\.yml\\'")
-
-(use-package nix-mode
-  :ensure (nix-mode :host github :repo "NixOS/nix-mode")
-  :mode "\\.nix\\'")
-
-
-(use-package docker-compose-mode
-  :ensure t
-  :mode "docker-compose.yml")
-
-(use-package json-mode
-  :ensure t
-  :mode "\\.json\\'")
-
-(use-package dockerfile-mode
-  :ensure t
+;; Show the source code of the function.
+(use-package helpful
   :config
-  (put 'dockerfile-image-name 'safe-local-variable #'stringp))
+  (global-set-key (kbd "C-h f") #'helpful-callable)
+  (global-set-key (kbd "C-h v") #'helpful-variable)
+  (global-set-key (kbd "C-h k") #'helpful-key)
+  (global-set-key (kbd "C-h x") #'helpful-command))
 
-(use-package go-mode
-  :ensure t
-  :mode "\\.go\\'")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Windows and popups
 
-(use-package pass
-  :ensure t)
-(use-package password-store
-  :after (pass)
-  :ensure t)
-(use-package auth-source-pass
-  :after (pass)
+;; Control overrides for the popups or windows.
+(use-package shackle
+  :config
+  (setq shackle-rules '(("*Messages*" :select t :popup t :align right :size 0.3)
+			("*Occur*" :select t :popup t :align below :size 0.2)
+			("*scratch*" :select t :popup t :align below :size 0.2)
+			("*eat*" :select t :popup t :align below :size 0.2)
+			("*Geiser Guile REPL*", :select t :popup below :size 0.2)
+			("*cargo-run*" :select t)
+			(helpful-mode :select t :popup t :align right :size 0.35)
+			(help-mode :select t :popup t :align right :size 0.3)))
+  (shackle-mode 1))
+
+;; Provide ultra smooth scrolling
+(use-package ultra-scroll
   :init
-  (auth-source-pass-enable)
-  (auth-source-search :host "github"))
+  (setq scroll-conservatively 3 ; or whatever value you prefer, since v0.4
+        scroll-margin 0)        ; important: scroll-margin>0 not yet supported
+  :config
+  (ultra-scroll-mode 1))
+
+(use-package popper
+  :after project
+  :bind (("C-`"   . popper-toggle)
+         ("M-`"   . popper-cycle)
+         ("C-M-`" . popper-toggle-type))
+  :general
+  (ph/leader-key
+    "wh" '(evil-window-left :wk "go left")
+    "wl" '(evil-window-right :wk "go right")
+    "wj" '(evil-window-bottom :wk "go down")
+    "wk" '(evil-window-top :wk "go top"))
+  :init
+  (setq popper-display-function #'display-buffer-in-child-frame)
+  (setq popper-reference-buffers
+        '("\\*Messages\\*"
+          "Output\\*$"
+	  "*cargo-test"
+	  "*cargo-run"
+	  "*Geiser Guile REPL*"
+	  "*helpful"
+          "\\*Async Shell Command\\*"
+	  "*rustic-compilation*"
+	  "lsp-help"
+	  "*vterm*"
+	  "*eldoc*"
+	  "*Backtrace*"
+	  "*cargo-clippy"
+          help-mode
+          compilation-mode))
+  (setq popper-display-control 'user)
+  (setq popper-group-function #'popper-group-by-project)
+  (popper-mode +1)
+  (popper-echo-mode +1)
+  (defun rustic-process-kill-p (proc &optional no-error)
+    "Don't allow two rust processes at once.
+
+If NO-ERROR is t, don't throw error if user chooses not to kill running process."
+    (if (or compilation-always-kill
+	    (yes-or-no-p (format "`%s' is running; kill it? " proc)))
+	(condition-case ()
+            (progn
+	      (interrupt-process proc)
+	      (sit-for 0.5)
+	      (delete-process proc))
+          (error nil))
+      (unless no-error
+	(error "Cannot have two rust processes at once")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Environment
 
 (use-package envrc
-  :ensure t
   :config
   (envrc-global-mode))
 
 (use-package inheritenv
-  :ensure t
   :after envrc)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package cargo-mode
-  :ensure t
-  :after (rustic)
-  :init
-  (add-hook 'rustic-mode-hook 'cargo-minor-mode))
-
-(use-package rust-mode
-  :ensure t
-  :init
-  (setq rust-mode-treesitter-derive t))
-
-(use-package rustic
-  :ensure t
-  :after (inheritenv envrc eglot rust-mode)
-  :init
-  (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
-  :config
-  (setq rustic-lsp-client 'eglot)
-  (setq rustic-format-on-save nil)
-  :custom
-  (rustic-cargo-use-last-stored-arguments t))
-
-(use-package ultra-scroll
-  :ensure (ultra-scroll :host github :repo "jdtsmith/ultra-scroll")
-  :init
-  (setq scroll-conservatively 101
-	scroll-margin 0)
-  :config
-  (ultra-scroll-mode 1))
-
+;; Exec the command and keep some of the shell environment values.
 (use-package exec-path-from-shell
-  :ensure t
   :config
   (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK"
 					 "PATH"
 					 "MANPATH"
 					 "SSH_AGENT_PID"
 					 "GPG_AGENT_INFO"
-					 "LANG" "LC_CTYPE"))
+					 "LANG"
+					 "LC_CTYPE"))
   (setq exec-path-from-shell-arguments nil)
   (when (daemonp)
     (exec-path-from-shell-initialize)))
 
-(unload-feature 'eldoc t)
-(setq custom-delayed-init-variables '())
-(defvar global-eldoc-mode nil)
-
-(elpaca eldoc
-  (require 'eldoc)
-  (global-eldoc-mode)) ;; This is usually enabled by default by Emacs
-
-(use-package jsonrpc :ensure (:wait t) :defer t)
-
-(use-package flymake
-  :ensure t
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package modus-themes)
+(use-package catppuccin-themes
+  :init
+  (catppuccin-themes-take-over-modus-themes-mode 1)
   :config
-  (flymake-mode))
+  (modus-themes-load-theme 'catppuccin-latte))
+
+;; Autocomplete popup
+(use-package corfu
+  :config
+
+  (setq corfu-auto t
+	corfu-auto-delay 0.1
+	corfu-auto-prefix 2
+	corfu-quit-no-match 'separator
+	corfu-count 16
+	corfu-max-width 120)
+
+  (add-hook 'evil-insert-state-exit-hook #'corfu-quit)
+  :custom
+  (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-preview-current 'insert)
+  (corfu-preselect 'prompt)     
+  (corfu-on-exact-match 'insert) ;; Configure handling of exact matches
+
+  :bind
+  (:map corfu-map
+	("TAB" . corfu-next)
+	([tab] . corfu-next)
+        ("S-TAB" . corfu-previous)
+        ([backtab] . corfu-previous))
+
+  :init
+
+  ;; Recommended: Enable Corfu globally.  Recommended since many modes provide
+  ;; Capfs and Dabbrev can be used globally (M-/).  See also the customization
+  ;; variable `global-corfu-modes' to exclude certain modes.
+  (global-corfu-mode)
+
+  ;; Enable optional extension modes:
+  (corfu-history-mode)
+  (corfu-popupinfo-mode))
+
+
+;; Add relevent icons next to the autocomplete item in the overlay.
+(use-package kind-icon
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+;; Manage multiples autocomplete sources.
+(use-package cape
+  :after eglot
+  :init
+  (defun ph/eglot-capf ()
+    (setq-local completion-at-point-functions
+		(list (cape-capf-super
+		       #'eglot-completion-at-point
+		       #'cape-file
+		       #'cape-dabbrev
+		       #'cape-keyword))))
+  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
+  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
+
+(use-package orderless
+  :custom
+  ;; (orderless-style-dispatchers '(orderless-affix-dispatch))
+  ;; (orderless-component-separator #'orderless-escapable-split-on-space)
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
+
+;; Create auto complete snippets
+(use-package tempel
+  :bind (("M-+" . tempel-complete)
+         ("M-*" . tempel-insert))
+  :config
+  (setq tempel-path (expand-file-name "my-templates/*" user-emacs-directory))
+  :init
+  (global-tempel-abbrev-mode))
 
 (use-package eglot
   :defer t
-  :ensure (:wait t)
   :after (emacs flymake exec-path-from-shell envrc)
   :hook
   (nix-mode . eglot-ensure)
@@ -378,7 +506,7 @@
     "ai" '(eglot-code-action-organize-imports :wk "organize imports")
     "aI" '(eglot-code-action-inline :wk "inline"))
   :config
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nixd")))
+  (add-to-list 'eglot-server-programs '(nix-mode . ("nixl")))
   (setq eglot-sync-connect 1
 	eglot-autoreconnect t
 	eglot-send-changes-idle-time 0.5
@@ -398,113 +526,237 @@
 	  ))
   (advice-add 'jsonrpc--log-event :override #'ignore))
 
+;; Add extension to eglot to be similar to LSP.
 (use-package eglot-x
-  :ensure (eglot-x :host github :repo "nemethf/eglot-x")
-  :after (eglot)
+  :after eglot
   :config 
   (with-eval-after-load 'eglot (require 'eglot-x))
   :config
   (eglot-x-setup)
   (define-key eglot-mode-map (kbd "s-.") #'eglot-x-find-refs))
 
-(use-package consult-eglot
-  :ensure t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; org
 
-(use-package tempel
-  :ensure t
-  :bind (("M-+" . tempel-complete)
-         ("M-*" . tempel-insert))
+(use-package org
+  :mode
+  ("\\.org\\'" . org-mode)
   :config
-  (setq tempel-path (expand-file-name "my-templates/*" user-emacs-directory))
-  :init
-  (global-tempel-abbrev-mode))
 
-(use-package corfu
-  :ensure t
-  :config
-  (setq corfu-auto t
-	corfu-auto-delay 0.1
-	corfu-auto-prefix 2
-	corfu-quit-no-match 'separator
-	corfu-count 16
-	corfu-max-width 120)
+  (setq org-directory (expand-file-name "src/notes" (getenv "HOME")))
+  (setq org-agenda-files (list org-directory))
 
-  (add-hook 'evil-insert-state-exit-hook #'corfu-quit)
+  (setq org-capture-templates
+	`(("i" "📥 Inbox" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
+	   "**  %?\n%i\n%a" :preprend t :jump-to-captured t)))
+
+  (setq org-todo-keywords
+	'((sequence "TODO(t)" "|" "NEXT(n)"  "|" "PROGRESS(p)" "|" "WAIT(w)" "|" "HOLD(h)" "|" "DELEGATED(l)" "|" "DONE(d)" "|" "KILL(k)")))
+  
+  (setq org-refile-targets
+	`((,(expand-file-name "todo.org" org-directory) :maxlevel . 1))
+	org-refile-use-outline-path 'file
+	org-outline-path-complete-in-steps nil)
+
+  (setq org-archive-location (concat (expand-file-name "archives.org" org-directory) "::datetree/* Archived Tasks"))
+
+  ;; ensure files is saved after refile
+  (add-hook 'org-after-refile-insert-hook #'save-buffer)
+
+  (ph/leader-key
+    "x" '(:ignore t :wk "org")
+    "xo" '((lambda ()
+	     (interactive)
+	     (find-file-other-window (expand-file-name "todo.org" org-directory))) :wk "open todo" )
+    "xc" '(org-capture :wk "capture")
+    "xi" '((lambda () (interactive) (org-capture nil "i")) :wk "capture todo")
+    "xn" '(org-roam-capture :wk "new note")
+    "xf" '(org-roam-find-file :wk "find note")))
+
+(use-package org-roam
+  :after org
+  :defer t
   :custom
-  (corfu-cycle t)
-  (corfu-preview-current 'insert)
-  (corfu-preselect 'prompt)     
-  :bind
-  (:map corfu-map
-	("TAB" . corfu-next)
-	([tab] . corfu-next)
-        ("S-TAB" . corfu-previous)
-        ([backtab] . corfu-previous))
-  :init
-  (global-corfu-mode))
+  (org-roam-directory (concat (org-directory) "roam"))
+  (org-roam-setup))
 
-(use-package cape
-  :ensure t
-  :after eglot
-  :init
-  (defun my/eglot-capf ()
-    (setq-local completion-at-point-functions
-		(list (cape-capf-super
-		       #'eglot-completion-at-point
-		       #'cape-file
-		       #'cape-dabbrev
-		       #'cape-keyword))))
-  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
-  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
+(use-package org-modern
+  :after org
+  :config
+  (add-hook 'org-mode-hook #'org-modern-mode)
+  (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
 
-(use-package orderless
-  :ensure t
+
+;; Ligatures
+(use-package ligature
+  :config
+  (ligature-set-ligatures 'prog-mode
+			  '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+			    ;; =:= =!=
+			    ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+			    ;; ;; ;;;
+			    (";" (rx (+ ";")))
+			    ;; && &&&
+			    ("&" (rx (+ "&")))
+			    ;; !! !!! !. !: !!. != !== !~
+			    ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+			    ;; ?? ??? ?:  ?=  ?.
+			    ("?" (rx (or ":" "=" "\." (+ "?"))))
+			    ;; %% %%%
+			    ("%" (rx (+ "%")))
+			    ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+			    ;; |->>-||-<<-| |- |== ||=||
+			    ;; |==>>==<<==<=>==//==/=!==:===>
+			    ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+					    "-" "=" ))))
+			    ;; \\ \\\ \/
+			    ("\\" (rx (or "/" (+ "\\"))))
+			    ;; ++ +++ ++++ +>
+			    ("+" (rx (or ">" (+ "+"))))
+			    ;; :: ::: :::: :> :< := :// ::=
+			    (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+			    ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+			    ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+					    "="))))
+			    ;; .. ... .... .= .- .? ..= ..<
+			    ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+			    ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+			    ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+			    ;; *> */ *)  ** *** ****
+			    ("*" (rx (or ">" "/" ")" (+ "*"))))
+			    ;; www wwww
+			    ("w" (rx (+ "w")))
+			    ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+			    ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+			    ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+			    ;; << <<< <<<<
+			    ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+					    "-"  "/" "|" "="))))
+			    ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+			    ;; >> >>> >>>>
+			    (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+			    ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+			    ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+					 (+ "#"))))
+			    ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+			    ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+			    ;; __ ___ ____ _|_ __|____|_
+			    ("_" (rx (+ (or "_" "|"))))
+			    ;; Fira code: 0xFF 0x12
+			    ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+			    ;; Fira code:
+			    "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+			    ;; The few not covered by the regexps.
+			    "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+  (global-ligature-mode t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; email
+(use-package mu4e
+  :general
+  (ph/leader-key
+    "om" '(mu4e :wk "mail"))
+  :config
+  (setq mail-user-agent 'mu4e-user-agent
+	mu4e-drafts-folder "/ph@heykimo.com/drafts"
+	mu4e-sent-folder   "/ph@heykimo.com/sent"
+	mu4e-trash-folder  "/ph@heykimo.com/trash"
+	mu4e-refile-folder  "/ph@heykimo.com/archive"
+	mu4e-sent-messages-behavior 'delete
+	mu4e-update-interval 300
+	mu4e-compose-format-flowed t
+	mu4e-use-fancy-chars t
+	mu4e-index-lazy-check t
+	mu4e-headers-date-format "%y.%m.%d"
+	mu4e-search-include-related t
+	mu4e-search-skip-duplicates t
+	mu4e-get-mail-command "mbsync gmail"
+	mu4e-change-filenames-when-moving t
+	mu4e-confirm-quit nil
+	;; this is coming from base
+	user-mail-address "ph@heykimo.com"
+	user-full-name  "Pier-Hugues Pellerin"
+	message-kill-buffer-on-exit t
+	mu4e-headers-draft-mark     '("D" . "💈")
+	mu4e-headers-flagged-mark   '("F" . "📍")
+	mu4e-headers-new-mark       '("N" . "🔥")
+	mu4e-headers-passed-mark    '("P" . "❯")
+	mu4e-headers-replied-mark   '("R" . "❮")
+	mu4e-headers-seen-mark      '("S" . "☑")
+	mu4e-headers-trashed-mark   '("T" . "💀")
+	mu4e-headers-attach-mark    '("a" . "📎")
+	mu4e-headers-encrypted-mark '("x" . "🔒")
+	mu4e-headers-signed-mark    '("s" . "🔑")
+	mu4e-headers-unread-mark    '("u" . "⎕")
+	mu4e-headers-list-mark      '("l" . "🔈")
+	mu4e-headers-personal-mark  '("p" . "👨")
+	mu4e-headers-calendar-mark  '("c" . "📅")
+	mu4e-compose-signature (concat "Thanks\n" "ph"))
   :custom
-  ;; (orderless-style-dispatchers '(orderless-affix-dispatch))
-  ;; (orderless-component-separator #'orderless-escapable-split-on-space)
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
+  (require 'smtpmail)
+  (setq sendmail-program (executable-find "msmtp")
+	mail-host-address "heykimo.com"
+	send-mail-function #'smtpmail-send-it
+	message-sendmail-f-is-evil t
+	message-sendmail-extra-arguments '("--read-envelope-from")
+	message-send-mail-function #'message-send-mail-with-sendmail))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package catppuccin-theme
-  :ensure t
-  :config
-  ;; (setq catppuccin-flavor 'latte) ;; or 'latte, 'macchiato, or 'mocha
-  (setq catppuccin-flavor 'mocha) ;; or 'latte, 'macchiato, or 'mocha
-  (load-theme 'catppuccin :no-confirm)
-  (catppuccin-reload))
+(use-package mu4e-thread-folding
+  :after mu4e
+  :custom
+  (require 'mu4e-thread-folding)
 
-;; (use-package ef-themes
-;;   :ensure t
-;;   :init
-;;   ;; This makes the Modus commands listed below consider only the Ef
-;;   ;; themes.  For an alternative that includes Modus and all
-;;   ;; derivative themes (like Ef), enable the
-;;   ;; `modus-themes-include-derivatives-mode' instead.  The manual of
-;;   ;; the Ef themes has a section that explains all the possibilities:
-;;   ;;
-;;   ;; - Evaluate `(info "(ef-themes) Working with other Modus themes or taking over Modus")'
-;;   ;; - Visit <https://protesilaos.com/emacs/ef-themes#h:6585235a-5219-4f78-9dd5-6a64d87d1b6e>
-;;   (ef-themes-take-over-modus-themes-mode 1)
-;;   :config
-;;   ;; All customisations here.
-;;   (setq modus-themes-mixed-fonts t)
-;;   (setq modus-themes-italic-constructs t)
+  (define-key mu4e-headers-mode-map (kbd "<tab>")     'mu4e-headers-toggle-at-point)
+  (define-key mu4e-headers-mode-map (kbd "<left>")    'mu4e-headers-fold-at-point)
+  (define-key mu4e-headers-mode-map (kbd "<S-left>")  'mu4e-headers-fold-all)
+  (define-key mu4e-headers-mode-map (kbd "<right>")   'mu4e-headers-unfold-at-point)
+  (define-key mu4e-headers-mode-map (kbd "<S-right>") 'mu4e-headers-unfold-all)
+  (add-to-list 'mu4e-header-info-custom
+	       '(:empty . (:name "Empty"
+				 :shortname ""
+				 :function (lambda (msg) "  "))))
+  (setq mu4e-headers-fields '((:empty         .    2)
+			      (:human-date    .   12)
+			      (:flags         .    6)
+			      (:mailing-list  .   10)
+			      (:from          .   22)
+			      (:subject       .   nil)))
+  (mu4e-thread-folding-mode))
 
-;;   ;; Finally, load your theme of choice (or a random one with
-;;   ;; `modus-themes-load-random', `modus-themes-load-random-dark',
-;;   ;; `modus-themes-load-random-light').
-;;   (modus-themes-load-theme 'ef-spring))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pass
+(use-package pass)
 
-(use-package highlight-parentheses
-  :ensure t
-  :config
-  (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
+(use-package password-store
+  :after pass)
 
+(use-package auth-source-pass
+  :after pass
+  :custom
+  (auth-source-pass-enable)
+  (auth-source-search :host "github"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(use-package circe
+  :after password-store
+  :general
+  (ph/leader-key
+    "oi" '(circe :wk "irc"))
+  :custom
+  (setq circe-network-options
+	'(("libera"
+	   :tls t
+	   :port 6697
+	   :host "irc.libera.chat"
+	   :nick "ph"
+	   :sasl-username "ph"
+	   :sasl-password (lambda (&rest _) (password-store-get "irc/libera.chat/password"))
+	   :channels ("#heyk")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UI
+;; Display a simple mod line.
 (use-package lambda-line
-  :ensure (lambda-line :ensure t :host github :repo "lambda-emacs/lambda-line")
   :custom
   ;; (lambda-line-icon-time t) ;; requires ClockFace font (see below)
   ;; (lambda-line-clockface-update-fontset "ClockFaceRect") ;; set clock icon
@@ -529,48 +781,27 @@
     (setq-default mode-line-format (list "%_"))
     (setq mode-line-format (list "%_"))))
 
-(use-package vterm
-  :ensure nil
-  :config
-  (setq vterm-kill-buffer-on-exit t)
-  (setq vterm-max-scrollback 5000)
-  :general
-  (ph/leader-key
-    "pv" '(vterm :wk "open vterm")))
+;; Make the HL line more suitable for selection UI.
+(use-package lin)
 
-(use-package project
-  :ensure nil
-  :general
-  (general-define-key :states 'normal
-		      "SPC SPC" '(project-find-file :wk "find file"))
-  (ph/leader-key
-    "p" '(:ignore t :wk "project")
-    "pp" '(project-switch-project :wk "switch project")
-    "p!" '(project-shell-command :wk "shell command")
-    "p&" '(project-async-shell-command :wk "async command")
-    "pD" '(project-dired :wk "dired")
-    "pc" '(project-compile :wk "compile")
-    "px" '(project-execute-extended-command :wk "extended command"))
-
-  :config
-  (setq project-switch-commands #'project-find-file))
-
-(use-package arei
-  :ensure (arei :ensure t :host github :repo "abcdw/emacs-arei")
-  :after (project)
-  :config
-  (setq arei-mode-auto t))
-
-(use-package lin
-  :ensure t)
-
+;; Highlight TODO, FIXME, HACK and other
 (use-package hl-todo
-  :ensure t
-  :config
-  (add-hook 'prog-mode-hook 'hl-todo-mode))
+  :hook
+  ;; only useful for programming.
+  (prog-mode-hook . hl-todo-mode))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; mini-buffer
+;; Add description of the command in the minibuffer
+(use-package marginalia
+  :bind
+  (:map minibuffer-local-map ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode 1))
+
+;; Vertico provides a performant and minimalistic vertical completion
+;; UI based on the default completion system.
 (use-package vertico
-  :ensure (vertico :ensure t :files (:defaults "extensions/*") ) 
   :general
   (:keymaps 'vertico-map
 	    "<escape>" #'minibuffer-keyboard-quit
@@ -586,29 +817,7 @@
   (vertico-mode)
   (vertico-reverse-mode))
 
-(use-package marginalia
-  :ensure t
-  :bind
-  (:map minibuffer-local-map ("M-A" . marginalia-cycle))
-  :init
-  (marginalia-mode 1))
-
-(use-package terraform-mode
-  :ensure t
-  :mode "\\.tf\\'")
-
-(use-package restclient
-  :ensure t
-  :mode (("\\.http\\'" . restclient-mode)))
-
-(use-package protobuf-mode
-  :ensure t)
-
-(use-package savehist
-  :ensure nil
-  :init
-  (savehist-mode))
-
+;; Consult provides search and navigation commands based on the Emacs completion function
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :general
@@ -739,362 +948,53 @@
   ;; (setq consult-project-function nil)
   )
 
-(use-package helpful
-  :ensure t
-  :config
-  (global-set-key (kbd "C-h f") #'helpful-callable)
-  (global-set-key (kbd "C-h v") #'helpful-variable)
-  (global-set-key (kbd "C-h k") #'helpful-key)
-  (global-set-key (kbd "C-h x") #'helpful-command))
+(use-package consult-eglot
+  :after (consult eglot))
 
-(use-package apheleia
-  :ensure t
-  :config
-  (setq apheleia-hide-log-buffers t)
-  (apheleia-global-mode +1))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Syntax and prog mode.
 
-(use-package ligature
-  :ensure t
-  :config
-  (ligature-set-ligatures 'prog-mode
-			  '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-			    ;; =:= =!=
-			    ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-			    ;; ;; ;;;
-			    (";" (rx (+ ";")))
-			    ;; && &&&
-			    ("&" (rx (+ "&")))
-			    ;; !! !!! !. !: !!. != !== !~
-			    ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-			    ;; ?? ??? ?:  ?=  ?.
-			    ("?" (rx (or ":" "=" "\." (+ "?"))))
-			    ;; %% %%%
-			    ("%" (rx (+ "%")))
-			    ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-			    ;; |->>-||-<<-| |- |== ||=||
-			    ;; |==>>==<<==<=>==//==/=!==:===>
-			    ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-					    "-" "=" ))))
-			    ;; \\ \\\ \/
-			    ("\\" (rx (or "/" (+ "\\"))))
-			    ;; ++ +++ ++++ +>
-			    ("+" (rx (or ">" (+ "+"))))
-			    ;; :: ::: :::: :> :< := :// ::=
-			    (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-			    ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-			    ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-					    "="))))
-			    ;; .. ... .... .= .- .? ..= ..<
-			    ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-			    ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-			    ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-			    ;; *> */ *)  ** *** ****
-			    ("*" (rx (or ">" "/" ")" (+ "*"))))
-			    ;; www wwww
-			    ("w" (rx (+ "w")))
-			    ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-			    ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-			    ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-			    ;; << <<< <<<<
-			    ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-					    "-"  "/" "|" "="))))
-			    ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-			    ;; >> >>> >>>>
-			    (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-			    ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-			    ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-					 (+ "#"))))
-			    ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-			    ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-			    ;; __ ___ ____ _|_ __|____|_
-			    ("_" (rx (+ (or "_" "|"))))
-			    ;; Fira code: 0xFF 0x12
-			    ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-			    ;; Fira code:
-			    "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-			    ;; The few not covered by the regexps.
-			    "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
-  (global-ligature-mode t))
-
-
-(use-package shackle
-  :ensure t
-  :config
-  (setq shackle-rules '(("*Messages*" :select t :popup t :align right :size 0.3)
-			("*Occur*" :select t :popup t :align below :size 0.2)
-			("*scratch*" :select t :popup t :align below :size 0.2)
-			("*vterm*" :select t :popup t :align below :size 0.2)
-			("*Geiser Guile REPL*", :select t :popup below :size 0.2)
-			("*cargo-run*" :select t)
-			(helpful-mode :select t :popup t :align right :size 0.35)
-			(help-mode :select t :popup t :align right :size 0.3)))
-  (shackle-mode 1))
-
-(use-package popper
-  :ensure t
-  :after (project)
-  :bind (("C-`"   . popper-toggle)
-         ("M-`"   . popper-cycle)
-         ("C-M-`" . popper-toggle-type))
-  :general
-  (ph/leader-key
-    "wh" '(evil-window-left :wk "go left")
-    "wl" '(evil-window-right :wk "go right")
-    "wj" '(evil-window-bottom :wk "go down")
-    "wk" '(evil-window-top :wk "go top"))
-  :init
-  (setq popper-display-function #'display-buffer-in-child-frame)
-  (setq popper-reference-buffers
-        '("\\*Messages\\*"
-          "Output\\*$"
-	  "*cargo-test"
-	  "*cargo-run"
-	  "*Geiser Guile REPL*"
-	  "*helpful"
-          "\\*Async Shell Command\\*"
-	  "*rustic-compilation*"
-	  "lsp-help"
-	  "*vterm*"
-	  "*eldoc*"
-	  "*Backtrace*"
-	  "*cargo-clippy"
-          help-mode
-          compilation-mode))
-  (setq popper-display-control 'user)
-  (setq popper-group-function #'popper-group-by-project)
-  (popper-mode +1)
-  (popper-echo-mode +1)
-  (defun rustic-process-kill-p (proc &optional no-error)
-    "Don't allow two rust processes at once.
-
-If NO-ERROR is t, don't throw error if user chooses not to kill running process."
-    (if (or compilation-always-kill
-	    (yes-or-no-p (format "`%s' is running; kill it? " proc)))
-	(condition-case ()
-            (progn
-	      (interrupt-process proc)
-	      (sit-for 0.5)
-	      (delete-process proc))
-          (error nil))
-      (unless no-error
-	(error "Cannot have two rust processes at once")))))
-
-(use-package git-gutter
-  :ensure t
-  :hook (prog-mode . git-gutter-mode)
-  :config
-  (setq git-gutter:update-interval 0))
-
-(use-package git-gutter-fringe
-  :ensure t
-  :config
-  ;; this is from doom emacs
-  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
-
-(use-package transient
-  :ensure t)
-
-(use-package magit
-  :ensure t
-  :init
-  ;; (require 'magit)
-  (setq transient-default-level 5
-	magit-diff-refine-hunk t ; show granular diffs in selected hunk
-	;; Don't autosave repo buffers. This is too magical, and saving can
-	;; trigger a bunch of unwanted side-effects, like save hooks and
-	;; formatters. Trust the user to know what they're doing.
-	magit-save-repository-buffers nil
-	;; Don't display parent/related refs in commit buffers; they are rarely
-	;; helpful and only add to runtime costs.
-	magit-revision-insert-related-refs nil
-	magit-no-confirm '(stage-all-changes unstage-all-changes))
+(use-package arei
+  :mode "\\.scm\\'"
   :custom
-  (git-commit-summary-max-length 50)
-  (git-commit-fill-column 72)
-  :general
-  :config
-  (add-hook 'after-save-hook 'magit-after-save-refresh-status t)
-  (ph/leader-key
-    "g"  '(:ignore t :wk "magit")
-    "gg" '(magit :wk "magit status")
-    "gG" '(magit-status-here :wk "magit status here")
-    "gB" '(magit-blame-addition :wk "blame")
-    "gl" '(magit-log-current :wk "log")))
+  (setq arei-mode-auto t))
 
-(use-package forge
-  :ensure t
-  :after magit)
+(use-package nix-mode
+  :mode "\\.nix\\'")
 
-(use-package circe
-  :ensure t
-  :after (password-store)
-  :config
-  (setq circe-network-options
-	'(("libera"
-	   :tls t
-	   :port 6697
-	   :host "irc.libera.chat"
-	   :nick "ph"
-	   :sasl-username "ph"
-	   :sasl-password (lambda (&rest _) (password-store-get "irc/libera.chat/password"))
-	   :channels ("#heyk")
-	   ))))
+(use-package yaml-mode
+  :mode "\\.yml\\'")
 
-(use-package mu4e-thread-folding
-  :ensure (mu4e-thread-folding :host github
-			       :repo "rougier/mu4e-thread-folding")
+(use-package json-mode
+  :mode "\\.json\\'")
 
-  :after (mu4e)
-  :config
-  (require 'mu4e-thread-folding)
-
-  (define-key mu4e-headers-mode-map (kbd "<tab>")     'mu4e-headers-toggle-at-point)
-  (define-key mu4e-headers-mode-map (kbd "<left>")    'mu4e-headers-fold-at-point)
-  (define-key mu4e-headers-mode-map (kbd "<S-left>")  'mu4e-headers-fold-all)
-  (define-key mu4e-headers-mode-map (kbd "<right>")   'mu4e-headers-unfold-at-point)
-  (define-key mu4e-headers-mode-map (kbd "<S-right>") 'mu4e-headers-unfold-all)
-  (add-to-list 'mu4e-header-info-custom
-	       '(:empty . (:name "Empty"
-				 :shortname ""
-				 :function (lambda (msg) "  "))))
-  (setq mu4e-headers-fields '((:empty         .    2)
-			      (:human-date    .   12)
-			      (:flags         .    6)
-			      (:mailing-list  .   10)
-			      (:from          .   22)
-			      (:subject       .   nil)))
-  (mu4e-thread-folding-mode))
-
-(use-package mu4e
-  :ensure nil
-  :config
-  (setq mail-user-agent 'mu4e-user-agent
-	mu4e-drafts-folder "/ph@heykimo.com/drafts"
-	mu4e-sent-folder   "/ph@heykimo.com/sent"
-	mu4e-trash-folder  "/ph@heykimo.com/trash"
-	mu4e-refile-folder  "/ph@heykimo.com/archive"
-	mu4e-sent-messages-behavior 'delete
-	mu4e-update-interval 300
-	mu4e-compose-format-flowed t
-	mu4e-use-fancy-chars t
-	mu4e-index-lazy-check t
-	mu4e-headers-date-format "%y.%m.%d"
-	mu4e-search-include-related t
-	mu4e-search-skip-duplicates t
-	mu4e-get-mail-command "mbsync gmail"
-	mu4e-change-filenames-when-moving t
-	mu4e-confirm-quit nil
-	;; this is coming from base
-	user-mail-address "ph@heykimo.com"
-	user-full-name  "Pier-Hugues Pellerin"
-	message-kill-buffer-on-exit t
-	mu4e-headers-draft-mark     '("D" . "💈")
-	mu4e-headers-flagged-mark   '("F" . "📍")
-	mu4e-headers-new-mark       '("N" . "🔥")
-	mu4e-headers-passed-mark    '("P" . "❯")
-	mu4e-headers-replied-mark   '("R" . "❮")
-	mu4e-headers-seen-mark      '("S" . "☑")
-	mu4e-headers-trashed-mark   '("T" . "💀")
-	mu4e-headers-attach-mark    '("a" . "📎")
-	mu4e-headers-encrypted-mark '("x" . "🔒")
-	mu4e-headers-signed-mark    '("s" . "🔑")
-	mu4e-headers-unread-mark    '("u" . "⎕")
-	mu4e-headers-list-mark      '("l" . "🔈")
-	mu4e-headers-personal-mark  '("p" . "👨")
-	mu4e-headers-calendar-mark  '("c" . "📅")
-	mu4e-compose-signature (concat "Thanks\n" "ph")))
-
-(require 'smtpmail)
-(setq sendmail-program (executable-find "msmtp")
-      mail-host-address "heykimo.com"
-      send-mail-function #'smtpmail-send-it
-      message-sendmail-f-is-evil t
-      message-sendmail-extra-arguments '("--read-envelope-from")
-      message-send-mail-function #'message-send-mail-with-sendmail)
-
-(use-package org-roam
-  :ensure t
-  :after (org)
-  :init
-  ;; (setq org-roam-v2-ack t)
+(use-package dockerfile-mode
+  :mode "^(dockerfile|Dockerfile)$"
   :custom
-  (org-roam-directory "~/src/notes/roam")
-  (org-roam-setup))
+  (put 'dockerfile-image-name 'safe-local-variable #'stringp))
 
-(use-package org
-  :mode
-  ("\\.org\\'" . org-mode)
-  :config
+(use-package go-mode
+  :mode "\\.go\\'")
 
-  (setq org-directory (expand-file-name "src/notes" (getenv "HOME")))
-  (setq org-agenda-files (list org-directory))
+(use-package terraform-mode
+  :mode "\\.tf\\'")
 
-  (setq org-capture-templates
-	`(("i" "📥 Inbox" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
-	   "**  %?\n%i\n%a" :preprend t :jump-to-captured t)))
+(use-package restclient
+  :mode (("\\.http\\'" . restclient-mode)))
 
-  (setq org-todo-keywords
-	'((sequence "TODO(t)" "|" "NEXT(n)"  "|" "PROGRESS(p)" "|" "WAIT(w)" "|" "HOLD(h)" "|" "DELEGATED(l)" "|" "DONE(d)" "|" "KILL(k)")))
-  
-  (setq org-refile-targets
-	`((,(expand-file-name "todo.org" org-directory) :maxlevel . 1))
-	org-refile-use-outline-path 'file
-	org-outline-path-complete-in-steps nil)
+;; Major mode for editing protobuf files.
+(use-package protobuf-mode
+  :mode "\\.proto\\'")
 
-  (setq org-archive-location (concat (expand-file-name "archives.org" org-directory) "::datetree/* Archived Tasks"))
-
-  ;; ensure files is saved after refile
-  (add-hook 'org-after-refile-insert-hook #'save-buffer)
-
-  (ph/leader-key
-    "x" '(:ignore t :wk "org")
-    "xo" '((lambda ()
-	     (interactive)
-	     (find-file-other-window (expand-file-name "todo.org" org-directory))) :wk "open todo" )
-    "xc" '(org-capture :wk "capture")
-    "xi" '((lambda () (interactive) (org-capture nil "i")) :wk "capture todo")
-    "xn" '(org-roam-capture :wk "new note")
-    "xf" '(org-roam-find-file :wk "find note")))
-
-(use-package kind-icon
-  :ensure t
-  :after corfu
-					;:custom
-					; (kind-icon-blend-background t)
-					; (kind-icon-default-face 'corfu-default) ; only needed with blend-background
-  :config
-  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
-
-(use-package flycheck
-  :ensure t
-  :init (global-flycheck-mode))
-;;
-(use-package flycheck-eglot
-  :ensure t
-  :after (flycheck eglot)
-  :config (global-flycheck-eglot-mode 1))
-
-(use-package consult-flycheck
-  :ensure t)
-
-(use-package jsonnet-mode
-  :ensure t)
-
-(push 'mu4e elpaca-ignored-dependencies)
-(use-package mu4e-dashboard
-  :ensure (:host github :repo "rougier/mu4e-dashboard" :build (:not elpaca--byte-compile))
-  :config
-  (setq mu4e-dashboard-file "~/.config/emacs/mu4e-dashboard.org")
+(use-package flymake
+  :after project
   :custom
-  (defun ph/open-dashboard ()
-    (interactive)
-    (with-current-buffer
-	(find-file mu4e-dashboard-file)
-      (mu4e-dashboard-mode 1))))
+  (flymake-mode))
 
-(use-package flymake-guile
-  :ensure t
-  :hook (scheme-mode-hook . flymake-guile))
-;;; init.el ends here
+(use-package rustic
+  :after (inheritenv envrc eglot)
+  :config
+  (setq rustic-lsp-client 'eglot)
+  (setq rustic-format-on-save nil)
+  :custom
+  (rustic-cargo-use-last-stored-arguments t))
