@@ -218,7 +218,7 @@
 ;; Add vim-like-command to common libraries.
 (use-package evil-collection
   :after evil
-  :custom
+  :config
   ;; TODO: we need to go back here and lazy enable them per mode.
   ;; https://github.com/emacs-evil/evil-collection?tab=readme-ov-file#installation
   (evil-collection-init))
