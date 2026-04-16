@@ -734,20 +734,20 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (use-package circe
-  :after password-store
   :general
   (ph/leader-key
     "oi" '(circe :wk "irc"))
-  :custom
-  (setq circe-network-options
-	'(("libera"
-	   :tls t
-	   :port 6697
-	   :host "irc.libera.chat"
-	   :nick "ph"
-	   :sasl-username "ph"
-	   :sasl-password (lambda (&rest _) (password-store-get "irc/libera.chat/password"))
-	   :channels ("#heyk")))))
+  :config
+  (setq
+   circe-network-defaults '()
+   circe-network-options '(("libera"
+			    :tls t
+			    :port 6697
+			    :host "irc.libera.chat"
+			    :nick "ph"
+			    :sasl-username "ph"
+			    :sasl-password (lambda (&rest _) (password-store-get "irc/libera.chat/password"))
+			    :channels ("#heyk")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UI
