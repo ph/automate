@@ -1,5 +1,4 @@
-;; -*- lexical-binding: t; -*-o
-
+;;; -*- lexical-binding: t -*-
 ;; records use-package time to reduce startup time.
 (setq use-package-compute-statistics t)
 
@@ -215,13 +214,6 @@
   (ph/leader-key
     "pv" '(eat :wk "open term")))
 
-;; Add vim-like-command to common libraries.
-(use-package evil-collection
-  :after evil
-  :config
-  ;; TODO: we need to go back here and lazy enable them per mode.
-  ;; https://github.com/emacs-evil/evil-collection?tab=readme-ov-file#installation
-  (evil-collection-init))
 
 ;; Make emacs commenting behave as vim.
 (use-package evil-commentary
@@ -266,10 +258,18 @@
   (after-init . magit))
 
 ;; Allow magit to interact with web forge like github.
-(use-package forge
-  :after magit)
+;; (use-package forge
+;;   :after magit)
 
+;; Add vim-like-command to common libraries.
+(use-package evil-collection
+  :after evil
+  :config
+  ;; TODO: we need to go back here and lazy enable them per mode.
+  ;; https://github.com/emacs-evil/evil-collection?tab=readme-ov-file#installation
+  (evil-collection-init))
 ;; Manage project in emacs.
+
 (use-package project
   :general
   (general-define-key :states 'normal
