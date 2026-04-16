@@ -272,6 +272,8 @@
 	emacs-evil-surround
 	emacs-general
 	emacs-magit
+	emacs-lispy
+	emacs-lispyville
 	emacs-eat/dolly
 	emacs-lin
 	emacs-hl-todo

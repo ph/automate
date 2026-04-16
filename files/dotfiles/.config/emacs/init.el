@@ -827,11 +827,13 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
+(use-package geiser
+  :when (locate-library "arei.el")
+  :custom (geiser-mode-auto-p nil))
 
-;; (use-package arei
-;;   :mode "\\.scm\\'"
-;;   :custom
-;;   (setq arei-mode-auto t))
+(use-package arei
+  :when (locate-library "arei.el")
+  :init (global-arei-mode))
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -882,11 +884,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :hook
   (after-init . global-treesit-auto-mode))
 
-;; (use-package cargo-mode
-;;   :after rustic
-;;   :init
-;;   (add-hook 'rustic-mode-hook 'cargo-minor-mode))
-
 (use-package eglot
   :general
   (ph/leader-key
@@ -898,7 +895,8 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     "ai" '(eglot-code-action-organize-imports :wk "organize imports")
     "aI" '(eglot-code-action-inline :wk "inline"))
   :config
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nil"))))
+  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
+  (advice-add 'jsonrpc--log-event :override #'ignore))
 
 ;; Add extension to eglot to be similar to LSP.
 (use-package eglot-x
@@ -914,3 +912,13 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (setq rustic-format-on-save nil)
   :custom
   (rustic-cargo-use-last-stored-arguments t))
+
+(use-package lispy
+  :hook
+  (emacs-lisp-mode lispy-mode))
+
+(use-package lispyville
+  :init
+  (general-add-hook '(emacs-lisp-mode-hook lisp-mode-hook) #'lispyville-mode)
+  :config
+  (lispyville-set-key-theme '(operators c-w additional)))
