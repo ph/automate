@@ -132,6 +132,8 @@
 (use-package general
   :config
   (general-evil-setup)
+  (general-define-key
+   "s-k" 'eldoc-doc-buffer)
   (general-create-definer ph/leader-key
     :states '(normal insert visual emacs)
     :keymaps 'override
@@ -451,7 +453,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (corfu-history-mode)
   (corfu-popupinfo-mode))
 
-
 ;; Add relevent icons next to the autocomplete item in the overlay.
 (use-package kind-icon
   :after corfu
@@ -460,7 +461,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 ;; Manage multiples autocomplete sources.
 (use-package cape
-  :after eglot
   :init
   (defun ph/eglot-capf ()
     (setq-local completion-at-point-functions
@@ -489,56 +489,10 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :init
   (global-tempel-abbrev-mode))
 
-(use-package eglot
-  :after (exec-path-from-shell envrc)
-  :hook
-  (nix-mode . eglot-ensure)
-  (rustic-mode . eglot-ensure)
-  :general
-  (ph/leader-key
-    "a" '(:ignore t :wk "actions")
-    "aR" '(eglot-rename :wk "rename")
-    "aa" '(eglot-code-actions :wk "code action")
-    "aq" '(eglot-code-action-quickfix :wk "quickfix")
-    "ae" '(eglot-code-action-extract :wk "extract")
-    "ai" '(eglot-code-action-organize-imports :wk "organize imports")
-    "aI" '(eglot-code-action-inline :wk "inline"))
-  :config
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-  (setq eglot-sync-connect 1
-	eglot-autoreconnect t
-	eglot-send-changes-idle-time 0.5
-	eglot-auto-display-help-buffer nil
-	eglot-events-buffer-size 0
-	eglot-extend-to-xref nil
-	eglot-stay-out-of '(flymake)
-	eglot-ignored-server-capabilities
-	'(
-	  :hoverProvider
-	  :documentHighlightProvider
-	  :documentFormattingProvider
-	  :documentRangeFormattingProvider
-	  :documentOnTypeFormattingProvider
-	  :colorProvider
-	  :foldingRangeProvider
-	  ))
-  (advice-add 'jsonrpc--log-event :override #'ignore))
-
-;; Add extension to eglot to be similar to LSP.
-(use-package eglot-x
-  :after eglot
-  :config
-  (eglot-x-setup)
-  (define-key eglot-mode-map (kbd "s-.") #'eglot-x-find-refs))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org
-
 (use-package org
-  :mode
-  ("\\.org\\'" . org-mode)
-  :config
-
+  :custom
   (setq org-directory (expand-file-name "src/notes" (getenv "HOME")))
   (setq org-agenda-files (list org-directory))
 
@@ -813,9 +767,8 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (vertico-mode)
   (vertico-reverse-mode))
 
-;; Consult provides search and navigation commands based on the Emacs completion function
+;; Example configuration for Consult
 (use-package consult
-  ;; Replace bindings. Lazily loaded due by `use-package'.
   :general
   (ph/leader-key
     "b" '(:ignore t :wk "buffer")
@@ -824,78 +777,17 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     "h" '(:ignore t :wk "help")
     "hm" '(consult-man :wk "man")
     "ai" '(consult-imenu :wk "imenu") 
-    "aI" '(consult-imenu-multi :wk "imenu multi") 
-    )
-  :bind (
-	 ;; C-c bindings in `mode-specific-map'
-         ;; ("C-c M-x" . consult-mode-command)
-         ;; ("C-c h" . consult-history)
-         ;; ("C-c k" . consult-kmacro)
-         ;; ("C-c m" . consult-man)
-         ;; ("C-c i" . consult-info)
-         ;; ([remap Info-search] . consult-info)
-         ;; C-x bindings in `ctl-x-map'
-         ;; ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-         ;; ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-         ;; ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ;; ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-         ;; ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
-         ;; ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
-         ;; Custom M-# bindings for fast register access
-         ;; ("M-#" . consult-register-load)
-         ;; ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-         ;; ("C-M-#" . consult-register)
-         ;; Other custom bindings
-         ;; ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ;; M-g bindings in `goto-map'
-         ;; ("M-g e" . consult-compile-error)
-         ;;("M-g f" . consult-flycheck)               ;; Alternative: consult-flycheck
-         ;; ("M-g g" . consult-goto-line)             ;; orig. goto-line
-         ;; ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-         ;; ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-         ;; ("M-g m" . consult-mark)
-         ;; ("M-g k" . consult-global-mark)
-         ;; ("M-g i" . consult-imenu)
-         ;; ("M-g I" . consult-imenu-multi)
-         ;; M-s bindings in `search-map'
-         ;; ("M-s d" . consult-find)
-         ;; ("M-s D" . consult-locate)
-         ;; ("M-s g" . consult-grep)
-         ;; ("M-s G" . consult-git-grep)
-         ;; ("M-s r" . consult-ripgrep)
-         ;; ("M-s l" . consult-line)
-         ;; ("M-s L" . consult-line-multi)
-         ;; ("M-s k" . consult-keep-lines)
-         ;; ("M-s u" . consult-focus-lines)
-         ;; Isearch integration
-         ;; ("M-s e" . consult-isearch-history)
-         ;; :map isearch-mode-map
-         ;; ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
-         ;; ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-         ;; ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-         ;; ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
-         ;; Minibuffer history
-         ;; :map minibuffer-local-map
-         ;; ("M-s" . consult-history)                 ;; orig. next-matching-history-element
-         ;; ("M-r" . consult-history)
-	 )                ;; orig. previous-matching-history-element
-
-  ;; Enable automatic preview at point in the *Completions* buffer. This is
-  ;; relevant when you use the default completion UI.
-  :hook (completion-list-mode . consult-preview-at-point-mode)
+    "aI" '(consult-imenu-multi :wk "imenu multi"))
 
   ;; The :init configuration is always executed (Not lazy)
   :init
 
-  ;; Optionally configure the register formatting. This improves the register
-  ;; preview for `consult-register', `consult-register-load',
-  ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0.5
-        register-preview-function #'consult-register-format)
-
-  ;; Optionally tweak the register preview window.
-  ;; This adds thin lines, sorting and hides the mode line of the window.
+  ;; Tweak the register preview for `consult-register-load',
+  ;; `consult-register-store' and the built-in commands.  This improves the
+  ;; register formatting, adds thin separator lines, register sorting and hides
+  ;; the window mode line.
   (advice-add #'register-preview :override #'consult-register-window)
+  (setq register-preview-delay 0.5)
 
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
@@ -914,10 +806,10 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
+   consult-ripgrep consult-git-grep consult-grep consult-man
    consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
+   consult-source-bookmark consult-source-file-register
+   consult-source-recent-file consult-source-project-recent-file
    ;; :preview-key "M-."
    :preview-key '(:debounce 0.4 any))
 
@@ -927,21 +819,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
   ;; Optionally make narrowing help available in the minibuffer.
   ;; You may want to use `embark-prefix-help-command' or which-key instead.
-  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
-
-  ;; By default `consult-project-function' uses `project-root' from project.el.
-  ;; Optionally configure a different project root function.
-  ;;;; 1. project.el (the default)
-  ;; (setq consult-project-function #'consult--default-project--function)
-  ;;;; 2. vc.el (vc-root-dir)
-  ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-  ;;;; 3. locate-dominating-file
-  ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-  ;;;; 4. projectile.el (projectile-project-root)
-  ;; (autoload 'projectile-project-root "projectile")
-  ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-  ;;;; 5. No project support
-  ;; (setq consult-project-function nil)
+  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
   )
 
 (use-package consult-eglot
@@ -950,10 +828,10 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
 
-(use-package arei
-  :mode "\\.scm\\'"
-  :custom
-  (setq arei-mode-auto t))
+;; (use-package arei
+;;   :mode "\\.scm\\'"
+;;   :custom
+;;   (setq arei-mode-auto t))
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -987,12 +865,50 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :custom
   (flymake-mode))
 
-(use-package rust-mode
-  :init
-  (setq rust-mode-treesitter-derive t))
+(use-package treesit-auto
+  :config
+  (require 'dockerfile-ts-mode)
+  (require 'go-ts-mode)
+  (require 'rust-ts-mode)
+  (require 'typescript-ts-mode)
+  (require 'yaml-ts-mode)
+
+  ;; Make them available in org mode.
+  (add-to-list 'org-src-lang-modes '("dockerfile" . dockerfile-ts))
+  (add-to-list 'org-src-lang-modes '("go" . go-ts))
+  (add-to-list 'org-src-lang-modes '("rust" . rust-ts))
+  (add-to-list 'org-src-lang-modes '("typescript" . typescript-ts))
+  (add-to-list 'org-src-lang-modes '("yaml" . yaml-ts))
+  :hook
+  (after-init . global-treesit-auto-mode))
+
+;; (use-package cargo-mode
+;;   :after rustic
+;;   :init
+;;   (add-hook 'rustic-mode-hook 'cargo-minor-mode))
+
+(use-package eglot
+  :general
+  (ph/leader-key
+    "a" '(:ignore t :wk "actions")
+    "aR" '(eglot-rename :wk "rename")
+    "aa" '(eglot-code-actions :wk "code action")
+    "aq" '(eglot-code-action-quickfix :wk "quickfix")
+    "ae" '(eglot-code-action-extract :wk "extract")
+    "ai" '(eglot-code-action-organize-imports :wk "organize imports")
+    "aI" '(eglot-code-action-inline :wk "inline"))
+  :config
+  (add-to-list 'eglot-server-programs '(nix-mode . ("nil"))))
+
+;; Add extension to eglot to be similar to LSP.
+(use-package eglot-x
+  :config
+  (eglot-x-setup)
+  (define-key eglot-mode-map (kbd "s-.") #'eglot-x-find-refs))
 
 (use-package rustic
-  :after (rust-mode inheritenv envrc eglot)
+  :init
+  (setq rust-mode-treesitter-derive t)
   :config
   (setq rustic-lsp-client 'eglot)
   (setq rustic-format-on-save nil)

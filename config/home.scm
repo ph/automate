@@ -315,7 +315,23 @@
 	emacs-consult
 	emacs-consult-eglot
 	mu ;; mu4e and mu cli
-	emacs-mu4e-thread-folding))
+	emacs-mu4e-thread-folding
+	;; treesitter
+	emacs-treesit-auto
+	tree-sitter-bash
+	tree-sitter-cmake
+	tree-sitter-dockerfile
+	tree-sitter-go
+	tree-sitter-gomod
+	tree-sitter-javascript
+	tree-sitter-json
+	tree-sitter-org
+	tree-sitter-python
+	tree-sitter-rust
+	tree-sitter-scheme
+	tree-sitter-yaml
+	tree-sitter-kdl
+	tree-sitter-typescript))
 
 (define %user "ph")
 
@@ -401,20 +417,6 @@
    (list
     direnv
     node-lts
-    tree-sitter-bash
-    tree-sitter-scheme
-    tree-sitter-rust
-    tree-sitter-python
-    tree-sitter-go
-    tree-sitter-gomod
-    tree-sitter-dockerfile
-    tree-sitter-c
-    tree-sitter-css
-    tree-sitter-org
-    tree-sitter-json
-    tree-sitter-typescript
-    tree-sitter-javascript
-    tree-sitter-ruby
     )))
 
 (define %fonts
