@@ -235,7 +235,7 @@
 
 ;; The best git client ever created.
 (use-package magit
-  :custom
+  :config
   (setq transient-default-level 5
 	;; show diff in selected hunk of code.
 	magit-diff-refine-hunk t
@@ -253,23 +253,21 @@
     "gg" '(magit :wk "status")
     "gG" '(magit-status-here :wk "git status here")
     "gB" '(magit-blame-addition :wk "blame")
-    "gl" '(magit-log-current :wk "log"))
-  :hook
-  (after-init . magit))
+    "gl" '(magit-log-current :wk "log")))
 
 ;; Allow magit to interact with web forge like github.
-;; (use-package forge
-;;   :after magit)
+(use-package forge
+  :after magit)
 
-;; Add vim-like-command to common libraries.
+;; ;; Add vim-like-command to common libraries.
 (use-package evil-collection
-  :after evil
+  :after (evil forge)
   :config
   ;; TODO: we need to go back here and lazy enable them per mode.
   ;; https://github.com/emacs-evil/evil-collection?tab=readme-ov-file#installation
   (evil-collection-init))
-;; Manage project in emacs.
 
+;; Manage project in emacs.
 (use-package project
   :general
   (general-define-key :states 'normal
@@ -552,7 +550,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
   (setq org-todo-keywords
 	'((sequence "TODO(t)" "|" "NEXT(n)"  "|" "PROGRESS(p)" "|" "WAIT(w)" "|" "HOLD(h)" "|" "DELEGATED(l)" "|" "DONE(d)" "|" "KILL(k)")))
-  
+
   (setq org-refile-targets
 	`((,(expand-file-name "todo.org" org-directory) :maxlevel . 1))
 	org-refile-use-outline-path 'file
