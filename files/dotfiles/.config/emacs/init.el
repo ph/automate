@@ -19,7 +19,8 @@
     (run-with-idle-timer 15 t
 			 (lambda ()
 			   (let ((gc-time (k-time (garbage-collect))))
-			     (message "Garbage Collector has run for %.06fsec" gc-time))))))
+			     ;; (message "Garbage Collector has run for %.06fsec" gc-time)
+			     )))))
 
 (use-package emacs
   :custom
@@ -385,7 +386,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Environment
-
 (use-package envrc
   :config
   (envrc-global-mode))
@@ -470,7 +470,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 		       #'cape-dabbrev
 		       #'cape-keyword))))
   (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
-  (add-hook 'eglot-managed-mode-hook #'my/eglot-capf))
+  (add-hook 'eglot-managed-mode-hook #'ph/eglot-capf))
 
 (use-package orderless
   :custom
@@ -490,10 +490,10 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (global-tempel-abbrev-mode))
 
 (use-package eglot
-  :defer t
-  :after (emacs flymake exec-path-from-shell envrc)
+  :after (exec-path-from-shell envrc)
   :hook
   (nix-mode . eglot-ensure)
+  (rustic-mode . eglot-ensure)
   :general
   (ph/leader-key
     "a" '(:ignore t :wk "actions")
@@ -504,31 +504,29 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     "ai" '(eglot-code-action-organize-imports :wk "organize imports")
     "aI" '(eglot-code-action-inline :wk "inline"))
   :config
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nixl")))
+  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
   (setq eglot-sync-connect 1
 	eglot-autoreconnect t
 	eglot-send-changes-idle-time 0.5
 	eglot-auto-display-help-buffer nil
 	eglot-events-buffer-size 0
 	eglot-extend-to-xref nil
-	;;eglot-stay-out-of '(flymake)
+	eglot-stay-out-of '(flymake)
 	eglot-ignored-server-capabilities
 	'(
-	  ;; :hoverProvider
+	  :hoverProvider
 	  :documentHighlightProvider
 	  :documentFormattingProvider
 	  :documentRangeFormattingProvider
-	  ;; :documentOnTypeFormattingProvider
+	  :documentOnTypeFormattingProvider
 	  :colorProvider
-	  ;; :foldingRangeProvider
+	  :foldingRangeProvider
 	  ))
   (advice-add 'jsonrpc--log-event :override #'ignore))
 
 ;; Add extension to eglot to be similar to LSP.
 (use-package eglot-x
   :after eglot
-  :config 
-  (with-eval-after-load 'eglot (require 'eglot-x))
   :config
   (eglot-x-setup)
   (define-key eglot-mode-map (kbd "s-.") #'eglot-x-find-refs))
@@ -989,8 +987,12 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :custom
   (flymake-mode))
 
+(use-package rust-mode
+  :init
+  (setq rust-mode-treesitter-derive t))
+
 (use-package rustic
-  :after (inheritenv envrc eglot)
+  :after (rust-mode inheritenv envrc eglot)
   :config
   (setq rustic-lsp-client 'eglot)
   (setq rustic-format-on-save nil)

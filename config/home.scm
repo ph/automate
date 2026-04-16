@@ -267,6 +267,7 @@
   (list emacs-evil/ph
 	emacs-evil-collection/ph
 	emacs-rustic/ph
+	emacs-rust-mode
 	emacs-evil-commentary
 	emacs-evil-surround
 	emacs-general
@@ -716,7 +717,8 @@
     (service home-dbus-service-type)
     (service home-gpg-agent-service-type
 	     (home-gpg-agent-configuration
-	      (pinentry-program (file-append pinentry-rofi "/bin/pinentry-rofi"))
+	      ;; (pinentry-program (file-append pinentry-rofi "/bin/pinentry-rofi"))
+	      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
 	      (ssh-support? #t)))
     (service home-xdg-configuration-files-service-type
 	     `(("gdb/gdbinit" ,%default-gdbinit)
