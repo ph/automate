@@ -11,3 +11,4 @@
 /target/
 /tangle-test/
 /.blue-store/
+/.agent-shell/
