@@ -642,6 +642,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	mu4e-headers-personal-mark  '("p" . "👨")
 	mu4e-headers-calendar-mark  '("c" . "📅")
 	mu4e-compose-signature (concat "Thanks\n" "ph"))
+  (evil-collection-init 'mu4e)
   :custom
   (require 'smtpmail)
   (setq sendmail-program (executable-find "msmtp")
@@ -827,13 +828,10 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
-;;(use-package geiser
-;;  :when (locate-library "arei.el")
-;;  :custom (geiser-mode-auto-p nil))
-
-;;(use-package arei
-;;  :when (locate-library "arei.el")
-;;  :init (global-arei-mode))
+(use-package arei
+  :custom
+  (geiser-mode-auto-p nil)
+  :init (arei-mode))
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -913,14 +911,89 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :custom
   (rustic-cargo-use-last-stored-arguments t))
 
-(use-package lispy
-  ;; NOTE(ph): Do not make it automatic for now.
-  ;; :hook
-  ;; ((emacs-lisp-mode . lispy-mode)
-  ;;  (lisp-mode . lispy-mode)
-  ;;  (scheme-mode .lispy-mode))
-  )
+;; (use-package lispy
+;; NOTE(ph): Do not make it automatic for now.
+;; :hook
+;; ((emacs-lisp-mode . lispy-mode)
+;;  (lisp-mode . lispy-mode)
+;;  (scheme-mode .lispy-mode))
+;; )
 
-(use-package lispyville
-  :after lispy
-  :hook (lispy-mode . lispyville-mode)
+;; (use-package lispyville
+;;   :after lispy
+;;   :hook (lispy-mode . lispyville-mode))
+
+(use-package rainbow-delimiters
+  :hook
+  (prog-mode . rainbow-delimiters-mode))
+
+;; (use-package paredit
+;;   :commands paredit-mode
+;;   :hook
+;;   ((emacs-lisp-mode . lispy-mode)
+;;    (lisp-mode . lispy-mode)
+;;    (scheme-mode .lispy-mode)))
+
+;; (use-package enhanced-evil-paredit
+;;   :commands enhanced-evil-paredit-mode
+;;   :hook (paredit-mode . enhanced-evil-paredit-mode))
+
+
+(defcustom ph/files-for-agentic-projects '("CLAUDE.md" "AGENT.md")
+  "Files used to identify agent-aware projects directories."
+  :type '(repeat string)
+  :group 'agent)
+
+(defcustom ph/agent-sandbox-packages '("bash" "openssl" "nss-certs" "coreutils" "grep" "sed" "jq" "git" "node")
+  "Packages installed in the agent sandbox."
+  :type '(repeat string)
+  :group 'agent)
+
+(defcustom ph/default-sandbox-shares `(,(expand-file-name ".local/npm" (getenv "HOME"))
+				       ,(expand-file-name ".claude" (getenv "HOME"))
+				       ,(expand-file-name ".cache/claude" (getenv "HOME")))
+  "Default shares to expose to the sandbox."
+  :type '(repeat string)
+  :group 'agent)
+
+(defun ph/make-share-path (path)
+  (concat "--share=" path))
+
+(defun ph/project-root-from-buffer (buffer)
+  (with-current-buffer buffer
+    default-directory))
+
+(defun ph/claude-agent-container-environment-mapping ()
+  (concat "--share="
+	  (expand-file-name ".local/npm/bin/claude-agent-acp-wrapper" (getenv "HOME"))
+	  "=/bin/claude-agent-acp"))
+
+(defun ph/guix-container-prefix (&optional buffer)
+  `("guix"
+    "shell"
+    "--container"
+    "--network"
+    "--emulate-fhs"
+    ,(ph/claude-agent-container-environment-mapping)
+    ,@(mapcar 'ph/make-share-path ph/default-sandbox-shares)
+    ,(ph/make-share-path (ph/project-root-from-buffer buffer))
+    ,@ph/agent-sandbox-packages
+    "--"))
+
+(use-package agent-shell
+  :config
+  ;; Evil state-specific RET behavior: insert mode = newline, normal mode = send
+  (evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'newline)
+  (evil-define-key 'normal agent-shell-mode-map (kbd "RET") #'comint-send-input)
+  
+  ;; Configure *agent-shell-diff* buf  
+  ;; Configure *agent-shell-diff* buffers to start in Emacs state
+  (add-hook 'diff-mode-hook
+	    (lambda ()
+	      (when (string-match-p "\\*agent-shell-diff\\*" (buffer-name))
+		(evil-emacs-state))))
+  (setq agent-shell-anthropic-authentication
+	(agent-shell-anthropic-make-authentication :login t))
+  (setq agent-shell-anthropic-claude-environment
+	(agent-shell-make-environment-variables :inherit-env t))
+  (setq agent-shell-command-prefix (lambda (buffer) (ph/guix-container-prefix buffer))))
