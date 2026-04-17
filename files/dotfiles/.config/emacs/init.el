@@ -827,13 +827,13 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
-(use-package geiser
-  :when (locate-library "arei.el")
-  :custom (geiser-mode-auto-p nil))
+;;(use-package geiser
+;;  :when (locate-library "arei.el")
+;;  :custom (geiser-mode-auto-p nil))
 
-(use-package arei
-  :when (locate-library "arei.el")
-  :init (global-arei-mode))
+;;(use-package arei
+;;  :when (locate-library "arei.el")
+;;  :init (global-arei-mode))
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -914,11 +914,13 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (rustic-cargo-use-last-stored-arguments t))
 
 (use-package lispy
-  :hook
-  (emacs-lisp-mode lispy-mode))
+  ;; NOTE(ph): Do not make it automatic for now.
+  ;; :hook
+  ;; ((emacs-lisp-mode . lispy-mode)
+  ;;  (lisp-mode . lispy-mode)
+  ;;  (scheme-mode .lispy-mode))
+  )
 
 (use-package lispyville
-  :init
-  (general-add-hook '(emacs-lisp-mode-hook lisp-mode-hook) #'lispyville-mode)
-  :config
-  (lispyville-set-key-theme '(operators c-w additional)))
+  :after lispy
+  :hook (lispy-mode . lispyville-mode)
