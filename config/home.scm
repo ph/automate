@@ -203,24 +203,6 @@
  It is configurable for use either as a header-line or as a footer-line.")
      (license license:gpl3+))))
 
-(define-public emacs-arei/ph
-  (let ((commit "c348103a4562e183a3c094dc945fc2af8bf0b704")
-	(revision "0"))
-    (package
-     (inherit emacs-arei)
-     (name "emacs-arei-ph")
-     (version (git-version "0.9.6" revision commit))
-     (source
-      (origin
-       (method git-fetch)
-       (uri (git-reference
-	     (url "https://git.sr.ht/~abcdw/emacs-arei")
-	     (commit version)))
-       (file-name (git-file-name name version))
-       (sha256
-	(base32
-	 "1m8ic5pcshz2y2maxvbgg70n4k2kgxvj98zisqal15j7djz0hzji")))))))
-
 (define emacs-mu4e-thread-folding
   ;; no tags or version available in the git repository.
   (let ((commit "0575994abb4827e93b7f31b7871f89b888f3e51c")
@@ -247,6 +229,7 @@
      (license license:gpl3+))))
 
 (define emacs-rustic/ph
+  ;; ensure we are on the bleeding edge.
   (let ((commit "b6c7e095145bb1fd0dc9cfb90ce36884e944556d")
 	(revision "0"))
     (package
@@ -263,15 +246,118 @@
        (sha256
 	(base32 "1kbhad1lc7jy7frp3lk14ch8g53zh28rwy8v7nb8fixlxbla0jml")))))))
 
+(define emacs-enhanced-evil-paredit
+  (package
+   (name "emacs-enhanced-evil-paredit")
+   (version "1.0.4")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+	   (url "https://github.com/jamescherti/enhanced-evil-paredit.el")
+	   (commit version)))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "0kkfnnqd2pzzm92pi13ngh63frp33z2mfb1prkqaw62nq4yrw6d8"))))
+   (build-system emacs-build-system)
+   (propagated-inputs
+    (list emacs-evil
+	  emacs-paredit))
+   (arguments (list #:tests? #f))   ;; no tests.
+   (home-page "https://github.com/jamescherti/enhanced-evil-paredit.el")
+   (synopsis "Emacs: Improved Paredit support with Evil keybindings")
+   (description "The enhanced-evil-paredit package prevents parenthesis imbalance when using evil-mode with paredit. It intercepts evil-mode commands such as delete, change, and paste, blocking their execution if they would break the parenthetical structure. This guarantees that your Lisp code remains syntactically correct while retaining the editing features of evil-mode.")
+   (license license:gpl3+)))
+
+(define-public emacs-acp/ph
+  (package
+    (name "emacs-acp-ph")
+    (version "0.11.3")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/xenodium/acp.el")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0hr1176sy8xrx6wkqadmvwdjm1sv7aq8ddrw8h3ha6sn74glx8ws"))))
+    (build-system emacs-build-system)
+    (home-page "https://github.com/xenodium/acp.el")
+    (synopsis "@acronym{ACP, Agent Client Protocol} for Emacs")
+    (description
+     "This package implements the @uref{https://agentclientprotocol.com/,
+Agent Client Protocol} (ACP) for Emacs, a standardized protocol for
+communicating with LLM agents.")
+    (license license:gpl3+)))
+
+(define-public emacs-shell-maker/ph
+  (let ((commit "6377cbdb49248d670170f1c8dbe045648063583e")
+	(revision "0"))
+    (package
+     (name "emacs-shell-maker-ph")
+     (version (git-version "0.90.1" revision commit))
+     (source (origin
+	      (method git-fetch)
+	      (uri (git-reference
+		    (url "https://github.com/xenodium/shell-maker")
+		    (commit commit)))
+	      (file-name (git-file-name name version))
+	      (sha256
+	       (base32 "0v2iqvr2ywng5d22sw88k90i2jzl3cf2ybp9q6qpqirhvlsbgq19"))))
+     (build-system emacs-build-system)
+     (arguments
+      (list #:tests? #f ; There are no tests.
+	    #:phases
+	    #~(modify-phases %standard-phases
+			     (add-after 'unpack 'patch-curl
+					(lambda* (#:key inputs #:allow-other-keys)
+					  (emacs-substitute-variables "shell-maker.el"
+								      ("shell-maker-curl-executable"
+								       (search-input-file inputs "/bin/curl"))))))))
+     (inputs (list curl))
+     (home-page "https://github.com/xenodium/shell-maker")
+     (synopsis "Create Emacs shells")
+     (description "Shell Maker is a convenience wrapper around Comint mode.")
+     (license license:gpl3+))))
+
+(define-public emacs-agent-shell/ph
+  (package
+    (name "emacs-agent-shell-ph")
+    (version "0.50.1")
+    (source
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/xenodium/agent-shell")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "0njajpz51pbz4hqaq7lcvwaypilq1c9sdxsk6sdxgk1xpivqlxfb"))))
+    (build-system emacs-build-system)
+    (propagated-inputs (list emacs-shell-maker/ph
+			     emacs-acp/ph))
+    (home-page "https://github.com/xenodium/agent-shell")
+    (synopsis "Native agentic integrations for Claude Code, Gemini CLI, etc")
+    (description
+     "This package offers a native comint shell experience to interact with any agent
+powered by @uref{https://agentclientprotocol.com/, Agent Client Protocol} (ACP).")
+    (license license:gpl3+)))
+
 (define %emacs-packages
   (list emacs-evil/ph
 	emacs-evil-collection/ph
+	emacs-agent-shell/ph
 	emacs-rustic/ph
 	emacs-rust-mode
 	emacs-evil-commentary
 	emacs-evil-surround
 	emacs-general
 	emacs-magit
+	emacs-guix
+	emacs-rainbow-delimiters
+	emacs-paredit
+	emacs-enhanced-evil-paredit
 	emacs-lispy
 	emacs-lispyville
 	emacs-eat/dolly
@@ -288,7 +374,8 @@
 	emacs-nix-mode
 	emacs-yaml-mode
 	emacs-json-mode
-	emacs-arei/ph
+	emacs-arei
+	emacs-geiser
 	emacs-terraform-mode
 	emacs-restclient
 	emacs-dockerfile-mode
@@ -345,6 +432,7 @@
 
 (define %dev
   (list
+   node
    mosh
    fish-foreign-env
    zathura-pdf-mupdf ;; should be added on the home service
@@ -418,7 +506,6 @@
    %vim
    (list
     direnv
-    node-lts
     )))
 
 (define %fonts
@@ -807,6 +894,8 @@ fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environ
 set -g hydro_color_pwd \"brcyan\"
 set -g fish_key_bindings fish_vi_key_bindings
 set -g fish_term24bit 1")
+		       (plain-file "add-npm-bin.fish"
+				   "fish_add_path $HOME/.local/npm/bin")
 		       ))))
     %base-home-services
     )))
@@ -814,3 +903,5 @@ set -g fish_term24bit 1")
 ;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
 ;; TODO: Create wrapper for this.
 ;; LD_LIBRARY_PATH=/home/ph/.guix-home/profile/lib/sane SANE_CONFIG_DIR=/home/ph/.guix-home/profile/etc/sane.d/ simple-scan
+
+;; guix shell -C -N -F curl bash openssl nss-certs coreutils grep sed jq git --share=$HOME/.local --share=$HOME/.cache/claude --share=$HOME/.claude -- $HOME/.local/bin/claude
