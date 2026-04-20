@@ -105,7 +105,60 @@
   #:use-module (rosenthal home services emacs)
   #:use-module (rosenthal utils file)
   #:use-module (guix git-download)
-  #:use-module ((ice-9 ftw) #:select (scandir)))
+  #:use-module ((ice-9 ftw) #:select (scandir))
+  #:use-module (guix build-system copy))
+
+(define-public fish-pure
+  (package
+   (name "fish-pure")
+   (version "4.16.0")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+	   (url "https://github.com/pure-fish/pure")
+	   (commit (string-append "v" version))))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32
+       "1qvi5wwwh60n9jc9nxxp43pjcbf77il468jp1j118dv13ghbpq1i"))))
+   (build-system copy-build-system)
+   (arguments
+    (list
+     #:install-plan #~`(("conf.d" "share/")
+			("functions" "share/"))))
+   (inputs
+    (list fish))
+   (home-page "https://github.com/pure-fish/pure")
+   (synopsis "Pretty, minimal and fast Fish 🐟 prompt, ported from zsh.")
+   (description "Pretty, minimal and fast Fish 🐟 prompt, ported from zsh.")
+   (license license:expat)))
+
+(define %fish-pure-config
+  "
+set pure_check_for_new_release false
+set pure_truncate_prompt_current_directory_keeps 3
+set pure_enable_single_line_prompt true
+set pure_reverse_prompt_symbol_in_vimode true
+")
+
+(define-public fish-hydro/ph
+  (package
+    (inherit
+     (package-with-extra-patches fish-hydro
+				 ;; Add username and hostname in container or with remote hosts.
+				 ;; https://github.com/jorgebucaran/hydro/pull/62
+				 (list (local-file "patches/username-hostname.patch"))))
+    (name "fish-hydro-ph")))
+
+(define %fish-hydro-config
+  "
+set -g hydro_always_show_user true
+set -g hydro_color_pwd \"brcyan\"
+set -g fish_key_bindings fish_vi_key_bindings
+set -g fish_term24bit 1
+")
+
 
 ;; Use git version for emacs-evil so it can run on emacs 31.
 (define emacs-evil/ph
@@ -113,13 +166,13 @@
 	(commit "729d9a58b387704011a115c9200614e32da3cefc")
 	(sha "0scdws40fg4k9lqyznjghnn8svn7l0c6mq7h2aq5pzkm6hanzqn3"))
     (package
-     (inherit emacs-evil)
-     (name "emacs-evil-ph")
-     (version (git-version "1.15.0" revision commit))
-     (source
-      (origin
-       (method git-fetch)
-       (uri (git-reference
+      (inherit emacs-evil)
+      (name "emacs-evil-ph")
+      (version (git-version "1.15.0" revision commit))
+      (source
+       (origin
+	 (method git-fetch)
+	 (uri (git-reference
 	     (url "https://github.com/emacs-evil/evil")
 	     (commit commit)))
        (file-name (git-file-name name version))
@@ -162,23 +215,29 @@
        (sha256
 	(base32 sha)))))))
 
-(define emacs-modus-catppuccin-themes/ph
-  (let ((commit "e1810f7a854aa5e5dff7d68e6c3c628777d22d4d")
-	(revision "0")
-	(sha "1g1zhcdk3j8sc187xl2qr87cvjl88s4fq1i1m6is094ra4grf7zg"))
+(define emacs-modus-catppuccin
+  (let ((commit "5ce8a86a6844acdc368c8a25ac85df60e2c1352a")
+	(revision "0"))
     (package
-     (inherit emacs-modus-catppuccin-themes)
-     (name "emacs-modus-catppuccin-themes-ph")
+     (name "emacs-modus-catppuccin")
      (version (git-version "0.0.1" revision commit))
      (source
       (origin
        (method git-fetch)
        (uri (git-reference
-	     (url "https://github.com/xuchengpeng/catppuccin-themes")
+	     (url "https://codeberg.org/alex-iam/modus-catppuccin")
 	     (commit commit)))
        (file-name (git-file-name name version))
        (sha256
-	(base32 sha)))))))
+	(base32 "05hvniayr1zcayk33f1qxih58fjnkbrljjqrk2w506j1d5vhkh0x"))))
+     (build-system emacs-build-system)
+     (propagated-inputs
+      (list emacs-modus-themes))
+     (arguments (list #:tests? #f))   ;; no tests.
+     (home-page "https://codeberg.org/alex-iam/modus-catppuccin")
+     (synopsis "Catppuccin color themes for Emacs, built on the modus-themes framework.")
+     (description " Catppuccin color themes for Emacs, built on the modus-themes framework.")
+     (license license:gpl3+))))
 
 (define emacs-lambda-line
   ;; no tags or version available in the git repository.
@@ -549,7 +608,7 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 	emacs-agent-shell/ph
 	emacs-rustic/ph
 	emacs-rust-mode
-	emacs-paren-face
+	emacs-prism
 	emacs-symex-core
 	emacs-symex
 	emacs-symex-ide
@@ -568,7 +627,7 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 	emacs-lin
 	emacs-hl-todo
 	emacs-forge
-	emacs-modus-catppuccin-themes/ph
+	emacs-modus-catppuccin
 	emacs-gcmh
 	emacs-corfu
 	emacs-cape
@@ -653,7 +712,7 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 (define %tools
   (list htop
 	`(,isc-bind "utils")
-	fish-hydro
+	fish-hydro/ph
 	bash
 	curl
 	b4
@@ -1074,7 +1133,10 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
       source $EAT_SHELL_INTEGRATION_DIR/fish
   end\n")))))
 
-    (service home-fish-hydro-service-type)
+    (service home-fish-hydro-service-type
+	     (home-fish-hydro-configuration
+	      (fish-hydro fish-hydro/ph)))
+
     (service home-fish-service-type
 	     (home-fish-configuration
 	      (config (list
@@ -1091,14 +1153,13 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 			"set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
 set -g DIRENV_WARN_TIMEOUT 10m
 fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
-		       (plain-file
-			"fish-hydro-config" "\
-set -g hydro_color_pwd \"brcyan\"
-set -g fish_key_bindings fish_vi_key_bindings
-set -g fish_term24bit 1")
-		       (plain-file "add-npm-bin.fish"
-				   "fish_add_path $HOME/.local/npm/bin")
-		       ))))
+
+
+
+		       (plain-file "fish-hydro-config.fish" %fish-hydro-config)
+
+		       (plain-file "add-npm-bin.fish" "fish_add_path $HOME/.local/npm/bin")
+		       (plain-file "fish-pure-config.fish" %fish-pure-config)))))
     %base-home-services
     )))
 

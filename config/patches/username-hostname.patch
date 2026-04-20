@@ -1,0 +1,259 @@
+From 048938684705eb03c555571cea1f3a4831cf9442 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Thorsten=20M=C3=BChlfelder?= <thorsten.muehlfelder@pid.team>
+Date: Wed, 12 Feb 2025 11:44:38 +0100
+Subject: [PATCH 1/6] Username/hostname section added
+
+---
+ README.md                  | 26 ++++++++++++++------------
+ conf.d/hydro.fish          | 34 +++++++++++++++++++++++++++++++++-
+ functions/fish_prompt.fish |  2 +-
+ 3 files changed, 48 insertions(+), 14 deletions(-)
+
+diff --git a/README.md b/README.md
+index 6731b13..1540d82 100644
+--- a/README.md
++++ b/README.md
+@@ -100,21 +100,23 @@ Modify variables using `set --universal` from the command line or `set --global`
+ 
+ > Any argument accepted by [`set_color`](https://fishshell.com/docs/current/cmds/set_color.html).
+ 
+-| Variable               | Type  | Description                    | Default              |
+-| ---------------------- | ----- | ------------------------------ | -------------------- |
+-| `hydro_color_pwd`      | color | Color of the pwd segment.      | `$fish_color_normal` |
+-| `hydro_color_git`      | color | Color of the git segment.      | `$fish_color_normal` |
+-| `hydro_color_start`    | color | Color of the start symbol.     | `$fish_color_normal` |
+-| `hydro_color_error`    | color | Color of the error segment.    | `$fish_color_error`  |
+-| `hydro_color_prompt`   | color | Color of the prompt symbol.    | `$fish_color_normal` |
+-| `hydro_color_duration` | color | Color of the duration section. | `$fish_color_normal` |
++| Variable               | Type  | Description                             | Default              |
++| ---------------------- | ----- | --------------------------------------- | -------------------- |
++| `hydro_color_pwd`      | color | Color of the pwd segment.               | `$fish_color_normal` |
++| `hydro_color_git`      | color | Color of the git segment.               | `$fish_color_normal` |
++| `hydro_color_start`    | color | Color of the start symbol.              | `$fish_color_normal` |
++| `hydro_color_error`    | color | Color of the error segment.             | `$fish_color_error`  |
++| `hydro_color_prompt`   | color | Color of the prompt symbol.             | `$fish_color_normal` |
++| `hydro_color_duration` | color | Color of the duration section.          | `$fish_color_normal` |
++| `hydro_color_who     ` | color | Color of the username/hostname section. | `$fish_color_normal` |
+ 
+ ### Flags
+ 
+-| Variable          | Type    | Description                                  | Default |
+-| ----------------- | ------- | -------------------------------------------- | ------- |
+-| `hydro_fetch`     | boolean | Fetch git remote in the background.          | `false` |
+-| `hydro_multiline` | boolean | Display prompt character on a separate line. | `false` |
++| Variable                 | Type    | Description                                  | Default |
++| ------------------------ | ------- | -------------------------------------------- | ------- |
++| `hydro_fetch`            | boolean | Fetch git remote in the background.          | `false` |
++| `hydro_multiline`        | boolean | Display prompt character on a separate line. | `false` |
++| `hydro_always_show_user` | boolean | Always display username.                     | `false` |
+ 
+ ### Misc
+ 
+diff --git a/conf.d/hydro.fish b/conf.d/hydro.fish
+index 39bf3a8..277de0b 100644
+--- a/conf.d/hydro.fish
++++ b/conf.d/hydro.fish
+@@ -31,6 +31,37 @@ function _hydro_pwd --on-variable PWD --on-variable hydro_ignored_git_paths --on
+     )
+ end
+ 
++function _hydro_who
++    set --local show_hostname false
++    if set --query SSH_CONNECTION
++        set --local show_hostname true
++    else
++        switch (uname)
++        case Linux
++            if test -r /proc/1/environ && grep -qa container=lxc /proc/1/environ
++                set --local show_hostname true
++            end
++        case FreeBSD
++            if test "$(sysctl -n security.jail.jailed)" = "1"
++                set --local show_hostname true
++            end
++        case SunOS
++            if test "$(zonename)" != "global"
++                set --local show_hostname true
++            end
++        end
++    end
++
++    if test "$show_hostname" = true
++        set --local host (
++            string split --fields 1 . "@$hostname"
++        )
++        set --global _hydro_who "$USER$host "
++    else if test "$hydro_always_show_user" = true
++        set --global _hydro_who "$USER "
++    end
++end
++
+ function _hydro_postexec --on-event fish_postexec
+     set --local last_status $pipestatus
+     set --global _hydro_status "$_hydro_newline$_hydro_color_prompt$hydro_symbol_prompt"
+@@ -60,6 +91,7 @@ end
+ function _hydro_prompt --on-event fish_prompt
+     set --query _hydro_status || set --global _hydro_status "$_hydro_newline$_hydro_color_prompt$hydro_symbol_prompt"
+     set --query _hydro_pwd || _hydro_pwd
++    set --query _hydro_who || _hydro_who
+ 
+     command kill $_hydro_last_pid 2>/dev/null
+ 
+@@ -115,7 +147,7 @@ end
+ 
+ set --global hydro_color_normal (set_color normal)
+ 
+-for color in hydro_color_{pwd,git,error,prompt,duration,start}
++for color in hydro_color_{pwd,git,error,prompt,duration,start,who}
+     function $color --on-variable $color --inherit-variable color
+         set --query $color && set --global _$color (set_color $$color)
+     end && $color
+diff --git a/functions/fish_prompt.fish b/functions/fish_prompt.fish
+index bbafa9f..8e6bb35 100644
+--- a/functions/fish_prompt.fish
++++ b/functions/fish_prompt.fish
+@@ -1,3 +1,3 @@
+ function fish_prompt --description Hydro
+-    echo -e "$_hydro_color_start$hydro_symbol_start$hydro_color_normal$_hydro_color_pwd$_hydro_pwd$hydro_color_normal $_hydro_color_git$$_hydro_git$hydro_color_normal$_hydro_color_duration$_hydro_cmd_duration$hydro_color_normal$_hydro_status$hydro_color_normal "
++    echo -e "$_hydro_color_start$hydro_symbol_start$hydro_color_normal$_hydro_color_who$_hydro_who$hydro_color_normal$_hydro_color_pwd$_hydro_pwd$hydro_color_normal $_hydro_color_git$$_hydro_git$hydro_color_normal$_hydro_color_duration$_hydro_cmd_duration$hydro_color_normal$_hydro_status$hydro_color_normal "
+ end
+
+From fd5934fd765bff4a213af96738d15050c9d03ce9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Thorsten=20M=C3=BChlfelder?= <thorsten.muehlfelder@pid.team>
+Date: Wed, 12 Feb 2025 13:40:44 +0100
+Subject: [PATCH 2/6] Alway set _hydro_who
+
+---
+ conf.d/hydro.fish | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/conf.d/hydro.fish b/conf.d/hydro.fish
+index 277de0b..91dbd28 100644
+--- a/conf.d/hydro.fish
++++ b/conf.d/hydro.fish
+@@ -59,6 +59,8 @@ function _hydro_who
+         set --global _hydro_who "$USER$host "
+     else if test "$hydro_always_show_user" = true
+         set --global _hydro_who "$USER "
++    else
++        set --global _hydro_who ""
+     end
+ end
+ 
+
+From 657bf91d075abda5b22f06fecc15a52aee60a9b2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Thorsten=20M=C3=BChlfelder?= <thorsten.muehlfelder@pid.team>
+Date: Wed, 12 Feb 2025 14:09:25 +0100
+Subject: [PATCH 3/6] Wrong use of set --local fixed
+
+---
+ conf.d/hydro.fish | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/conf.d/hydro.fish b/conf.d/hydro.fish
+index 91dbd28..8c0ce35 100644
+--- a/conf.d/hydro.fish
++++ b/conf.d/hydro.fish
+@@ -34,20 +34,20 @@ end
+ function _hydro_who
+     set --local show_hostname false
+     if set --query SSH_CONNECTION
+-        set --local show_hostname true
++        set show_hostname true
+     else
+         switch (uname)
+         case Linux
+             if test -r /proc/1/environ && grep -qa container=lxc /proc/1/environ
+-                set --local show_hostname true
++                set show_hostname true
+             end
+         case FreeBSD
+             if test "$(sysctl -n security.jail.jailed)" = "1"
+-                set --local show_hostname true
++                set show_hostname true
+             end
+         case SunOS
+             if test "$(zonename)" != "global"
+-                set --local show_hostname true
++                set show_hostname true
+             end
+         end
+     end
+
+From bff361aa591932e7b84f7d90b053fa5327039023 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Thorsten=20M=C3=BChlfelder?= <thorsten.muehlfelder@pid.team>
+Date: Wed, 12 Feb 2025 14:39:26 +0100
+Subject: [PATCH 4/6] Moved @
+
+---
+ conf.d/hydro.fish | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/conf.d/hydro.fish b/conf.d/hydro.fish
+index 8c0ce35..eb7be1e 100644
+--- a/conf.d/hydro.fish
++++ b/conf.d/hydro.fish
+@@ -53,10 +53,10 @@ function _hydro_who
+     end
+ 
+     if test "$show_hostname" = true
+-        set --local host (
+-            string split --fields 1 . "@$hostname"
++        set --local short_host (
++            string split --fields 1 . $hostname
+         )
+-        set --global _hydro_who "$USER$host "
++        set --global _hydro_who "$USER@$short_host "
+     else if test "$hydro_always_show_user" = true
+         set --global _hydro_who "$USER "
+     else
+
+From 37931297a6b34e6ca7b98dee556327fec898a0ca Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Thorsten=20M=C3=BChlfelder?= <t@nxry.de>
+Date: Fri, 23 Jan 2026 08:19:24 +0100
+Subject: [PATCH 5/6] gitignore added
+
+---
+ .gitignore | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..e43b0f9
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1 @@
++.DS_Store
+
+From f181c1ddb846e4f2ed4323802875c8db83589c2e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Thorsten=20M=C3=BChlfelder?= <t@nxry.de>
+Date: Fri, 23 Jan 2026 09:40:12 +0100
+Subject: [PATCH 6/6] merge upstram
+
+---
+ functions/fish_mode_prompt.fish | 2 +-
+ functions/fish_prompt.fish      | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/functions/fish_mode_prompt.fish b/functions/fish_mode_prompt.fish
+index 2b6b28c..c32b5f8 100644
+--- a/functions/fish_mode_prompt.fish
++++ b/functions/fish_mode_prompt.fish
+@@ -16,6 +16,6 @@ function fish_mode_prompt
+                 set vi_mode_color (set_color $fish_color_match)
+                 set vi_mode_symbol V
+         end
+-        echo -e "$vi_mode_color $vi_mode_symbol \x1b[0m "
++        echo -e -n "$vi_mode_color $vi_mode_symbol \x1b[0m "
+     end
+ end
+diff --git a/functions/fish_prompt.fish b/functions/fish_prompt.fish
+index 8e6bb35..653828c 100644
+--- a/functions/fish_prompt.fish
++++ b/functions/fish_prompt.fish
+@@ -1,3 +1,3 @@
+ function fish_prompt --description Hydro
+-    echo -e "$_hydro_color_start$hydro_symbol_start$hydro_color_normal$_hydro_color_who$_hydro_who$hydro_color_normal$_hydro_color_pwd$_hydro_pwd$hydro_color_normal $_hydro_color_git$$_hydro_git$hydro_color_normal$_hydro_color_duration$_hydro_cmd_duration$hydro_color_normal$_hydro_status$hydro_color_normal "
++    echo -e -n "$_hydro_color_start$hydro_symbol_start$hydro_color_normal$_hydro_color_who$_hydro_who$hydro_color_normal$_hydro_color_pwd$_hydro_pwd$hydro_color_normal $_hydro_color_git$$_hydro_git$hydro_color_normal$_hydro_color_duration$_hydro_cmd_duration$hydro_color_normal$_hydro_status$hydro_color_normal "
+ end

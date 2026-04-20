@@ -45,13 +45,14 @@
   (fset 'yes-or-no-p 'y-or-n-p)
 
 
+  ;; TODO(ph): experimenting wiht paren-face
   ;; Highlight matching paren.
-  (show-paren-mode 1)
+  ;; (show-paren-mode 1)
   ;; Three options for paren-style: 'expression, 'parenthesis, and
   ;; 'mixed The first one highlights the complete region between
   ;; parens, the second only highlights the matching paren, the third
   ;; does 'expression when the matching paren is not visible.
-  (show-paren-style 'mixed)
+  ;; (show-paren-style 'mixed)
 
   :config
   (setq
@@ -207,6 +208,10 @@
 
     "bp" '(previous-buffer :wk "previous buffer")
     "bn" '(next-buffer :wk "next buffer")))
+
+(use-package modus-catppuccin
+  :config
+  (load-theme 'modus-catppuccin-macchiato :no-confirm))
 
 ;; Improved termibal experience
 (use-package eat
@@ -412,12 +417,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     (exec-path-from-shell-initialize)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package modus-themes)
-(use-package catppuccin-themes
-  :init
-  (catppuccin-themes-take-over-modus-themes-mode 1)
-  :config
-  (modus-themes-load-theme 'catppuccin-latte))
 
 ;; Autocomplete popup
 (use-package corfu
@@ -1005,9 +1004,12 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 (use-package symex
   :after symex-core
   :config
-  (symex-mode))
+  (symex-mode)
+  :general
+  (ph/leader-key
+    ";" '(symex-mode-interface :wk "symex")))
 
-(use-package symex-ide
+(use-package  symex-ide
   :after (symex)
   :config
   (symex-ide-mode 1))
@@ -1015,4 +1017,25 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 (use-package symex-evil
   :after (symex evil)
   :config
+  (defvar-local entered-insert-from-symex nil
+    "Did buffer's most recent entry into insert state come from symex state?")
+  (add-hook 'evil-insert-state-entry-hook
+            (lambda ()
+              (setq entered-insert-from-symex (eq evil-previous-state 'symex))))
+
+  ;; when returning from insert state, go back to symex state if it's whence we came
+  (advice-add 'evil-normal-state :after
+	      (lambda (&rest _)
+		(when (and (eq evil-previous-state 'insert) entered-insert-from-symex) ; when we're coming from insert state, and got thither from symex state
+					;(setq entered-insert-from-symex nil) ; this seems to be redundant, but would make doubly sure it's just a one-shot
+		  (symex-mode-interface))))
   (symex-evil-mode 1))
+
+;; TODO(ph): to evaluate, not sure I like all the colors in the code.
+;; (use-package prism
+;;   :hook
+;;   ((emacs-lisp-mode . prism-mode)
+;;    (scheme-mode . prism-mode)
+;;    (lisp-mode . prism-mode))
+;;   :custom
+;;   (prism-parens t))
