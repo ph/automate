@@ -109,7 +109,9 @@
   (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 10"))
 
   ;; Create a closing pair automatically
-  (electric-pair-mode 1)
+  ;; TODO(ph): evaluate with symex if needed.
+  ;; (electric-pair-mode 1)
+
   (global-auto-revert-mode 1)
   (global-hl-line-mode)
   (global-display-line-numbers-mode t)
@@ -923,9 +925,9 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 ;;   :after lispy
 ;;   :hook (lispy-mode . lispyville-mode))
 
-(use-package rainbow-delimiters
-  :hook
-  (prog-mode . rainbow-delimiters-mode))
+;; (use-package rainbow-delimiters
+;;   :hook
+;;   (prog-mode . rainbow-delimiters-mode))
 
 ;; (use-package paredit
 ;;   :commands paredit-mode
@@ -997,3 +999,20 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (setq agent-shell-anthropic-claude-environment
 	(agent-shell-make-environment-variables :inherit-env t))
   (setq agent-shell-command-prefix (lambda (buffer) (ph/guix-container-prefix buffer))))
+
+(use-package symex-core)
+
+(use-package symex
+  :after symex-core
+  :config
+  (symex-mode))
+
+(use-package symex-ide
+  :after (symex)
+  :config
+  (symex-ide-mode 1))
+
+(use-package symex-evil
+  :after (symex evil)
+  :config
+  (symex-evil-mode 1))
