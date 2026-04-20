@@ -104,7 +104,8 @@
   #:use-module (rosenthal services desktop)
   #:use-module (rosenthal home services emacs)
   #:use-module (rosenthal utils file)
-  #:use-module (guix git-download))
+  #:use-module (guix git-download)
+  #:use-module ((ice-9 ftw) #:select (scandir)))
 
 ;; Use git version for emacs-evil so it can run on emacs 31.
 (define emacs-evil/ph
@@ -323,26 +324,224 @@ communicating with LLM agents.")
 
 (define-public emacs-agent-shell/ph
   (package
-    (name "emacs-agent-shell-ph")
-    (version "0.50.1")
-    (source
-     (origin
+   (name "emacs-agent-shell-ph")
+   (version "0.50.1")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+	   (url "https://github.com/xenodium/agent-shell")
+	   (commit (string-append "v" version))))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32 "0njajpz51pbz4hqaq7lcvwaypilq1c9sdxsk6sdxgk1xpivqlxfb"))))
+   (build-system emacs-build-system)
+   (propagated-inputs (list emacs-shell-maker/ph
+			    emacs-acp/ph))
+   (home-page "https://github.com/xenodium/agent-shell")
+   (synopsis "Native agentic integrations for Claude Code, Gemini CLI, etc")
+   (description
+    "This package offers a native comint shell experience to interact with any agent
+powered by @uref{https://agentclientprotocol.com/, Agent Client Protocol} (ACP).")
+   (license license:gpl3+)))
+
+
+(define-public emacs-pubsub
+  (let ((commit "51a6a052984d02d0d11c9be4aad421d2d34017af")
+	(revision "0"))
+    (package
+     (name "emacs-pubsub")
+     (version (git-version "0.1" revision commit))
+     (source
+      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/xenodium/agent-shell")
-             (commit (string-append "v" version))))
+	     (url "https://github.com/countvajhula/pubsub")
+	     (commit commit)))
        (file-name (git-file-name name version))
        (sha256
-        (base32 "0njajpz51pbz4hqaq7lcvwaypilq1c9sdxsk6sdxgk1xpivqlxfb"))))
-    (build-system emacs-build-system)
-    (propagated-inputs (list emacs-shell-maker/ph
-			     emacs-acp/ph))
-    (home-page "https://github.com/xenodium/agent-shell")
-    (synopsis "Native agentic integrations for Claude Code, Gemini CLI, etc")
-    (description
-     "This package offers a native comint shell experience to interact with any agent
-powered by @uref{https://agentclientprotocol.com/, Agent Client Protocol} (ACP).")
-    (license license:gpl3+)))
+	(base32 "0d12dq2cyaz86vs1md0n111wmlpd09nnnrdhbij7sbphqxw8vlrx"))))
+     (build-system emacs-build-system)
+     (arguments
+      `(#:tests? #f))
+     (home-page "https://github.com/countvajhula/pubsub")
+     (synopsis "A basic publish/subscribe system for Emacs")
+     (description "Pubsub is for decoupling — allowing different pieces of code to talk to each other without being directly connected. A function call, for instance, is the simplest way to pass data from one place to another, and it can be thought of as entailing a single, directly connected, publisher and subscriber pair.")
+     (license license:public-domain))))
+
+(define-public emacs-lithium
+  (let ((commit "d8a8e1287df0d42e0357f8dda450d2c2c0294a75")
+	(revision "0"))
+    (package
+     (name "emacs-lithium")
+     (version (git-version "0.1.1" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/countvajhula/lithium")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "0vyd3y0ndksg3dyxhgzrgwfpzqc7mdmq1ma3jmzxlqsnb8jby49d"))))
+     (build-system emacs-build-system)
+     (arguments
+      `(#:tests? #f))
+     (propagated-inputs
+      (list emacs-pubsub))
+     (home-page "https://github.com/countvajhula/lithium")
+     (synopsis "Lightweight persistent modal interfaces for Emacs")
+     (description
+      "Lithium allows you to define Vim-like modes using Emacs's minor mode infrastructure. Modes may either be local to a buffer or global across all of Emacs.")
+     (license license:public-domain))))
+
+(define-public emacs-mantra
+    (package
+     (name "emacs-mantra")
+     (version "0.3")
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/countvajhula/mantra")
+	     (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "0hxjjb68swaggp1z2r0dmc441iz7gsvykm2njizrkp9aimj59h55"))))
+     (build-system emacs-build-system)
+     (arguments
+      `(#:tests? #f))
+     (propagated-inputs
+      (list emacs-pubsub))
+     (home-page "https://github.com/countvajhula/mantra")
+     (synopsis "Parse and compose editing activity in Emacs")
+     (description
+      "Parse and compose keyboard activity in Emacs.")
+     (license license:public-domain)))
+
+(define-public emacs-virtual-ring
+  (package
+   (name "emacs-virtual-ring")
+   (version "0.1")
+   (source
+    (origin
+     (method git-fetch)
+     (uri (git-reference
+	   (url "https://github.com/countvajhula/virtual-ring")
+	   (commit (string-append "v" version))))
+     (file-name (git-file-name name version))
+     (sha256
+      (base32
+       "1v986w4d315fmrmr0ik9v0srrsf48pmiwa6cqw0v4s6qdhccvcal"))))
+   (build-system emacs-build-system)
+   (arguments
+    `(#:tests? #f))
+   ;; (propagated-inputs (list emacs-pubsub))
+   (home-page "https://github.com/countvajhula/virtual-ring")
+   (synopsis "Fixed size rings with virtual rotation")
+   (description
+    "A thin wrapper around Emacs's ring data structure that layers stateful, \"virtual,\" rotation on top of the underlying fixed-size recency-aware ring.
+
+Virtual rings are a good fit in cases where you need to keep track both of recency of insertion as well as have an independent notion of stateful rotation to track a current \"selection.\"")
+   (license license:public-domain)))
+
+(define-public emacs-repeat-ring
+    (package
+     (name "emacs-repeat-ring")
+     (version "0.1")
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/countvajhula/repeat-ring")
+	     (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32
+	 "0z2hzfiaq7ml1fj1wnfxy8dx8805iyz0mimskr2x98pa8wvbclbl"))))
+     (build-system emacs-build-system)
+     (arguments
+      `(#:tests? #f))
+     (propagated-inputs
+      (list emacs-pubsub
+	    emacs-mantra
+	    emacs-virtual-ring))
+     (home-page "https://github.com/countvajhula/repeat-ring")
+     (synopsis "A structured and configurable way to repeat key sequences in Emacs.")
+     (description
+"A structured and general way to record and replay your activity within Emacs, inspired by both Vim and Emacs keyboard macros.")
+     (license license:public-domain)))
+
+(define (emacs-symex-package name path inputs)
+  (let ((commit "4025d17ba260c893d58848258647005b58964b42")
+	(revision "0"))
+    (package
+     (name name)
+     (version (git-version "0.50.1" revision commit))
+     (source
+      (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://github.com/drym-org/symex.el")
+	     (commit commit)))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "1bn4fs064l6g1yllbbimq33and9admhsadzlh6a74dgc6z1xcmza"))
+       (modules '((guix build utils)
+		  (srfi srfi-26)
+		  (ice-9 ftw)))
+       (snippet `(begin
+		   (define (delete-other-except directory keep-paths)
+		     (with-directory-excursion directory
+					       (let* ((predicate (negate (cut member <> (append '("." "..") (list keep-paths)))))
+						      (files-to-delete (or (scandir "." predicate) '())))
+						 (for-each delete-file-recursively files-to-delete))))
+		   (delete-other-except "." ,path)
+		   (for-each (lambda (f)
+			       (rename-file (in-vicinity ,path f)  (basename f)))
+			     (scandir ,path (negate (cut member <> '("." "..")))))
+		   (rmdir ,path)))))
+     (build-system emacs-build-system)
+     (propagated-inputs inputs)
+     (home-page "https://github.com/drym-org/symex.el")
+      (synopsis "An expressive modal way to write code (esp. Lisp) in Emacs")
+      (description "Symex (pronounced sim-ex) is an intuitive modal way to edit code,
+ built on top of an expressive domain-specific language (DSL) for te-oriented operations.")
+      (license license:public-domain))))
+
+(define-public emacs-symex-core
+  (emacs-symex-package "emacs-symex-core"
+		       "symex-core"
+		       (list emacs-paredit)))
+
+(define-public emacs-symex
+  (emacs-symex-package "emacs-symex"
+		       "symex"
+		       (list emacs-lithium
+			     emacs-mantra
+			     emacs-pubsub
+			     emacs-repeat-ring
+			     emacs-symex-core)))
+
+(define-public emacs-symex-ide
+  (emacs-symex-package "emacs-symex-ide"
+		       "symex-ide"
+		       (list emacs-symex)))
+
+(define-public emacs-symex-evil
+  (emacs-symex-package "emacs-symex-evil"
+		       "symex-evil"
+		       (list emacs-symex
+			     emacs-evil)))
+
+(define-public emacs-symex-rigpa
+  (emacs-symex-package "emacs-symex-rigpa"
+		       "symex-rigpa"
+		       (list emacs-symex
+			     ;; need https://github.com/countvajhula/rigpa
+			     ;; need https://github.com/countvajhula/lithium
+			     emacs-symex-evil)))
+
 
 (define %emacs-packages
   (list emacs-evil/ph
@@ -350,6 +549,11 @@ powered by @uref{https://agentclientprotocol.com/, Agent Client Protocol} (ACP).
 	emacs-agent-shell/ph
 	emacs-rustic/ph
 	emacs-rust-mode
+	emacs-paren-face
+	emacs-symex-core
+	emacs-symex
+	emacs-symex-ide
+	emacs-symex-evil
 	emacs-evil-commentary
 	emacs-evil-surround
 	emacs-general
@@ -615,9 +819,7 @@ powered by @uref{https://agentclientprotocol.com/, Agent Client Protocol} (ACP).
 					 "@theme '" rofi-theme-catppuccin "/share/themes/catppuccin-default'")))
 
 
-(define %emacs
-
-  )
+(define %emacs)
 
 (define %swayish 
   (sway-configuration
