@@ -52,17 +52,6 @@
    (url "https://github.com/ph/guix-rusty")
    (branch "main")))
 
-(define %emacs-master-channel
-  (channel
-    (name 'emacs-master)
-    (url "https://github.com/gs-101/emacs-master.git")
-    (branch "main")
-    (introduction
-      (make-channel-introduction
-	"568579841d0ca41a9d222a2cfcad9a7367f9073b"
-	(openpgp-fingerprint
-	  "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4")))))
-
 ;; Expose BLUE - Build Language User Extensible. A generic build-system crafted
 ;; entirely in Guile. 
 (define %bluebox-channel
@@ -80,5 +69,4 @@
       %nonguix-channel
       %rosenthal-channel
       %heyk-channel
-      %emacs-master-channel
       %bluebox-channel)

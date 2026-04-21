@@ -32,7 +32,6 @@
   #:use-module (gnu packages curl)
   #:use-module (gnu packages docker)
   #:use-module (gnu packages emacs)
-  #:use-module (emacs-master)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages emulators)
   #:use-module (gnu packages engineering)
@@ -757,7 +756,6 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 ;; (define %emacs
 ;;   (list
 ;;    ;; emacs-next-pgtk
-;;    ;; emacs-master-pgtk
 ;;    ;; emacs-guix
 ;;    ;; emacs-arei
 ;;    ;; emacs-debbugs
