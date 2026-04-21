@@ -164,4 +164,4 @@ window-rule {
     open-floating true
 }
 
-spawn-sh-at-startup "sleep 15; $$bin/signal-desktop$$ --use-tray-icon"
+spawn-sh-at-startup "sleep 15; $$bin/signal-desktop$$ --use-tray-icon --start-in-tray"
