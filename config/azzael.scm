@@ -190,22 +190,6 @@
 					   %default-channels))
 				   (priority 5)
 				   (systems '("x86_64-linux" "aarch64-linux")))
-				  (specification
-				   (name "emacs-master")
-				   (build '(channels emacs-master))
-				   (channels
-				    (cons* (channel
-					    (name 'emacs-master)
-					    (url "https://github.com/gs-101/emacs-master.git")
-					    (branch "main")
-					    (introduction
-					     (make-channel-introduction
-					      "568579841d0ca41a9d222a2cfcad9a7367f9073b"
-					      (openpgp-fingerprint
-					       "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
-					   %default-channels))
-				   (priority 3)
-				   (systems '("x86_64-linux")))
 
 				  (specification
 				   (name "guix")
