@@ -105,8 +105,8 @@
   #:use-module (rosenthal utils file)
   #:use-module (guix git-download)
   #:use-module ((ice-9 ftw) #:select (scandir))
-  #:use-module (guix build-system copy))
-
+  #:use-module (guix build-system copy)
+  )
 (define-public fish-pure
   (package
    (name "fish-pure")
