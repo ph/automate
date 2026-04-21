@@ -133,14 +133,6 @@
    (description "Pretty, minimal and fast Fish 🐟 prompt, ported from zsh.")
    (license license:expat)))
 
-(define %fish-pure-config
-  "
-set pure_check_for_new_release false
-set pure_truncate_prompt_current_directory_keeps 3
-set pure_enable_single_line_prompt true
-set pure_reverse_prompt_symbol_in_vimode true
-")
-
 (define-public fish-hydro/ph
   (package
     (inherit
