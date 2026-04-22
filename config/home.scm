@@ -106,6 +106,7 @@
   #:use-module (guix git-download)
   #:use-module ((ice-9 ftw) #:select (scandir))
   #:use-module (guix build-system copy)
+  #:use-module (automate packages patches)
   )
 (define-public fish-pure
   (package
@@ -680,6 +681,7 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 
 (define %vcs
   (list git
+	fprintd/ph
 	;; mako
 	jujutsu
 	`(,git "send-email")))
@@ -696,9 +698,9 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
    guile-colorized))
 
 (define %browsers
-  (list
-   ;; firefox
-	librewolf))
+  (list ;; firefox
+   ungoogled-chromium
+   librewolf))
 
 (define %tools
   (list htop
@@ -1143,15 +1145,9 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 			"set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
 set -g DIRENV_WARN_TIMEOUT 10m
 fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
-
-
-
 		       (plain-file "fish-hydro-config.fish" %fish-hydro-config)
-
-		       (plain-file "add-npm-bin.fish" "fish_add_path $HOME/.local/npm/bin")
-		       (plain-file "fish-pure-config.fish" %fish-pure-config)))))
-    %base-home-services
-    )))
+		       (plain-file "add-npm-bin.fish" "fish_add_path $HOME/.local/npm/bin")))))
+    %base-home-services)))
 
 ;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
 ;; TODO: Create wrapper for this.

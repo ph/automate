@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://codeberg.org/guix/guix.git")
        (branch "master")
-       (commit "5fe112e4fa22537a50a6264d4e19969bacda620a")
+       (commit "b9512bd5e87aea2ced7b285824e5e487824d8f6c")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "5d8b56d6a07cdc1aa3022737c32ccb95f08aef08")
+       (commit "a3f4e7bff779da4593a2922516064a8edaafa3e6")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,7 +22,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "54137b18ef1a56fe4065f4298f971d411a15c151")
+       (commit "9e60a11917cbdca57e10c51e174dfa56379e74cc")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
@@ -38,16 +38,6 @@
          "fa96f4b8e25dba3b5ea47f1365cbe9cf9ef0358c"
          (openpgp-fingerprint
           "AB8D 7699 282F 5F12 4949  547E C6CD 2C3D B524 1054"))))
-      (channel
-       (name 'emacs-master)
-       (url "https://github.com/gs-101/emacs-master.git")
-       (branch "main")
-       (commit "4450a0c9230a6db5a3eaaf81fcf8f0bf64a798e9")
-       (introduction
-        (make-channel-introduction
-         "568579841d0ca41a9d222a2cfcad9a7367f9073b"
-         (openpgp-fingerprint
-          "3049 BF6C 0829 94E4 38ED  4A15 3033 E0E9 F7E2 5FE4"))))
       (channel
        (name 'bluebox)
        (url "https://codeberg.org/lapislazuli/bluebox")

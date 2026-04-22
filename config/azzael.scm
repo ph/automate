@@ -322,6 +322,7 @@
 	       (port-number 4222)
 	       (authorized-keys
 		`(("deploy" , (plain-file "deploy.pub" %user/deploy/key))
-		  ("deploy-web" , (local-file "../secrets/deploy.pub" ))))))
+		  ;; ("deploy-web" , (local-file "../secrets/deploy.pub" ))
+		  ))))
      %base-services))))
 %os

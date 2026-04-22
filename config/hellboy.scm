@@ -3,35 +3,63 @@
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 
 (define-module (hellboy)
-  #:use-module (gnu packages games)
-  #:use-module (gnu packages gnome)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages)
-  #:use-module (gnu services docker)
-  #:use-module (gnu)
-  #:use-module (nongnu packages linux)
-  #:use-module (nongnu system linux-initrd)
-  #:use-module (nongnu packages firmware)
   #:use-module (automate common)
   #:use-module (automate packages patches)
-  ;; #:use-module (automate services fwupd)
+  #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages games)
+  #:use-module (gnu packages gnome)
+  ;; #:use-module (gnu packages linux)
+  #:use-module (gnu packages)
+  #:use-module (gnu services authentication)
+  #:use-module (gnu services docker)
+  #:use-module (gnu services linux)
+  #:use-module (gnu)
+  #:use-module (nongnu packages firmware)
+  #:use-module (nongnu packages linux)
+  #:use-module (nongnu system linux-initrd)
   #:use-module (rosenthal services networking)
+  ;; #:use-module (automate services fwupd)
   #:use-module (srfi srfi-1))
 
 (load "./shared.scm")
 
 (use-service-modules desktop
 		     networking
-		     mcron
-		     linux)
+		     mcron)
+
+(define %nftables-rules
+  "
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority 0; policy drop;
+        ct state invalid drop
+        ct state { established, related } accept
+        iif lo accept # loopback
+        iif != lo ip daddr 127.0.0.1/8 drop
+        iif != lo ip6 daddr ::1/128 drop
+
+        reject with icmpx type port-unreachable
+    }
+
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+    }
+
+    chain output {
+        type filter hook output priority 0; policy accept;
+    }
+")
+  
 
 (operating-system
- (kernel linux)
+ (kernel linux-6.19)
+ (kernel-arguments (append %default-kernel-arguments
+			   ;; adding landlock
+			   (list "lsm=\"landlock,yama,loadpin,safesetid,integrity,apparmor,selinux,smack,tomoyo\"")))
  (initrd microcode-initrd)
- (firmware (list
-	    linux-firmware
-	    sof-firmware))
+ (firmware (list linux-firmware sof-firmware))
  (locale "en_CA.utf8")
  (timezone "America/Toronto")
  (keyboard-layout (keyboard-layout "us"
@@ -52,6 +80,27 @@
 	    %base-packages))
  (services
   (append (list
+	   ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
+	   ;; lets retry on kernel 7.0
+	   ;; (service fprintd-service-type
+	   ;; 	    (fprintd-configuration
+	   ;; 	     (fprintd fprintd/ph)))
+	   ;; (simple-service 'fprintd-pam-login
+	   ;; 		   pam-root-service-type
+	   ;; 		   (list (pam-extension
+	   ;; 			  (transformer
+	   ;; 			   (lambda (pam)
+	   ;; 			     (if (member (pam-service-name pam) '("sddm"))
+	   ;; 				 (pam-service
+	   ;; 				  (inherit pam)
+	   ;; 				  (auth (cons (pam-entry
+	   ;; 					       (control "sufficient")
+	   ;; 					       (module (file-append fprintd/ph "/lib/security/pam_fprintd.so")))
+	   ;; 					      (pam-service-auth pam))))
+	   ;; 				 pam))))))
+	   (service nftables-service-type
+		    (nftables-configuration
+		     (ruleset (plain-file "nftables.rules" %nftables-rules))))
 	   (simple-service 'extend-guix
 			   guix-service-type
 			   (guix-extension
@@ -66,17 +115,11 @@
 				     %default-authorized-guix-keys))))
 	   (udev-rules-service
 	    'probe-rs %probe-rs-udev-rules)
-	   ;; TODO: sync gpg keys
 	   ;; (service fwupd-service-type
 	   ;; 	    (fwupd-configuration
 	   ;; 	     (fwupd fwupd-nonfree)))
 	   (service sane-service-type)
 	   (service tailscale-service-type)
-	   (service guix-publish-service-type
-		    (guix-publish-configuration
-		     (host "0.0.0.0")
-		     (port 8181)
-		     (advertise? #t)))
 	   (service zram-device-service-type
 		    (zram-device-configuration
 		     (size "32G")
@@ -92,14 +135,12 @@
 	   (btrfs-maintenance-service '("/")))
 	  %my-system-services))
  (bootloader (bootloader-configuration
-              (bootloader grub-efi-bootloader)
-              (targets (list "/boot/efi"))
-              (keyboard-layout keyboard-layout)))
+	      (bootloader grub-efi-bootloader)
+	      (targets '("/boot/efi"))
+	      (keyboard-layout keyboard-layout)))
  (mapped-devices (list
-                  (mapped-device
-                   (source (uuid
-			    "06068380-2848-4a1e-960f-a74aa930ba8f"
-			    ))
+		  (mapped-device
+		   (source (uuid "06068380-2848-4a1e-960f-a74aa930ba8f"))
                    (target "cryptroot")
                    (type luks-device-mapping))))
  (file-systems (cons*
@@ -142,5 +183,4 @@
 		 (type "tmpfs")
 		 (options "size=40G")
 		 (check? #f))
-
 		%base-file-systems)))

@@ -195,11 +195,16 @@
            (service x11-socket-directory-service-type)
            (service pulseaudio-service-type)
            (service alsa-service-type)
-
 	   (service openssh-service-type
 		    (openssh-configuration
 		     (openssh openssh-sans-x)))
-	   (service tlp-service-type)
+	   (service tlp-service-type
+		    (tlp-configuration
+		     (cpu-scaling-governor-on-ac (list "balanced" "performance"))
+		     (cpu-boost-on-ac? #f)
+		     (cpu-scaling-governor-on-bat (list "low-power"))
+		     (cpu-boost-on-bat? #f)
+		     (sched-powersave-on-bat? #t)))
 	   (udev-rules-service 'light light)
 	   (service thermald-service-type)
 	   (service nix-service-type
@@ -209,12 +214,6 @@
 	   (service qemu-binfmt-service-type
 		    (qemu-binfmt-configuration
 		     (platforms (lookup-qemu-platforms "aarch64"))))
-	   (service screen-locker-service-type
-		    (screen-locker-configuration
-		     (name "swaylock")
-		     (program (file-append swaylock "/bin/swaylock"))
-		     (using-pam? #t)
-		     (using-setuid? #f)))
 	   (service sddm-service-type
 		    (sddm-configuration
 		     (sddm sddm-qt5)

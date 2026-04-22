@@ -93,7 +93,8 @@
 		       (permit-root-login #f)
 		       (authorized-keys
 			`(("deploy" , (plain-file "deploy.pub" %user/deploy/key))
-			  ("deploy-web" , (local-file "../secrets/deploy.pub" )))))))
+			  ;; ("deploy-web" , (local-file "../secrets/deploy.pub" ))
+			  )))))
 	    %base-services))
    (file-systems (cons*
 		  (file-system
