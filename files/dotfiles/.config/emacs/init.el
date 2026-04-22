@@ -945,15 +945,24 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :type '(repeat string)
   :group 'agent)
 
-(defcustom ph/agent-sandbox-packages '("bash" "openssl" "nss-certs" "coreutils" "grep" "sed" "jq" "git" "node")
+(defcustom ph/agent-sandbox-packages '("bash" "openssl" "nss-certs" "coreutils" "grep" "gawk" "sed" "jq" "git" "node")
   "Packages installed in the agent sandbox."
   :type '(repeat string)
   :group 'agent)
 
 (defcustom ph/default-sandbox-shares `(,(expand-file-name ".local/npm" (getenv "HOME"))
 				       ,(expand-file-name ".claude" (getenv "HOME"))
-				       ,(expand-file-name ".cache/claude" (getenv "HOME")))
+				       ,(expand-file-name ".local/share/claude" (getenv "HOME"))
+				       ,(expand-file-name ".local/bin/claude" (getenv "HOME"))
+				       ,(expand-file-name ".cache/claude" (getenv "HOME"))
+				       ,(expand-file-name ".config/claude" (getenv "HOME"))
+				       ,(expand-file-name ".claude.json" (getenv "HOME")))
   "Default shares to expose to the sandbox."
+  :type '(repeat string)
+  :group 'agent)
+
+(defcustom ph/project-customs-share '()
+  "Addition shares path for project."
   :type '(repeat string)
   :group 'agent)
 
@@ -966,7 +975,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 (defun ph/claude-agent-container-environment-mapping ()
   (concat "--share="
-	  (expand-file-name ".local/npm/bin/claude-agent-acp-wrapper" (getenv "HOME"))
+	  (expand-file-name ".local/bin/claude-agent-acp-wrapper" (getenv "HOME"))
 	  "=/bin/claude-agent-acp"))
 
 (defun ph/guix-container-prefix (&optional buffer)
@@ -978,6 +987,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     ,(ph/claude-agent-container-environment-mapping)
     ,@(mapcar 'ph/make-share-path ph/default-sandbox-shares)
     ,(ph/make-share-path (ph/project-root-from-buffer buffer))
+    ,(ph/make-share-path (ph/project-customs-share))
     ,@ph/agent-sandbox-packages
     "--"))
 
@@ -1020,8 +1030,8 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (defvar-local entered-insert-from-symex nil
     "Did buffer's most recent entry into insert state come from symex state?")
   (add-hook 'evil-insert-state-entry-hook
-            (lambda ()
-              (setq entered-insert-from-symex (eq evil-previous-state 'symex))))
+	    (lambda ()
+	      (setq entered-insert-from-symex (eq evil-previous-state 'symex))))
 
   ;; when returning from insert state, go back to symex state if it's whence we came
   (advice-add 'evil-normal-state :after
@@ -1039,3 +1049,15 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 ;;    (lisp-mode . prism-mode))
 ;;   :custom
 ;;   (prism-parens t))
+
+;; guix shell --container --network --emulate-fhs \
+;; --share=$HOME/.local/bin/claude \
+;; --share=$HOME/.local/npm \
+;; --share=$HOME/.local/share/claude \
+;; --share=$HOME/.cache/claude \
+;; --share=$HOME/.config/claude \
+;; --share=$HOME/.claude \
+;; --share=$HOME/.claude.json \
+;; bash openssl coreutils grep sed curl jq git node nss-certs
+
+;; --share=$HOME/.local/bin/claude \

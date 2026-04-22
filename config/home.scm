@@ -1152,5 +1152,3 @@ fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environ
 ;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
 ;; TODO: Create wrapper for this.
 ;; LD_LIBRARY_PATH=/home/ph/.guix-home/profile/lib/sane SANE_CONFIG_DIR=/home/ph/.guix-home/profile/etc/sane.d/ simple-scan
-
-;; guix shell -C -N -F curl bash openssl nss-certs coreutils grep sed jq git --share=$HOME/.local --share=$HOME/.cache/claude --share=$HOME/.claude -- $HOME/.local/bin/claude
