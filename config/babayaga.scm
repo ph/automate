@@ -35,7 +35,7 @@
 		     linux)
 
 (operating-system
- (kernel linux)
+ (kernel linux-6.19)
  (initrd microcode-initrd)
  (firmware (list linux-firmware sof-firmware))
  (locale "en_CA.utf8")
