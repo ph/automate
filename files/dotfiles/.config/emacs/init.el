@@ -945,7 +945,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :type '(repeat string)
   :group 'agent)
 
-(defcustom ph/agent-sandbox-packages '("bash" "openssl" "nss-certs" "coreutils" "grep" "gawk" "sed" "jq" "git" "node")
+(defcustom ph/agent-sandbox-packages '("bash" "openssl" "nss-certs" "coreutils" "grep" "gawk" "sed" "jq" "git" "node" "rust" "rust:cargo" "nix")
   "Packages installed in the agent sandbox."
   :type '(repeat string)
   :group 'agent)
@@ -956,6 +956,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 				       ,(expand-file-name ".local/bin/claude" (getenv "HOME"))
 				       ,(expand-file-name ".cache/claude" (getenv "HOME"))
 				       ,(expand-file-name ".config/claude" (getenv "HOME"))
+				       ,(expand-file-name ".cargo" (getenv "HOME"))
 				       ,(expand-file-name ".claude.json" (getenv "HOME")))
   "Default shares to expose to the sandbox."
   :type '(repeat string)
@@ -986,8 +987,8 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     "--emulate-fhs"
     ,(ph/claude-agent-container-environment-mapping)
     ,@(mapcar 'ph/make-share-path ph/default-sandbox-shares)
+    ,@(mapcar 'ph/make-share-path ph/project-customs-share)
     ,(ph/make-share-path (ph/project-root-from-buffer buffer))
-    ,(ph/make-share-path (ph/project-customs-share))
     ,@ph/agent-sandbox-packages
     "--"))
 
@@ -1049,15 +1050,3 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 ;;    (lisp-mode . prism-mode))
 ;;   :custom
 ;;   (prism-parens t))
-
-;; guix shell --container --network --emulate-fhs \
-;; --share=$HOME/.local/bin/claude \
-;; --share=$HOME/.local/npm \
-;; --share=$HOME/.local/share/claude \
-;; --share=$HOME/.cache/claude \
-;; --share=$HOME/.config/claude \
-;; --share=$HOME/.claude \
-;; --share=$HOME/.claude.json \
-;; bash openssl coreutils grep sed curl jq git node nss-certs
-
-;; --share=$HOME/.local/bin/claude \

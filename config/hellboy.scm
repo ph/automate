@@ -181,6 +181,6 @@ table inet filter {
 		 (mount-point "/tmp")
 		 (device "tmp")
 		 (type "tmpfs")
-		 (options "size=40G")
+		 (options "size=40G"
 		 (check? #f))
 		%base-file-systems)))
