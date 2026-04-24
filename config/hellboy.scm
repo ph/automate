@@ -19,6 +19,10 @@
   #:use-module (nongnu system linux-initrd)
   #:use-module (rosenthal services networking)
   ;; #:use-module (automate services fwupd)
+  #:use-module (automate microvm)
+  #:use-module (gnu system privilege)
+  #:use-module (gnu services sysctl)
+  #:use-module (gnu packages virtualization)
   #:use-module (srfi srfi-1))
 
 (load "./shared.scm")
@@ -27,37 +31,11 @@
 		     networking
 		     mcron)
 
-(define %nftables-rules
-  "
-flush ruleset
-
-table inet filter {
-    chain input {
-        type filter hook input priority 0; policy drop;
-        ct state invalid drop
-        ct state { established, related } accept
-        iif lo accept # loopback
-        iif != lo ip daddr 127.0.0.1/8 drop
-        iif != lo ip6 daddr ::1/128 drop
-
-        reject with icmpx type port-unreachable
-    }
-
-    chain forward {
-        type filter hook forward priority 0; policy drop;
-    }
-
-    chain output {
-        type filter hook output priority 0; policy accept;
-    }
-")
-  
-
 (operating-system
  (kernel linux-6.19)
- (kernel-arguments (append %default-kernel-arguments
-			   ;; adding landlock
-			   (list "lsm=\"landlock,yama,loadpin,safesetid,integrity,apparmor,selinux,smack,tomoyo\"")))
+ (kernel-arguments (cons*
+		    "lsm=\"landlock,yama,loadpin,safesetid,integrity,apparmor,selinux,smack,tomoyo\"" ;; adding landlock
+		    %default-kernel-arguments))
  (initrd microcode-initrd)
  (firmware (list linux-firmware sof-firmware))
  (locale "en_CA.utf8")
@@ -80,6 +58,15 @@ table inet filter {
 	    %base-packages))
  (services
   (append (list
+	   (microvm-bridge-networking-service-type)
+	   (microvm-extra-special-file-qemu-host-conf)
+
+
+	   (simple-service 'extend-sysctl
+			   sysctl-service-type
+			   '(("net.ipv4.ip_forward" . "1")
+			     ("net.ipv6.conf.all.forwarding" . "1")))
+
 	   ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
 	   ;; lets retry on kernel 7.0
 	   ;; (service fprintd-service-type
@@ -100,7 +87,7 @@ table inet filter {
 	   ;; 				 pam))))))
 	   (service nftables-service-type
 		    (nftables-configuration
-		     (ruleset (plain-file "nftables.rules" %nftables-rules))))
+		     (ruleset (plain-file "nftables.rules" %microvm-nftables-rules))))
 	   (simple-service 'extend-guix
 			   guix-service-type
 			   (guix-extension
@@ -143,6 +130,11 @@ table inet filter {
 		   (source (uuid "06068380-2848-4a1e-960f-a74aa930ba8f"))
                    (target "cryptroot")
                    (type luks-device-mapping))))
+ (privileged-programs
+  (cons (privileged-program
+	  (program (file-append qemu "/libexec/qemu-bridge-helper"))
+	  (setuid? #t))
+	%default-privileged-programs))
  (file-systems (cons*
 		(file-system
                  (mount-point "/")
@@ -181,6 +173,6 @@ table inet filter {
 		 (mount-point "/tmp")
 		 (device "tmp")
 		 (type "tmpfs")
-		 (options "size=40G"
+		 (options "size=40G")
 		 (check? #f))
 		%base-file-systems)))
