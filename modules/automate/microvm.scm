@@ -41,6 +41,7 @@ table ip filter {
 
 (define %microvm-bridge-name-default "virbr0")
 (define %microvm-cidr-range-default "192.168.100.1/24")
+(define %microvm-memory-size-default 256)
 
 (define* (microvm-bridge-networking-service-type #:optional
 						 (bridge-name %microvm-bridge-name-default)
@@ -112,9 +113,11 @@ table ip filter {
 			    `(("ph" ,(plain-file "ph.key" %pubkey)))))))
 	       %base-services))))
 
+gg
+
 (define (microvm os)
   (virtual-machine
     (operating-system os)
-    (memory-size 256)))
+    (memory-size %memory-size-default)))
 
 (microvm %microvm-os)
