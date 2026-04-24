@@ -40,7 +40,7 @@ table ip filter {
 ")
 
 (define %microvm-bridge-name-default "virbr0")
-(define %microvm-cidr-range-default "192.168.100/24")
+(define %microvm-cidr-range-default "192.168.100.1/24")
 
 (define* (microvm-bridge-networking-service-type #:optional
 						 (bridge-name %microvm-bridge-name-default)
@@ -57,10 +57,6 @@ table ip filter {
 			   (name bridge-name)
 			   (type 'bridge)
 			   (arguments '()))))
-		   ;; (routes
-		   ;;  (list (network-route
-		   ;; 	   (source bridge-name)
-		   ;; 	   (destination "default"))))
 		   (addresses
 		    (list (network-address
 			   (device bridge-name)
