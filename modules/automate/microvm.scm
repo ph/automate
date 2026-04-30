@@ -113,7 +113,6 @@ table ip filter {
 			    `(("ph" ,(plain-file "ph.key" %pubkey)))))))
 	       %base-services))))
 
-gg
 
 (define (microvm os)
   (virtual-machine

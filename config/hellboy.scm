@@ -8,7 +8,8 @@
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
-  ;; #:use-module (gnu packages linux)
+  #:use-module (gnu packages linux)
+  #:use-module (guix gexp)
   #:use-module (gnu packages)
   #:use-module (gnu services authentication)
   #:use-module (gnu services docker)
@@ -21,6 +22,7 @@
   ;; #:use-module (automate services fwupd)
   #:use-module (automate microvm)
   #:use-module (gnu system privilege)
+  #:use-module (gnu services shepherd)
   #:use-module (gnu services sysctl)
   #:use-module (gnu packages virtualization)
   #:use-module (srfi srfi-1))
@@ -61,13 +63,25 @@
 	   (microvm-bridge-networking-service-type)
 	   (microvm-extra-special-file-qemu-host-conf)
 
-
+	   (simple-service 'microvm-tap
+			   shepherd-root-service-type
+			   (list (shepherd-service
+				   (provision '(microvm-tap))
+				   (requirement '(static-networking))
+				   ;; (one-shot? #t)
+				   (start #~(lambda _
+					      (let (($ip #$(file-append iproute "/sbin/ip")))
+						(every (lambda (command)
+							 (zero? (apply system* command)))
+						       (list `(,$ip "tuntap" "add" "name" "tap3" "mode" "tap")
+							     `(,$ip "link" "set" "tap3" "master" "virbr0") ;; This might be static-networking
+							     `(,$ip "link" "set" "tap3" "up")))))))))
 	   (simple-service 'extend-sysctl
-			   sysctl-service-type
-			   '(("net.ipv4.ip_forward" . "1")
-			     ("net.ipv6.conf.all.forwarding" . "1")))
+			  sysctl-service-type
+			  '(("net.ipv4.ip_forward" . "1")
+			    ("net.ipv6.conf.all.forwarding" . "1")))
 
-	   ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
+	  ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
 	   ;; lets retry on kernel 7.0
 	   ;; (service fprintd-service-type
 	   ;; 	    (fprintd-configuration
@@ -176,3 +190,4 @@
 		 (options "size=40G")
 		 (check? #f))
 		%base-file-systems)))
+
