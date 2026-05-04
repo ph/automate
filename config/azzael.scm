@@ -114,7 +114,8 @@
 		       (append (list
 				"https://cache-cdn.guix.moe"
 				;; "https://substitutes.nonguix.org"
-				"https://ci.supervoid.org")
+				;; "https://ci.supervoid.org"
+				)
 			       %default-substitute-urls))
 		      (authorized-keys
 		       (append %guix-keyring-all
@@ -147,16 +148,6 @@
 		    ("logging_collector" #t)
 		    ("log_directory" "/var/log/postgresql")))))))
 
-     (simple-service 'extend-guix
-		     guix-service-type
-		     (guix-extension
-		      (substitute-urls
-		       (append (list "https://cache-cdn.guix.moe"
-				     "https://substitutes.supervoid.org")
-			       %default-substitute-urls))
-		      (authorized-keys
-		       (append %guix-keyring-all
-			       %default-authorized-guix-keys))))
      (service avahi-service-type)
      (service cuirass-service-type
 	      (cuirass-configuration
@@ -321,8 +312,8 @@
 	       (password-authentication? #f)
 	       (port-number 4222)
 	       (authorized-keys
-		`(("deploy" , (plain-file "deploy.pub" %user/deploy/key))
-		  ;; ("deploy-web" , (local-file "../secrets/deploy.pub" ))
+		`(("deploy" ,(plain-file "deploy.pub" %user/deploy/key))
+		  ;; ("deploy-web" ,(local-file "../secrets/deploy.pub" ))
 		  ))))
      %base-services))))
 %os

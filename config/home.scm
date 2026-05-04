@@ -3,24 +3,19 @@
 
 (define-module (home)
   #:use-module ((guix licenses) #:prefix license:)
-  #:use-module (heyk gnu packages fish)
-  #:use-module (heyk gnu home services fish)
-  #:use-module (heyk gnu home services avizo)
-  #:use-module (heyk gnu home services waybar)
-  #:use-module (heyk gnu home services zathura)
-  #:use-module (heyk gnu packages fonts)
-  #:use-module (heyk gnu packages wayland)
+  #:use-module ((ice-9 ftw) #:select (scandir))
+  #:use-module (automate packages patches)
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
   #:use-module (gnu home services guix)
+  #:use-module (gnu home services niri)
   #:use-module (gnu home services pm)
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
   #:use-module (gnu home services sound)
   #:use-module (gnu home services sway)
   #:use-module (gnu home services syncthing)
-  #:use-module (gnu home services niri)
   #:use-module (gnu home services)
   #:use-module (gnu home)
   #:use-module (gnu packages admin)
@@ -30,16 +25,16 @@
   #:use-module (gnu packages chromium)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
+  #:use-module (gnu packages dns)
   #:use-module (gnu packages docker)
+  #:use-module (gnu packages electronics)
   #:use-module (gnu packages emacs)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages emulators)
   #:use-module (gnu packages engineering)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages electronics)
   #:use-module (gnu packages ghostscript)
-  #:use-module (gnu packages ssh)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages gnome-xyz)
@@ -60,7 +55,6 @@
   #:use-module (gnu packages music)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages node)
-  #:use-module (gnu packages xorg)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages password-utils)
   #:use-module (gnu packages pdf)
@@ -72,6 +66,7 @@
   #:use-module (gnu packages scanner)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages shellutils)
+  #:use-module (gnu packages ssh)
   #:use-module (gnu packages terminals)
   #:use-module (gnu packages tls)
   #:use-module (gnu packages tree-sitter)
@@ -80,33 +75,38 @@
   #:use-module (gnu packages vim)
   #:use-module (gnu packages virtualization)
   #:use-module (gnu packages web)
-  #:use-module (gnu packages dns)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages xdisorg)
+  #:use-module (gnu packages xorg)
   #:use-module (gnu packages)
   #:use-module (gnu services configuration)
   #:use-module (gnu services)
   #:use-module (gnu system keyboard)
   #:use-module (gnu system shadow)
-  #:use-module (guix channels)
+  #:use-module (guix build-system copy)
   #:use-module (guix build-system emacs)
+  #:use-module (guix channels)
   #:use-module (guix gexp)
-  #:use-module (guix profiles)
+  #:use-module (guix git-download)
   #:use-module (guix packages)
+  #:use-module (guix profiles)
   #:use-module (guix store)
   #:use-module (guix transformations)
+  #:use-module (heyk gnu home services avizo)
+  #:use-module (heyk gnu home services fish)
+  #:use-module (heyk gnu home services waybar)
+  #:use-module (heyk gnu home services zathura)
+  #:use-module (heyk gnu packages fish)
+  #:use-module (heyk gnu packages fonts)
+  #:use-module (heyk gnu packages wayland)
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
   #:use-module (nonguix utils)
-  #:use-module (rosenthal packages rust-apps)
-  #:use-module (rosenthal packages emacs-xyz)
-  #:use-module (rosenthal services desktop)
   #:use-module (rosenthal home services emacs)
+  #:use-module (rosenthal packages emacs-xyz)
+  #:use-module (rosenthal packages rust-apps)
+  #:use-module (rosenthal services desktop)
   #:use-module (rosenthal utils file)
-  #:use-module (guix git-download)
-  #:use-module ((ice-9 ftw) #:select (scandir))
-  #:use-module (guix build-system copy)
-  #:use-module (automate packages patches)
   )
 (define-public fish-pure
   (package
@@ -687,15 +687,14 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 	`(,git "send-email")))
 
 (define %dev
-  (list
-   node
-   mosh
-   fish-foreign-env
-   zathura-pdf-mupdf ;; should be added on the home service
-   atuin
-   guile-gcrypt
-   guile-readline
-   guile-colorized))
+  (list node
+	mosh
+	fish-foreign-env
+	zathura-pdf-mupdf
+	atuin
+	guile-gcrypt
+	guile-readline
+	guile-colorized))
 
 (define %browsers
   (list ;; firefox
@@ -746,15 +745,6 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 
 (define %vim
   (list neovim))
-
-;; (define %emacs
-;;   (list
-;;    ;; emacs-next-pgtk
-;;    ;; emacs-guix
-;;    ;; emacs-arei
-;;    ;; emacs-debbugs
-;;    ;; emacs-vterm
-;;    ;; emacs-geiser))
 
 (define %editors
   (append

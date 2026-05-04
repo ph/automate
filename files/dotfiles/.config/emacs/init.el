@@ -829,10 +829,14 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
+
+(use-package geiser
+  :when (locate-library "arei.el")
+  :custom (geiser-mode-auto-p nil))
+
 (use-package arei
-  :custom
-  (geiser-mode-auto-p nil)
-  :init (arei-mode))
+  :when (locate-library "arei.el")
+  :init (global-arei-mode))
 
 (use-package nix-mode
   :mode "\\.nix\\'")

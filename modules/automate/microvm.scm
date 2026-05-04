@@ -117,6 +117,6 @@ table ip filter {
 (define (microvm os)
   (virtual-machine
     (operating-system os)
-    (memory-size %memory-size-default)))
+    (memory-size %microvm-memory-size-default)))
 
 (microvm %microvm-os)
