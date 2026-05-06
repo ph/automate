@@ -13,8 +13,8 @@
 	cl = clone
 	t = tag
 
-# [core]
-# 	editor = "emacs"
+[core]
+	editor = emacsclient -t -a emacs
 
 [credential]
 	helper = "cache"
