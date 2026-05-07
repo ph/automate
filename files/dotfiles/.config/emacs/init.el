@@ -1109,6 +1109,10 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 		  (symex-mode-interface))))
   (symex-evil-mode 1))
 
+(use-package mu4e-dashboard
+  :after (mu4e)
+  :custom)
+
 ;; TODO(ph): to evaluate, not sure I like all the colors in the code.
 ;; (use-package prism
 ;;   :hook
@@ -1117,3 +1121,5 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 ;;    (lisp-mode . prism-mode))
 ;;   :custom
 ;;   (prism-parens t))
+
+

@@ -22,7 +22,10 @@
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages printers)
   #:use-module (nongnu system linux-initrd)
+  #:use-module (automate microvm)
+  #:use-module (microvm)
   #:use-module (microvm gnu services virtiofsd)
+  #:use-module (microvm gnu services microvm)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26))
 
@@ -66,16 +69,49 @@
 	    %base-packages))
  (services
   (append (list
-	   ;;
-	   (service virtiofsd-service-type
-		    (virtiofsd-configuration
-		     (socket-path "/tmp/virtiofsd.sock")
-		     (readonly? #t)
-		     (tag "trunk-vm")
-		     (shared-dir "/gnu")
-		     (cache 'never)))
-	   ;;
+	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	   (microvm-bridge-networking-service-type)
+	   (microvm-extra-special-file-qemu-host-conf)
 
+	   (service microvm-service-type
+		    (microvm-configuration
+		     (microvm-config
+		      (microvm
+		       (name "test-machine-1")
+		       (os %microvm-base-os)
+		       (hypervisor hypervisor-cloud-hypervisor)
+		       (memory 1024)
+		       (vcpu 1)
+		       ;; TODO(ph): required or not?
+		       ;; (update-filesystem? #t)
+		       (shares
+			(list (microvm-share
+			       (tag "store")
+			       (shared-dir "/gnu/")
+			       (mount-point "/gnu")
+			       (type "virtiofs")
+			       (readonly? #t))
+			      ;; (microvm-share
+			      ;;  (tag "tmp")
+			      ;;  (shared-dir "/home/ph/tmp/")
+			      ;;  (mount-point "/home/ph/tmp")
+			      ;;  (type "virtiofs"))
+			      ))))))
+
+	   (simple-service 'microvm-tap
+			   shepherd-root-service-type
+			   (list (shepherd-service
+				  (provision '(microvm-tap))
+				  (requirement '(static-networking))
+				  ;; (one-shot? #t)
+				  (start #~(lambda _
+					     (let (($ip #$(file-append iproute "/sbin/ip")))
+					       (every (lambda (command)
+							(zero? (apply system* command)))
+						      (list `(,$ip "tuntap" "add" "name" "tap3" "mode" "tap")
+							    `(,$ip "link" "set" "tap3" "master" "virbr0") ;; This might be static-networking
+							    `(,$ip "link" "set" "tap3" "up")))))))))
+	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	   (udev-rules-service
 	    'probe-rs %probe-rs-udev-rules)
 	   (service sane-service-type)

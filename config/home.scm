@@ -658,6 +658,7 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 	emacs-vertico
 	emacs-consult
 	emacs-consult-eglot
+	emacs-mu4e-dashboard
 	mu ;; mu4e and mu cli
 	emacs-mu4e-thread-folding
 	;; treesitter
