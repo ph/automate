@@ -332,6 +332,7 @@
 			("*scratch*" :select t :popup t :align below :size 0.2)
 			("*eat*" :select t :popup t :align below :size 0.2)
 			("*Geiser Guile REPL*", :select t :popup below :size 0.2)
+			("*arei.*?", :regexp t :select t :popup below :size 0.2)
 			("*cargo-run*" :select t)
 			(helpful-mode :select t :popup t :align right :size 0.35)
 			(help-mode :select t :popup t :align right :size 0.3)))

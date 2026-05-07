@@ -25,6 +25,8 @@
   #:use-module (gnu services shepherd)
   #:use-module (gnu services sysctl)
   #:use-module (gnu packages virtualization)
+  #:use-module (microvm)
+  #:use-module (microvm gnu services microvm)
   #:use-module (srfi srfi-1))
 
 (load "./shared.scm")
@@ -34,7 +36,7 @@
 		     mcron)
 
 (operating-system
- (kernel linux-6.19)
+ (kernel linux-7.0)
  (kernel-arguments (cons*
 		    "lsm=\"landlock,yama,loadpin,safesetid,integrity,apparmor,selinux,smack,tomoyo\"" ;; adding landlock
 		    %default-kernel-arguments))
@@ -62,6 +64,32 @@
   (append (list
 	   (microvm-bridge-networking-service-type)
 	   (microvm-extra-special-file-qemu-host-conf)
+
+	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	   (service microvm-service-type
+		    (microvm-configuration
+		     (microvm-config
+		      (microvm
+		       (name "test-machine-1")
+		       (os %microvm-base-os)
+		       (hypervisor hypervisor-cloud-hypervisor)
+		       (memory 1024)
+		       (vcpu 1)
+		       ;; TODO(ph): required or not?
+		       ;; (update-filesystem? #t)
+		       (shares
+			(list (microvm-share
+			       (tag "store")
+			       (shared-dir "/gnu/")
+			       (mount-point "/gnu")
+			       (type "virtiofs")
+			       (readonly? #t))
+			      (microvm-share
+			       (tag "tmp")
+			       (shared-dir "/home/ph/tmp/")
+			       (mount-point "/home/ph/tmp")
+			       (type "virtiofs"))))))))
+	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	   (simple-service 'microvm-tap
 			   shepherd-root-service-type
