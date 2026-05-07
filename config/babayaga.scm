@@ -22,6 +22,7 @@
   #:use-module (nongnu packages linux)
   #:use-module (nongnu packages printers)
   #:use-module (nongnu system linux-initrd)
+  #:use-module (microvm gnu services virtiofsd)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26))
 
@@ -65,6 +66,16 @@
 	    %base-packages))
  (services
   (append (list
+	   ;;
+	   (service virtiofsd-service-type
+		    (virtiofsd-configuration
+		     (socket-path "/tmp/virtiofsd.sock")
+		     (readonly? #t)
+		     (tag "trunk-vm")
+		     (shared-dir "/gnu")
+		     (cache 'never)))
+	   ;;
+
 	   (udev-rules-service
 	    'probe-rs %probe-rs-udev-rules)
 	   (service sane-service-type)
