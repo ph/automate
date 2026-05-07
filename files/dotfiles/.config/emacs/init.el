@@ -630,23 +630,20 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	user-full-name  "Pier-Hugues Pellerin"
 	message-kill-buffer-on-exit t
 	mu4e-headers-draft-mark     '("D" . "")
-	mu4e-headers-flagged-mark   '("F" . "")
+	mu4e-headers-flagged-mark   '("F" . "󰈿")
 	mu4e-headers-new-mark       '("N" . "󰈸")
 	mu4e-headers-passed-mark    '("P" . "❯")
-	mu4e-headers-replied-mark   '("R" . "❮")
-	mu4e-headers-seen-mark      '("S" . "☑")
+	mu4e-headers-replied-mark   '("R" . "󰑚") ;;❮
+	mu4e-headers-seen-mark      '("S" . "")
 	mu4e-headers-trashed-mark   '("T" . "󰚌")
 	mu4e-headers-attach-mark    '("a" . "󰁦")
 	mu4e-headers-encrypted-mark '("x" . "")
 	mu4e-headers-signed-mark    '("s" . "󰌆")
 	mu4e-headers-unread-mark    '("u" . "")
-	mu4e-headers-list-mark      '("l" . "󰓃")
+	mu4e-headers-list-mark      '("l" . "󱜽")
 	mu4e-headers-personal-mark  '("p" . "󰙃")
 	mu4e-headers-calendar-mark  '("c" . "")
 	mu4e-compose-signature (concat "Thanks\n" "ph"))
-  (evil-collection-init 'mu4e)
-  :custom
-  (require 'smtpmail)
 
   (defgroup ph-mu4e nil
     "Custom mu4e settings.")
@@ -709,6 +706,9 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	  (:flags . 6)
 	  (:ph-relative-date . 12)))
 
+  (evil-collection-init 'mu4e)
+  :custom
+  (require 'smtpmail)
   (setq sendmail-program (executable-find "msmtp")
 	mail-host-address "heykimo.com"
 	send-mail-function #'smtpmail-send-it
@@ -1110,8 +1110,8 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (symex-evil-mode 1))
 
 (use-package mu4e-dashboard
-  :after (mu4e)
-  :custom)
+  :config
+  (setq mu4e-dashboard-file "~/src/automate/files/dotfiles/.config/emacs/side-dashboard.org"))
 
 ;; TODO(ph): to evaluate, not sure I like all the colors in the code.
 ;; (use-package prism
