@@ -658,8 +658,9 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 	emacs-vertico
 	emacs-consult
 	emacs-consult-eglot
-	emacs-mu4e-dashboard
+	emacs-rainbow-delimiters
 	mu ;; mu4e and mu cli
+	emacs-mu4e-dashboard
 	emacs-mu4e-thread-folding
 	;; treesitter
 	emacs-treesit-auto
@@ -1054,6 +1055,8 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
 	     (home-gpg-agent-configuration
 	      ;; (pinentry-program (file-append pinentry-rofi "/bin/pinentry-rofi"))
 	      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
+	      (default-cache-ttl-ssh 3600)
+	      (default-cache-ttl 3600)
 	      (ssh-support? #t)))
     (service home-xdg-configuration-files-service-type
 	     `(("gdb/gdbinit" ,%default-gdbinit)

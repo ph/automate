@@ -211,7 +211,8 @@
 
 (use-package modus-catppuccin
   :config
-  (load-theme 'modus-catppuccin-macchiato :no-confirm))
+  ;; (load-theme 'modus-catppuccin-macchiato :no-confirm)
+  (load-theme 'modus-catppuccin-latte :no-confirm))
 
 ;; Improved termibal experience
 (use-package eat
@@ -494,12 +495,12 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; org
 (use-package org
-  :custom
+  :config
   (setq org-directory (expand-file-name "src/notes" (getenv "HOME")))
   (setq org-agenda-files (list org-directory))
 
   (setq org-capture-templates
-	`(("i" "📥 Inbox" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
+	`(("i" "󱉰 Inbox" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
 	   "**  %?\n%i\n%a" :preprend t :jump-to-captured t)))
 
   (setq org-todo-keywords
@@ -643,7 +644,32 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	mu4e-headers-list-mark      '("l" . "󱜽")
 	mu4e-headers-personal-mark  '("p" . "󰙃")
 	mu4e-headers-calendar-mark  '("c" . "")
-	mu4e-compose-signature (concat "Thanks\n" "ph"))
+	mu4e-compose-signature (concat "Thanks\n" "ph")
+	mu4e-split-view 'vertical
+	mu4e-headers-visible-columns 40
+	mm-discouraged-alternatives '("text/html" "text/richtext"))
+
+  (setq mu4e-maildir-shortcuts
+	'((:maildir "/ph@heykimo.com/inbox"     :name "Inbox"   :key  ?i)
+	  (:maildir "/ph@heykimo.com/drafts"    :name "Drafts"  :key  ?d)
+	  (:maildir "/ph@heykimo.com/sent"      :name "Sent"    :key  ?s)
+	  (:maildir "/ph@heykimo.com/archive"   :name "Archive" :key  ?a)
+	  (:maildir "/ph@heykimo.com/spam"      :name "Spam" :key  ?p)
+	  (:maildir "/ph@heykimo.com/trash"     :name "Trash" :key  ?t)
+	  (:maildir "/ph@heykimo.com/lists"     :name "Lists" :key  ?l)))
+
+  (setq mu4e-bookmarks
+	'((:name "Unread" :query "flag:unread and not flag:list and not from:ph@heykimo.com and not from:phpellerin@gmail.com" :key ?u)
+	  (:name "Flagged" :query "flag:flagged and not flag:list" :key ?f)
+	  (:name "Today" :query "date:today..now and not flag:list" :key ?t)
+	  (:name "Yesterday" :query "date:2d..today and not flag:list" :key ?y)
+	  (:name "Last Week" :query "date:7d..now and not flag:list" :key ?w)
+	  (:name "Last Month" :query "date:4w..now and not flag:list" :key ?m)
+	  (:name "me" :query "from:ph@heykimo.com or from:phpellerin@gmail.com" :key ?p)
+	  (:name "Caroline" :query "from:caro.champ@gmail.com" :key ?c)
+	  (:name "Anaïs" :query "from:anais@heykimo.com" :key  ?a)
+	  (:name "Guix Devel" :query "list:guix-devel.gnu.org" :key ?g)
+	  (:name "Guix Help" :query "list:guix-help.gnu.org" :key ?h)))
 
   (defgroup ph-mu4e nil
     "Custom mu4e settings.")
@@ -659,7 +685,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (defun ph/last-year? (date)
     (let ((date (decode-time date))
 	  (today (decode-time (current-time))))
-      (> (- (nth 5 today) (nth 5 date)) 1)))
+      (>= (- (nth 5 today) (nth 5 date)) 1)))
 
   (defcustom ph/mu4e-relative-date-format "%H:%M"
     "Date format for relative date"
@@ -678,9 +704,9 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 
   (defun ph/mu4e-headers-relative-date (msg)
     "Show a \"human\" date for MSG.
-	If the date is today, show the time, otherwise, show the date.
-	The formats used for date and time are `mu4e-headers-date-format'
-	and `mu4e-headers-time-format'."
+    If the date is today, show the time, otherwise, show the date.
+    The formats used for date and time are `mu4e-headers-date-format'
+    and `mu4e-headers-time-format'."
     (let ((date (mu4e-msg-field msg :date)))
       (if (equal date '(0 0 0))
 	  "None"
@@ -707,7 +733,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	  (:ph-relative-date . 12)))
 
   (evil-collection-init 'mu4e)
-  :custom
   (require 'smtpmail)
   (setq sendmail-program (executable-find "msmtp")
 	mail-host-address "heykimo.com"
@@ -726,16 +751,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   (define-key mu4e-headers-mode-map (kbd "<S-left>")  'mu4e-headers-fold-all)
   (define-key mu4e-headers-mode-map (kbd "<right>")   'mu4e-headers-unfold-at-point)
   (define-key mu4e-headers-mode-map (kbd "<S-right>") 'mu4e-headers-unfold-all)
-  (add-to-list 'mu4e-header-info-custom
-	       '(:empty . (:name "Empty"
-				 :shortname ""
-				 :function (lambda (msg) "  "))))
-  (setq mu4e-headers-fields '((:empty         .    2)
-			      (:human-date    .   12)
-			      (:flags         .    6)
-			      (:mailing-list  .   10)
-			      (:from          .   22)
-			      (:subject       .   nil)))
   (mu4e-thread-folding-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1109,9 +1124,9 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 		  (symex-mode-interface))))
   (symex-evil-mode 1))
 
-(use-package mu4e-dashboard
-  :config
-  (setq mu4e-dashboard-file "~/src/automate/files/dotfiles/.config/emacs/side-dashboard.org"))
+;; (use-package mu4e-dashboard
+;;   :config
+;;   (setq mu4e-dashboard-file "~/src/automate/files/dotfiles/.config/emacs/side-dashboard.org"))
 
 ;; TODO(ph): to evaluate, not sure I like all the colors in the code.
 ;; (use-package prism
@@ -1121,5 +1136,9 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 ;;    (lisp-mode . prism-mode))
 ;;   :custom
 ;;   (prism-parens t))
+
+(use-package rainbow-delimiters
+  :hook
+  (prog-mode . rainbow-delimiters-mode))
 
 

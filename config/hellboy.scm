@@ -66,6 +66,11 @@
 	   (microvm-extra-special-file-qemu-host-conf)
 
 	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	   (service microvm-tap-service-type
+		    (microvm-tap-configuration
+		     (bridge "virbr0")
+		     (tap "tap3")))
+
 	   (service microvm-service-type
 		    (microvm-configuration
 		     (microvm-config
@@ -73,7 +78,7 @@
 		       (name "test-machine-1")
 		       (os %microvm-base-os)
 		       (hypervisor hypervisor-cloud-hypervisor)
-		       (memory 1024)
+		       (memory 256)
 		       (vcpu 1)
 		       ;; TODO(ph): required or not?
 		       ;; (update-filesystem? #t)
@@ -84,26 +89,15 @@
 			       (mount-point "/gnu")
 			       (type "virtiofs")
 			       (readonly? #t))
-			      (microvm-share
-			       (tag "tmp")
-			       (shared-dir "/home/ph/tmp/")
-			       (mount-point "/home/ph/tmp")
-			       (type "virtiofs"))))))))
-	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+			      ;; (microvm-share
+			      ;;  (tag "tmp")
+			      ;;  (shared-dir "/home/ph/tmp/")
+			      ;;  (mount-point "/home/ph/tmp")
+			      ;;  (type "virtiofs"))
+			      ))))))
 
-	   (simple-service 'microvm-tap
-			   shepherd-root-service-type
-			   (list (shepherd-service
-				   (provision '(microvm-tap))
-				   (requirement '(static-networking))
-				   ;; (one-shot? #t)
-				   (start #~(lambda _
-					      (let (($ip #$(file-append iproute "/sbin/ip")))
-						(every (lambda (command)
-							 (zero? (apply system* command)))
-						       (list `(,$ip "tuntap" "add" "name" "tap3" "mode" "tap")
-							     `(,$ip "link" "set" "tap3" "master" "virbr0") ;; This might be static-networking
-							     `(,$ip "link" "set" "tap3" "up")))))))))
+
+	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	   (simple-service 'extend-sysctl
 			  sysctl-service-type
 			  '(("net.ipv4.ip_forward" . "1")

@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 [init]
-  defaultBranch = trunk
+       defaultBranch = trunk
 
 [alias]
 	graph = "log --decorate --oneline --graph"
@@ -21,9 +21,6 @@
 
 [feature]
 	manyFiles = false
-
-[init]
-	defaultBranch = "main"
 
 [commit]
 	gpgsign = true

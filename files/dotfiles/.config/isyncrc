@@ -70,6 +70,14 @@ Create Both
 Expunge Both
 SyncState *
 
+Channel gmail-lists
+Far :gmail-remote:"lists"
+Near :gmail-local:"lists"
+CopyArrivalDate yes
+Create Both
+Expunge Both
+SyncState *
+
 Group Gmail
 Channel gmail-inbox
 Channel gmail-trash
@@ -77,3 +85,4 @@ Channel gmail-all
 Channel gmail-spam
 Channel gmail-drafts
 Channel gmail-sent
+Channel gmail-lists
