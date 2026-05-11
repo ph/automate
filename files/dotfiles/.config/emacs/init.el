@@ -23,7 +23,7 @@
 			     )))))
 
 (use-package emacs
-  :custom
+  :config
   ;; TAB cycle if there are only few candidates
   (completion-cycle-threshold 3)
 
@@ -54,7 +54,6 @@
   ;; does 'expression when the matching paren is not visible.
   ;; (show-paren-style 'mixed)
 
-  :config
   (setq
    ;; Disable customs files
    custom-file null-device
@@ -372,6 +371,7 @@
 	  "lsp-help"
 	  "*vterm*"
 	  "*eldoc*"
+	  "arei-debugger*"
 	  "*Backtrace*"
 	  "*cargo-clippy"
           help-mode
@@ -383,7 +383,7 @@
   (defun rustic-process-kill-p (proc &optional no-error)
     "Don't allow two rust processes at once.
 
-If NO-ERROR is t, don't throw error if user chooses not to kill running process."
+	  If NO-ERROR is t, don't throw error if user chooses not to kill running process."
     (if (or compilation-always-kill
 	    (yes-or-no-p (format "`%s' is running; kill it? " proc)))
 	(condition-case ()
@@ -609,6 +609,8 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :general
   (ph/leader-key
     "om" '(mu4e :wk "mail"))
+  :hook
+  (mu4e-thread-mode . mu4e-thread-fold-apply-all)
   :config
   (setq mail-user-agent 'mu4e-user-agent
 	mu4e-drafts-folder "/ph@heykimo.com/drafts"
@@ -659,7 +661,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	  (:maildir "/ph@heykimo.com/lists"     :name "Lists" :key  ?l)))
 
   (setq mu4e-bookmarks
-	'((:name "Unread" :query "flag:unread and not flag:list and not from:ph@heykimo.com and not from:phpellerin@gmail.com" :key ?u)
+	'((:name "Unread" :query "flag:unread and not flag:list and not from:ph@heykimo.com and not from:phpellerin@gmail.com and maildir:/ph@heykimo.com/inbox" :key ?u)
 	  (:name "Flagged" :query "flag:flagged and not flag:list" :key ?f)
 	  (:name "Today" :query "date:today..now and not flag:list" :key ?t)
 	  (:name "Yesterday" :query "date:2d..today and not flag:list" :key ?y)
@@ -668,7 +670,7 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	  (:name "me" :query "from:ph@heykimo.com or from:phpellerin@gmail.com" :key ?p)
 	  (:name "Caroline" :query "from:caro.champ@gmail.com" :key ?c)
 	  (:name "Anaïs" :query "from:anais@heykimo.com" :key  ?a)
-	  (:name "Guix Devel" :query "list:guix-devel.gnu.org" :key ?g)
+	  (:name "Guix Devel" :query "list:guix-devel.gnu.org and not maildir:/ph@heykimo.com/archive" :key ?g)
 	  (:name "Guix Help" :query "list:guix-help.gnu.org" :key ?h)))
 
   (defgroup ph-mu4e nil
@@ -702,8 +704,34 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
     :type 'string
     :group 'ph-mu4e)
 
+  (defcustom ph/mu4e-maildir-root-path-to-remove "/ph@heykimo.com/"
+    "The path of the maildir to hide in the UI"
+    :type 'string
+    :group 'ph-mu4e)
+
+  (defun ph/remove-root-path-in-maildir (target)
+    "Return a new path without the part defined in {ph/mu4e-maildir-path-to-remove}."
+    (string-replace ph/mu4e-maildir-root-path-to-remove "" target))
+
+  (defun ph/prepend-icon-to-string-when-matched (match icon)
+    "Return a lambda that will prepend an icon to a string in argument."
+    (lambda (target)
+      (if (string= target match)
+	  (concat icon target)
+	target)))
+
+  (setf (plist-get (alist-get 'move mu4e-marks) :show-target)
+	(lambda (target)
+	  (funcall (ph/prepend-icon-to-string-when-matched "archive" " ")
+		   (ph/remove-root-path-in-maildir target))))
+
+  (setf (plist-get (alist-get 'trash mu4e-marks) :show-target)
+	(lambda (target)
+	  (funcall (ph/prepend-icon-to-string-when-matched "trash" " ")
+		   (ph/remove-root-path-in-maildir target))))
+
   (defun ph/mu4e-headers-relative-date (msg)
-    "Show a \"human\" date for MSG.
+    "Show a \"relative\" date for MSG.
     If the date is today, show the time, otherwise, show the date.
     The formats used for date and time are `mu4e-headers-date-format'
     and `mu4e-headers-time-format'."
@@ -718,11 +746,13 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	    (format-time-string ph/mu4e-after-a-year-format date))
 	   ((format-time-string ph/mu4e-current-year-format date)))))))
 
+
   (add-to-list 'mu4e-header-info-custom
 	       '(:ph-relative-date . ( :name "Date"
 				       :shortname "Date"
 				       :help "Date received"
 				       :function ph/mu4e-headers-relative-date)))
+
   (setq mu4e-headers-visible-flags
 	'(flagged attach calendar trashed signed encrypted))
 
@@ -740,18 +770,6 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 	message-sendmail-f-is-evil t
 	message-sendmail-extra-arguments '("--read-envelope-from")
 	message-send-mail-function #'message-send-mail-with-sendmail))
-
-(use-package mu4e-thread-folding
-  :after mu4e
-  :custom
-  (require 'mu4e-thread-folding)
-
-  (define-key mu4e-headers-mode-map (kbd "<tab>")     'mu4e-headers-toggle-at-point)
-  (define-key mu4e-headers-mode-map (kbd "<left>")    'mu4e-headers-fold-at-point)
-  (define-key mu4e-headers-mode-map (kbd "<S-left>")  'mu4e-headers-fold-all)
-  (define-key mu4e-headers-mode-map (kbd "<right>")   'mu4e-headers-unfold-at-point)
-  (define-key mu4e-headers-mode-map (kbd "<S-right>") 'mu4e-headers-unfold-all)
-  (mu4e-thread-folding-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; pass
@@ -912,9 +930,20 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
   :when (locate-library "arei.el")
   :custom (geiser-mode-auto-p nil))
 
+
+(defun ph/start-ares-nrepl ()
+  (interactive)
+  (inheritenv
+   (let ((default-directory (project-root (project-current t))))
+     (if default-directory
+	 (start-process "run make ares" "make ares" "make" "ares")))))
+
 (use-package arei
   :when (locate-library "arei.el")
-  :init (global-arei-mode))
+  :init (global-arei-mode)
+  :general
+  (ph/leader-key
+    "am" '(ph/start-ares-nrepl :wk "arei nrepl")))
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -1140,5 +1169,4 @@ If NO-ERROR is t, don't throw error if user chooses not to kill running process.
 (use-package rainbow-delimiters
   :hook
   (prog-mode . rainbow-delimiters-mode))
-
 

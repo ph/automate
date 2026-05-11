@@ -16,6 +16,7 @@
   #:use-module (gnu home services sound)
   #:use-module (gnu home services sway)
   #:use-module (gnu home services syncthing)
+  #:use-module (gnu home services xdg)
   #:use-module (gnu home services)
   #:use-module (gnu home)
   #:use-module (gnu packages admin)
@@ -1122,6 +1123,13 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
     (service home-fish-hydro-service-type
 	     (home-fish-hydro-configuration
 	      (fish-hydro fish-hydro/ph)))
+
+    (service home-xdg-mime-applications-service-type
+	     (home-xdg-mime-applications-configuration
+	      (default
+		'((text/html . librewolf.desktop)
+		  (x-scheme-handler/http . librewolf.desktop)
+		  (x-scheme-handler/https . librewolf.desktop)))))
 
     (service home-fish-service-type
 	     (home-fish-configuration
