@@ -2,6 +2,13 @@
 ;; records use-package time to reduce startup time.
 (setq use-package-compute-statistics t)
 
+(setopt custom-file (locate-user-emacs-file "custom.el"))
+(if (not (file-exists-p custom-file))
+    (make-empty-file custom-file)
+  (load custom-file))
+
+(make-directory "~/.config/emacs-backup")
+
 (use-package gcmh
   :init
   (gcmh-mode 1)

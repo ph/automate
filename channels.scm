@@ -5,7 +5,7 @@
 (define %guix-channel
   (channel
    (name 'guix)
-    (url "https://codeberg.org/guix/guix.git")
+    (url "https://git.guix.gnu.org/guix.git")
    (branch "master")
    (introduction
     (make-channel-introduction
@@ -72,7 +72,7 @@
    (branch "trunk")
    (introduction
     (make-channel-introduction
-     "6c16b06ac3e4a5ebe953acc5ac110f96d2201e76"
+     "61226b15bb6e23369810463e2dd77f691d815231"
      (openpgp-fingerprint
       "6068 E700 E178 0ADB 1D43  1E65 F7B8 F761 5A88 1272")))))
 
@@ -83,9 +83,10 @@
    (branch "trunk")
    (introduction
     (make-channel-introduction
-     "8afc2d9311256ddd2654875d00ba1b295db86ab7"
+     "245db3d4ef2a29559b7dccef67afba453c9f6563"
      (openpgp-fingerprint
-      "6068 E700 E178 0ADB 1D43  1E65 F7B8 F761 5A88 1272")))))
+      "6068 E700 E178 0ADB 1D43  1E65 F7B8 F761 5A88 1272"))))
+  )
 
 (list %guix-channel
       %nonguix-channel
