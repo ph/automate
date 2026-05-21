@@ -25,8 +25,12 @@
   #:use-module (gnu services shepherd)
   #:use-module (gnu services sysctl)
   #:use-module (gnu packages virtualization)
-  #:use-module (microvm)
   #:use-module (microvm gnu services microvm)
+  #:use-module (microvm gnu services tap)
+  #:use-module (microvm vmm cloud-hypervisor)
+  #:use-module (microvm config microvm)
+  #:use-module (microvm)
+  #:use-module (microvm os)
   #:use-module (srfi srfi-1))
 
 (load "./shared.scm")
@@ -46,7 +50,7 @@
  (timezone "America/Toronto")
  (keyboard-layout (keyboard-layout "us"
                                    #:options '("ctrl:nocaps")))
- (host-name "hellboy.local.heyk.org")
+ (host-name "hellboy")
  (groups (cons*
 	  (user-group (system? #t)
 		      (name "realtime"))
@@ -63,7 +67,6 @@
  (services
   (append (list
 	   (microvm-bridge-networking-service-type)
-	   (microvm-extra-special-file-qemu-host-conf)
 
 	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	   (service microvm-tap-service-type
@@ -75,33 +78,44 @@
 		    (microvm-configuration
 		     (microvm-config
 		      (microvm
-		       (name "test-machine-1")
-		       (os %microvm-base-os)
-		       (hypervisor hypervisor-cloud-hypervisor)
+		       (name "complex-vm")
+		       (boot %microvm-base-os)
+		       (vmm cloud-hypervisor)
 		       (memory 256)
 		       (vcpu 1)
-		       ;; TODO(ph): required or not?
-		       ;; (update-filesystem? #t)
+		       (net (list (net
+				   (name "tap3")
+				   (type 'tap)
+				   (mac "02:00:00:00:00:05"))))
 		       (shares
-			(list (microvm-share
-			       (tag "store")
-			       (shared-dir "/gnu/")
-			       (mount-point "/gnu")
+			(list (share
+			       (tag "src")
+			       (shared-dir "/home/ph/src/")
+			       (mount-point "/home/ph/src/")
+			       (readonly? #f)
 			       (type "virtiofs")
-			       (readonly? #t))
-			      ;; (microvm-share
-			      ;;  (tag "tmp")
-			      ;;  (shared-dir "/home/ph/tmp/")
-			      ;;  (mount-point "/home/ph/tmp")
-			      ;;  (type "virtiofs"))
-			      ))))))
-
+			       (fs-options
+				(fs-options
+				 (flags '())
+				 (needed-for-boot? #t)
+				 (create-mount-point? #t))))
+			      (share
+			       (tag "creds")
+			       (shared-dir "/home/ph/tmp/")
+			       (mount-point "/root/creds/")
+			       (readonly? #t)
+			       (type "virtiofs"))
+			      (share
+			       (tag "documents")
+			       (shared-dir "/home/ph/Documents/")
+			       (mount-point "/home/microvm/Documents")
+			       (type "virtiofs"))))))))
 
 	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	   (simple-service 'extend-sysctl
-			  sysctl-service-type
-			  '(("net.ipv4.ip_forward" . "1")
-			    ("net.ipv6.conf.all.forwarding" . "1")))
+			   sysctl-service-type
+			   '(("net.ipv4.ip_forward" . "1")
+			     ("net.ipv6.conf.all.forwarding" . "1")))
 
 	  ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
 	   ;; lets retry on kernel 7.0

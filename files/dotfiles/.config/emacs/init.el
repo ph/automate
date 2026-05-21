@@ -23,7 +23,7 @@
 			     )))))
 
 (use-package emacs
-  :config
+  :custom
   ;; TAB cycle if there are only few candidates
   (completion-cycle-threshold 3)
 

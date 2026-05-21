@@ -65,8 +65,32 @@
      (openpgp-fingerprint
       "5132 3571 CEED 988F 52FC 467C 6F98 DBF3 EA7F 4B37")))))
 
+(define %microvm-channel
+  (channel
+   (name 'microvm)
+   (url "https://codeberg.org/pierhugues/microvm.git")
+   (branch "trunk")
+   (introduction
+    (make-channel-introduction
+     "6c16b06ac3e4a5ebe953acc5ac110f96d2201e76"
+     (openpgp-fingerprint
+      "6068 E700 E178 0ADB 1D43  1E65 F7B8 F761 5A88 1272")))))
+
+(define %supervoid-channel
+  (channel
+   (name 'supervoid)
+   (url "https://codeberg.org/pierhugues/supervoid.git")
+   (branch "trunk")
+   (introduction
+    (make-channel-introduction
+     "8afc2d9311256ddd2654875d00ba1b295db86ab7"
+     (openpgp-fingerprint
+      "6068 E700 E178 0ADB 1D43  1E65 F7B8 F761 5A88 1272")))))
+
 (list %guix-channel
       %nonguix-channel
       %rosenthal-channel
       %heyk-channel
-      %bluebox-channel)
+      %bluebox-channel
+      %microvm-channel
+      %supervoid-channel)

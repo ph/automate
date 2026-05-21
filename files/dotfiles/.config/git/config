@@ -3,33 +3,33 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 [init]
-       defaultBranch = trunk
+defaultBranch = trunk
 
 [alias]
-	graph = "log --decorate --oneline --graph"
-	st = status
-	b = branch
-	c = commit
-	cl = clone
-	t = tag
+graph = "log --decorate --oneline --graph"
+st = status
+b = branch
+c = commit
+cl = clone
+t = tag
 
 [core]
-	editor = emacsclient -t -a emacs
+editor = emacsclient -t -a emacs
 
 [credential]
-	helper = "cache"
+helper = "cache"
 
 [feature]
-	manyFiles = false
+manyFiles = false
 
 [commit]
-	gpgsign = true
-	template = ~/.config/git/gitmessage
+gpgsign = true
+template = ~/.config/git/gitmessage
 
 [user]
-	email = "phpellerin@gmail.com"
-	name = "Pier-Hugues Pellerin"
-	signingKey = "8703943BA35F230EE9BDC0D98BAEC3055E5388F2"
+email = "phpellerin@gmail.com"
+name = "Pier-Hugues Pellerin"
+signingKey = "F7B8F7615A881272!"
 
 [github]
-	user = "ph"
+user = "ph"

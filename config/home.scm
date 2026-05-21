@@ -1047,14 +1047,13 @@ Virtual rings are a good fit in cases where you need to keep track both of recen
    (cons*
     (simple-service 'additional-channels-service
 		    home-channels-service-type
-		    (load "../channels.scm"))
+		    (load "../channels.lock.scm"))
 (service home-shepherd-service-type
 	     (home-shepherd-configuration
 	      (auto-start? #f))) ;; Sadly we need to start shepherd in the sway boot process to make $WAYLAND_DISPLAY available.
     (service home-dbus-service-type)
     (service home-gpg-agent-service-type
 	     (home-gpg-agent-configuration
-	      ;; (pinentry-program (file-append pinentry-rofi "/bin/pinentry-rofi"))
 	      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
 	      (default-cache-ttl-ssh 3600)
 	      (default-cache-ttl 3600)
