@@ -4,7 +4,6 @@
 
 (define-module (hellboy)
   #:use-module (automate common)
-  #:use-module (automate packages patches)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
@@ -117,7 +116,7 @@
 			   '(("net.ipv4.ip_forward" . "1")
 			     ("net.ipv6.conf.all.forwarding" . "1")))
 
-	  ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
+	   ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
 	   ;; lets retry on kernel 7.0
 	   ;; (service fprintd-service-type
 	   ;; 	    (fprintd-configuration

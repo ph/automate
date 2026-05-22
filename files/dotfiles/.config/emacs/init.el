@@ -7,7 +7,8 @@
     (make-empty-file custom-file)
   (load custom-file))
 
-(make-directory "~/.config/emacs-backup")
+(if (not (file-exists-p "~/.config/emacs-backup"))
+    (make-directory "~/.config/emacs-backup"))
 
 (use-package gcmh
   :init
@@ -1176,4 +1177,3 @@
 (use-package rainbow-delimiters
   :hook
   (prog-mode . rainbow-delimiters-mode))
-

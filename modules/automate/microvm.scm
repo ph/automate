@@ -12,7 +12,6 @@
 (use-service-modules networking ssh)
 (use-package-modules bash certs)
 
-
 (define %microvm-nftables-rules
   "
 table ip nat {

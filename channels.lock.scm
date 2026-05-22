@@ -1,8 +1,8 @@
 (list (channel
        (name 'guix)
-       (url "https://codeberg.org/guix/guix.git")
+       (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "115e10921ee145d10fdba2c00daff5f071ad4537")
+       (commit "1130f6873278e7c11a23b0fe4726955c10c8bc74")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "5f2630e69fbbe9e79c350a67545f0fef7e93e223")
+       (commit "0107c1c4849460b567424ba2cdc8942294c7a611")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -47,6 +47,26 @@
         (make-channel-introduction
          "63350484aaacc362aea28fb14236019fced4050f"
          (openpgp-fingerprint
-          "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37")))))
+          "5132 3571 CEED 988F 52FC  467C 6F98 DBF3 EA7F 4B37"))))
+      (channel
+       (name 'microvm)
+       (url "https://codeberg.org/pierhugues/microvm.git")
+       (branch "trunk")
+       (commit "13c038f0c3ada22dd9c667f15edbf6b8b1f6d8a2")
+       (introduction
+        (make-channel-introduction
+         "61226b15bb6e23369810463e2dd77f691d815231"
+         (openpgp-fingerprint
+          "6068 E700 E178 0ADB 1D43  1E65 F7B8 F761 5A88 1272"))))
+      (channel
+       (name 'supervoid)
+       (url "https://codeberg.org/pierhugues/supervoid.git")
+       (branch "trunk")
+       (commit "ffc8aae7865bb5d697489ab0234865c2e9d54b7c")
+       (introduction
+        (make-channel-introduction
+         "245db3d4ef2a29559b7dccef67afba453c9f6563"
+         (openpgp-fingerprint
+          "6068 E700 E178 0ADB 1D43  1E65 F7B8 F761 5A88 1272")))))
 
 ;; warning: GUIX_PACKAGE_PATH="/home/ph/src/automate/modules:"
