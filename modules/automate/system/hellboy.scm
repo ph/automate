@@ -1,49 +1,50 @@
-;;; SPDX-FileCopyrightText: 2025 Pier-Hugues Pellerin <ph@heykimo.com>
-;;;
-;;; SPDX-License-Identifier: GPL-3.0-or-later
-
-(define-module (hellboy)
+(define-module (automate system hellboy)
   #:use-module (automate common)
   #:use-module (automate config home)
+  #:use-module (automate microvm)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
-  #:use-module (guix gexp)
+  #:use-module (gnu packages virtualization)
   #:use-module (gnu packages)
   #:use-module (gnu services authentication)
-  #:use-module (gnu services authentication)
+  #:use-module (gnu services networking)
+  #:use-module (gnu services desktop)
   #:use-module (gnu services guix)
   #:use-module (gnu services linux)
+  #:use-module (gnu services shepherd)
+  #:use-module (gnu services sysctl)
+  #:use-module (gnu system privilege)
   #:use-module (gnu)
+  #:use-module (guix gexp)
+  #:use-module (microvm config microvm)
+  #:use-module (microvm gnu services microvm)
+  #:use-module (microvm gnu services tap)
+  #:use-module (microvm os)
+  #:use-module (microvm vmm cloud-hypervisor)
+  #:use-module (microvm)
   #:use-module (nongnu packages firmware)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
   #:use-module (rosenthal services networking)
-  ;; #:use-module (automate services fwupd)
-  #:use-module (automate microvm)
-  #:use-module (gnu system privilege)
-  #:use-module (gnu services shepherd)
-  #:use-module (gnu services sysctl)
-  #:use-module (gnu packages virtualization)
-  #:use-module (microvm gnu services microvm)
-  #:use-module (microvm gnu services tap)
-  #:use-module (microvm vmm cloud-hypervisor)
-  #:use-module (microvm config microvm)
-  #:use-module (microvm)
-  #:use-module (microvm os)
   #:use-module (srfi srfi-1))
 
-(load "./shared.scm")
-
-(use-service-modules desktop
-		     networking
-		     mcron)
+(load "../../../config/shared.scm")
 
 (operating-system
  (kernel linux-7.0)
  (kernel-arguments (cons*
-		    "lsm=\"landlock,yama,loadpin,safesetid,integrity,apparmor,selinux,smack,tomoyo\"" ;; adding landlock
+		    (format #f "lsm=~s"
+			    (string-join '("landlock"
+					   "yama"
+					   "loadpin"
+					   "safesetid"
+					   "integrity"
+					   "apparmor"
+					   "selinux"
+					   "smack"
+					   "tomoyo") ","))
 		    %default-kernel-arguments))
  (initrd microcode-initrd)
  (firmware (list linux-firmware sof-firmware))
@@ -53,12 +54,8 @@
                                    #:options '("ctrl:nocaps")))
  (host-name "hellboy")
  (groups (cons*
-	  (user-group (system? #t)
-		      (name "realtime"))
-
-	  (user-group (system? #t)
-		      (name "plugdev"))
-
+	  (user-group (system? #t) (name "realtime"))
+	  (user-group (system? #t) (name "plugdev"))
 	  %base-groups))
  (users (cons* %ph
 	       %base-user-accounts))
