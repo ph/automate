@@ -4,6 +4,7 @@
 
 (define-module (hellboy)
   #:use-module (automate common)
+  #:use-module (automate config home)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
@@ -11,7 +12,8 @@
   #:use-module (guix gexp)
   #:use-module (gnu packages)
   #:use-module (gnu services authentication)
-  #:use-module (gnu services docker)
+  #:use-module (gnu services authentication)
+  #:use-module (gnu services guix)
   #:use-module (gnu services linux)
   #:use-module (gnu)
   #:use-module (nongnu packages firmware)
@@ -68,47 +70,47 @@
 	   (microvm-bridge-networking-service-type)
 
 	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	   (service microvm-tap-service-type
-		    (microvm-tap-configuration
-		     (bridge "virbr0")
-		     (tap "tap3")))
+	   ;; (service microvm-tap-service-type
+	   ;; 	    (microvm-tap-configuration
+	   ;; 	     (bridge "virbr0")
+	   ;; 	     (tap "tap3")))
 
-	   (service microvm-service-type
-		    (microvm-configuration
-		     (microvm-config
-		      (microvm
-		       (name "complex-vm")
-		       (boot %microvm-base-os)
-		       (vmm cloud-hypervisor)
-		       (memory 256)
-		       (vcpu 1)
-		       (net (list (net
-				   (name "tap3")
-				   (type 'tap)
-				   (mac "02:00:00:00:00:05"))))
-		       (shares
-			(list (share
-			       (tag "src")
-			       (shared-dir "/home/ph/src/")
-			       (mount-point "/home/ph/src/")
-			       (readonly? #f)
-			       (type "virtiofs")
-			       (fs-options
-				(fs-options
-				 (flags '())
-				 (needed-for-boot? #t)
-				 (create-mount-point? #t))))
-			      (share
-			       (tag "creds")
-			       (shared-dir "/home/ph/tmp/")
-			       (mount-point "/root/creds/")
-			       (readonly? #t)
-			       (type "virtiofs"))
-			      (share
-			       (tag "documents")
-			       (shared-dir "/home/ph/Documents/")
-			       (mount-point "/home/microvm/Documents")
-			       (type "virtiofs"))))))))
+	   ;; (service microvm-service-type
+	   ;; 	    (microvm-configuration
+	   ;; 	     (microvm-config
+	   ;; 	      (microvm
+	   ;; 	       (name "complex-vm")
+	   ;; 	       (boot %microvm-base-os)
+	   ;; 	       (vmm cloud-hypervisor)
+	   ;; 	       (memory 256)
+	   ;; 	       (vcpu 1)
+	   ;; 	       (net (list (net
+	   ;; 			   (name "tap3")
+	   ;; 			   (type 'tap)
+	   ;; 			   (mac "02:00:00:00:00:05"))))
+	   ;; 	       (shares
+	   ;; 		(list (share
+	   ;; 		       (tag "src")
+	   ;; 		       (shared-dir "/home/ph/src/")
+	   ;; 		       (mount-point "/home/ph/src/")
+	   ;; 		       (readonly? #f)
+	   ;; 		       (type "virtiofs")
+	   ;; 		       (fs-options
+	   ;; 			(fs-options
+	   ;; 			 (flags '())
+	   ;; 			 (needed-for-boot? #t)
+	   ;; 			 (create-mount-point? #t))))
+	   ;; 		      (share
+	   ;; 		       (tag "creds")
+	   ;; 		       (shared-dir "/home/ph/tmp/")
+	   ;; 		       (mount-point "/root/creds/")
+	   ;; 		       (readonly? #t)
+	   ;; 		       (type "virtiofs"))
+	   ;; 		      (share
+	   ;; 		       (tag "documents")
+	   ;; 		       (shared-dir "/home/ph/Documents/")
+	   ;; 		       (mount-point "/home/microvm/Documents")
+	   ;; 		       (type "virtiofs"))))))))
 
 	   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	   (simple-service 'extend-sysctl
@@ -116,11 +118,15 @@
 			   '(("net.ipv4.ip_forward" . "1")
 			     ("net.ipv6.conf.all.forwarding" . "1")))
 
+	   (service guix-home-service-type
+		    `(("ph" ,(automate-home-environment))))
+
 	   ;; Doesn't work on my X1 carbon at the moment, weird usb issue.
 	   ;; lets retry on kernel 7.0
 	   ;; (service fprintd-service-type
 	   ;; 	    (fprintd-configuration
-	   ;; 	     (fprintd fprintd/ph)))
+	   ;; 	     (fprintd fprintd/ph)));;;
+
 	   ;; (simple-service 'fprintd-pam-login
 	   ;; 		   pam-root-service-type
 	   ;; 		   (list (pam-extension
@@ -225,4 +231,3 @@
 		 (options "size=40G")
 		 (check? #f))
 		%base-file-systems)))
-

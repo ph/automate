@@ -1,3 +1,5 @@
 /.agent-shell
 .agent-shell
 .nrepl-port
+.claude
+/.claude

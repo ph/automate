@@ -1,6 +1,3 @@
-;;;
-;;; SPDX-License-Identifier: GPL-3.0-or-later
-
 (define-module (home)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module ((ice-9 ftw) #:select (scandir))
@@ -28,8 +25,6 @@
   #:use-module (gnu packages dns)
   #:use-module (gnu packages docker)
   #:use-module (gnu packages electronics)
-  #:use-module (gnu packages emacs)
-  #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages emulators)
   #:use-module (gnu packages engineering)
   #:use-module (gnu packages fonts)
@@ -102,13 +97,11 @@
   #:use-module (nongnu packages messaging)
   #:use-module (nongnu packages mozilla)
   #:use-module (nonguix utils)
-  #:use-module (rosenthal home services emacs)
-  #:use-module (rosenthal packages emacs-xyz)
   #:use-module (rosenthal packages rust-apps)
   #:use-module (rosenthal services desktop)
   #:use-module (rosenthal utils file)
-  #:use-module (supervoid gnu packages emacs-xyz)
-  #:use-module (supervoid gnu packages shells))
+  #:use-module (supervoid gnu packages shells)
+  #:export (%automate-home-environment))
 
 (define %fish-hydro-config
   "
@@ -118,90 +111,6 @@ set -g fish_key_bindings fish_vi_key_bindings
 set -g fish_term24bit 1
 ")
 
-(define %emacs-packages
-  (list emacs-evil/ph
-	emacs-evil-collection/ph
-	emacs-agent-shell/ph
-	emacs-rustic/ph
-	emacs-rust-mode
-	emacs-prism
-	emacs-symex-core
-	emacs-symex
-	emacs-symex-ide
-	emacs-symex-evil
-	emacs-evil-commentary
-	emacs-evil-surround
-	emacs-general
-	emacs-magit
-	emacs-guix
-	emacs-rainbow-delimiters
-	emacs-paredit
-	emacs-enhanced-evil-paredit
-	emacs-lispy
-	emacs-lispyville
-	emacs-eat/dolly
-	emacs-lin
-	emacs-hl-todo
-	emacs-forge
-	emacs-modus-catppuccin
-	emacs-gcmh
-	emacs-corfu
-	emacs-cape
-	emacs-kind-icon
-	emacs-orderless
-	emacs-eglot-x
-	emacs-nix-mode
-	emacs-yaml-mode
-	emacs-json-mode
-	emacs-arei
-	emacs-geiser
-	emacs-terraform-mode
-	emacs-restclient
-	emacs-dockerfile-mode
-	emacs-go-mode
-	emacs-org-modern
-	emacs-org-roam
-	emacs-pass
-	emacs-password-store
-	emacs-auth-source-pass
-	emacs-envrc
-	emacs-inheritenv
-	emacs-circe
-	emacs-git-gutter
-	emacs-git-gutter-fringe
-	emacs-ligature
-	emacs-helpful
-	emacs-apheleia
-	emacs-exec-path-from-shell
-	emacs-ultra-scroll
-	emacs-tempel
-	emacs-popper
-	emacs-shackle
-	emacs-lambda-line
-	emacs-marginalia
-	emacs-vertico
-	emacs-consult
-	emacs-consult-eglot
-	emacs-rainbow-delimiters
-	mu ;; mu4e and mu cli
-	emacs-mu4e-dashboard
-	emacs-mu4e-thread-folding
-	;; treesitter
-	emacs-treesit-auto
-	tree-sitter-bash
-	tree-sitter-cmake
-	tree-sitter-dockerfile
-	tree-sitter-go
-	tree-sitter-gomod
-	tree-sitter-javascript
-	tree-sitter-json
-	tree-sitter-org
-	tree-sitter-python
-	tree-sitter-rust
-	tree-sitter-scheme
-	tree-sitter-yaml
-	tree-sitter-kdl
-	tree-sitter-typescript))
 
 (define %user "ph")
 
@@ -385,25 +294,23 @@ set -g fish_term24bit 1
 					 "@theme '" rofi-theme-catppuccin "/share/themes/catppuccin-default'")))
 
 
-(define %emacs)
-
 (define %swayish 
   (sway-configuration
    (packages
-     (list qtwayland-5
-           sway
-	   swayidle
-	   rofi
-	   rofi-themes-collection
-           wl-clipboard
-	   foot
-	   alacritty
-	   grim
-	   slurp
-	   light
-	   xdg-utils
-           xdg-desktop-portal-gtk
-           xdg-desktop-portal-wlr))
+    (list qtwayland-5
+          sway
+	  swayidle
+	  rofi
+	  rofi-themes-collection
+          wl-clipboard
+	  foot
+	  alacritty
+	  grim
+	  slurp
+	  light
+	  xdg-utils
+          xdg-desktop-portal-gtk
+          xdg-desktop-portal-wlr))
    (variables
     `((mod . "Mod4")))
    (keybindings
@@ -509,12 +416,12 @@ set -g fish_term24bit 1
    (inputs
     (list
      (sway-input
-	   (identifier "type:keyboard")
-	   (layout
-	    (keyboard-layout "us,ca(fr)" #:options '("ctrl:nocaps")))
-	   (extra-content
-	    '("repeat_delay 180"
-	      "repeat_rate 20")))
+      (identifier "type:keyboard")
+      (layout
+       (keyboard-layout "us,ca(fr)" #:options '("ctrl:nocaps")))
+      (extra-content
+       '("repeat_delay 180"
+	 "repeat_rate 20")))
      (sway-input
       (identifier "type:touchpad")
       (tap #t)
@@ -552,125 +459,113 @@ set -g fish_term24bit 1
      %sway-zoom-config
      %sway-signal-config))))
 
-(home-environment
- (packages (append
-	    %browsers
-	    %vcs
-	    %games
-	    %dev
-	    %scanner
-	    %tools
-	    %mail
-	    %editors
-	    ;; %emacs-packages
-	    %wm
-	    %fonts))
- (services
-   (cons*
-    (simple-service 'additional-channels-service
-		    home-channels-service-type
-		    (load "../channels.lock.scm"))
-(service home-shepherd-service-type
-	     (home-shepherd-configuration
-	      (auto-start? #f))) ;; Sadly we need to start shepherd in the sway boot process to make $WAYLAND_DISPLAY available.
-    (service home-dbus-service-type)
-    (service home-gpg-agent-service-type
-	     (home-gpg-agent-configuration
-	      (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
-	      (default-cache-ttl-ssh 3600)
-	      (default-cache-ttl 3600)
-	      (ssh-support? #t)))
-    (service home-xdg-configuration-files-service-type
-	     `(("gdb/gdbinit" ,%default-gdbinit)
-	       (".Xdefaults" ,%default-xdefaults)
-	       ("nano/nanorc" ,%default-nanorc)
-	       ,(activate-rofi-theme "nord")))
-    (service home-syncthing-service-type
-	     (for-home
-	      (syncthing-configuration
-	       (user %user))))
-    (service home-dotfiles-service-type
-	     (home-dotfiles-configuration
-	      (directories
-	       '("../files/dotfiles"))))
-    (service home-files-service-type
-	     `((".guile" ,%default-dotguile)
-	       (".face" ,(local-file "../files/plain/ph.jpg"))))
-    (service home-sway-service-type
-	     %swayish)
-    (service home-niri-service-type
-	     (home-niri-configuration
-	      (config
-	       (computed-substitution-with-inputs
-		"niri.kdl"
-		(local-file "../files/plain/niri.kdl")
-		(list xwayland-satellite
-		      signal-desktop)))))
-    ;; (service home-mako-service-type)
-    (service home-noctalia-shell-service-type)
-    (service home-polkit-gnome-service-type)
-    (service home-zathura-service-type)
-    (service home-pipewire-service-type)
-    (service home-batsignal-service-type)
+(define %automate-home-environment
+  (home-environment
+   (packages (append
+	      %browsers
+	      %vcs
+	      %games
+	      %dev
+	      %scanner
+	      %tools
+	      %mail
+	      %editors
+	      ;; %emacs-packages
+	      %wm
+	      %fonts))
+   (services
+    (cons*
+     (simple-service 'additional-channels-service
+		     home-channels-service-type
+		     (load "../channels.lock.scm"))
+     (service home-shepherd-service-type
+	      (home-shepherd-configuration
+	       (auto-start? #f))) ;; Sadly we need to start shepherd in the sway boot process to make $WAYLAND_DISPLAY available.
+     (service home-dbus-service-type)
+     (service home-gpg-agent-service-type
+	      (home-gpg-agent-configuration
+	       (pinentry-program (file-append pinentry-qt "/bin/pinentry-qt"))
+	       (default-cache-ttl-ssh 3600)
+	       (default-cache-ttl 3600)
+	       (ssh-support? #t)))
+     (service home-xdg-configuration-files-service-type
+	      `(("gdb/gdbinit" ,%default-gdbinit)
+		(".Xdefaults" ,%default-xdefaults)
+		("nano/nanorc" ,%default-nanorc)
+		,(activate-rofi-theme "nord")))
+     (service home-syncthing-service-type
+	      (for-home
+	       (syncthing-configuration
+		(user %user))))
+     (service home-dotfiles-service-type
+	      (home-dotfiles-configuration
+	       (directories
+		'("../files/dotfiles"))))
+     (service home-files-service-type
+	      `((".guile" ,%default-dotguile)
+		(".face" ,(local-file "../files/plain/ph.jpg"))))
+     (service home-sway-service-type
+	      %swayish)
+     (service home-niri-service-type
+	      (home-niri-configuration
+	       (config
+		(computed-substitution-with-inputs
+		 "niri.kdl"
+		 (local-file "../files/plain/niri.kdl")
+		 (list xwayland-satellite
+		       signal-desktop)))))
+     ;; (service home-mako-service-type)
+     (service home-noctalia-shell-service-type)
+     (service home-polkit-gnome-service-type)
+     (service home-zathura-service-type)
+     (service home-pipewire-service-type)
+     (service home-batsignal-service-type)
 
-    ;; emacs
-    (simple-service 'emacs-environment home-environment-variables-service-type
-		    `(("EDITOR" . "emacsclient")
-		      ("VISUAL" . "$EDITOR")
-		      ("ESHELL" . ,(file-append fish "/bin/fish"))))
+     ;; emacs
+     (simple-service 'emacs-environment home-environment-variables-service-type
+		     `(("EDITOR" . "emacsclient")
+		       ("VISUAL" . "$EDITOR")
+		       ("ESHELL" . ,(file-append fish "/bin/fish"))))
 
-    (service home-emacs-service-type
-	     (home-emacs-configuration
-	      (emacs emacs-pgtk)
-	      (packages
-	       (with-transformation
-		(compose (options->transformation
-			  '((without-tests . "emacs-el-mock")))
-			 (package-input-rewriting
-			  `((,(@ (gnu packages emacs) emacs)         . ,emacs)
-			    (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
-			    (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs))))
-		(packages->manifest %emacs-packages)))
-	      (shepherd-requirement '(graphical-session))))
 
-    (simple-service 'fish-emacs-eat home-fish-service-type
-		    (home-fish-extension
-		     (config
-		      (list (plain-file "emacs-eat.fish" "\
+     (simple-service 'fish-emacs-eat home-fish-service-type
+		     (home-fish-extension
+		      (config
+		       (list (plain-file "emacs-eat.fish" "\
   if test -n \"$EAT_SHELL_INTEGRATION_DIR\"
       source $EAT_SHELL_INTEGRATION_DIR/fish
   end\n")))))
 
-    (service home-fish-hydro-service-type
-	     (home-fish-hydro-configuration
-	      (fish-hydro fish-hydro/ph)))
+     (service home-fish-hydro-service-type
+	      (home-fish-hydro-configuration
+	       (fish-hydro fish-hydro/ph)))
 
-    (service home-xdg-mime-applications-service-type
-	     (home-xdg-mime-applications-configuration
-	      (default
-		'((text/html . librewolf.desktop)
-		  (x-scheme-handler/http . librewolf.desktop)
-		  (x-scheme-handler/https . librewolf.desktop)))))
+     (service home-xdg-mime-applications-service-type
+	      (home-xdg-mime-applications-configuration
+	       (default
+		 '((text/html . librewolf.desktop)
+		   (x-scheme-handler/http . librewolf.desktop)
+		   (x-scheme-handler/https . librewolf.desktop)))))
 
-    (service home-fish-service-type
-	     (home-fish-configuration
-	      (config (list
-		       (mixed-text-file
-			"fish-config-direnv"
-			direnv "/bin/direnv hook fish | source")
-		       (mixed-text-file
-			"fish-config-atuin"
-			atuin "/bin/atuin init fish | source")
-		       (mixed-text-file
-			"disable-fish-greetings" "set -U fish_greeting")
-		       (mixed-text-file
-			"enable-foreign-fish-env"
-			"set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
+     (service home-fish-service-type
+	      (home-fish-configuration
+	       (config (list
+			(mixed-text-file
+			 "fish-config-direnv"
+			 direnv "/bin/direnv hook fish | source")
+			(mixed-text-file
+			 "fish-config-atuin"
+			 atuin "/bin/atuin init fish | source")
+			(mixed-text-file
+			 "disable-fish-greetings" "set -U fish_greeting")
+			(mixed-text-file
+			 "enable-foreign-fish-env"
+			 "set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
 set -g DIRENV_WARN_TIMEOUT 10m
 fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
-		       (plain-file "fish-hydro-config.fish" %fish-hydro-config)
-		       (plain-file "add-npm-bin.fish" "fish_add_path $HOME/.local/npm/bin")))))
-    %base-home-services)))
+			(plain-file "fish-hydro-config.fish" %fish-hydro-config)
+			(plain-file "add-npm-bin.fish" "fish_add_path $HOME/.local/npm/bin")))))
+     %base-home-services))))
 
 ;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
 ;; TODO: Create wrapper for this.

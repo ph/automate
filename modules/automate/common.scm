@@ -113,6 +113,9 @@
 (define %my-packages
   (map specification->package (list "awesome"
 				    "bluez"
+
+				    "simple-scan"
+				    "sane-airscan"
 				    "bluez-alsa"
 				    "ghostscript"
 				    "dconf"
