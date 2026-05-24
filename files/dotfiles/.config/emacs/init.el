@@ -1064,7 +1064,19 @@
   :type '(repeat string)
   :group 'agent)
 
-(defcustom ph/agent-sandbox-packages '("bash" "openssl" "nss-certs" "coreutils" "grep" "gawk" "sed" "jq" "git" "node" "rust" "rust:cargo" "nix")
+(defcustom ph/agent-sandbox-packages '("bash"
+				       "openssl"
+				       "nss-certs"
+				       "coreutils"
+				       "grep"
+				       "gawk"
+				       "sed"
+				       "jq"
+				       "git"
+				       "node"
+				       "rust"
+				       "rust:cargo"
+				       "nix")
   "Packages installed in the agent sandbox."
   :type '(repeat string)
   :group 'agent)
@@ -1177,3 +1189,13 @@
 (use-package rainbow-delimiters
   :hook
   (prog-mode . rainbow-delimiters-mode))
+
+;; For a more ergonomic Emacs and `dape' experience
+(use-package repeat
+  :custom
+  (repeat-mode +1))
+
+;; Left and right side windows occupy full frame height
+(use-package emacs
+  :custom
+  (window-sides-vertical t))

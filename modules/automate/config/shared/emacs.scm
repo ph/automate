@@ -20,6 +20,7 @@
 	emacs-evil-collection/ph
 	emacs-agent-shell/ph
 	emacs-rustic/ph
+	emacs-dape
 	emacs-rust-mode
 	emacs-prism
 	emacs-symex-core

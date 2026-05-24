@@ -15,6 +15,7 @@
   #:use-module (gnu home services)
   #:use-module (gnu home)
   #:use-module (gnu packages admin)
+  #:use-module (gnu packages llvm)
   #:use-module (gnu packages algebra)
   #:use-module (gnu packages aspell)
   #:use-module (gnu packages bash)
@@ -28,6 +29,7 @@
   #:use-module (gnu packages engineering)
   #:use-module (gnu packages fonts)
   #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages gdb)
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
@@ -110,11 +112,13 @@ set -g fish_term24bit 1 ")
 
 (define %vcs
   (list git
+	lldb
 	jujutsu
 	`(,git "send-email")))
 
 (define %dev
   (list node
+	gdb
 	mosh
 	fish-foreign-env
 	zathura-pdf-mupdf
