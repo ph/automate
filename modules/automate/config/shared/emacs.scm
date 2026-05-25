@@ -2,25 +2,63 @@
   #:use-module (gnu home services)
   #:use-module (gnu home)
   #:use-module (gnu packages emacs)
+  #:use-module (gnu packages emacs-build)
   #:use-module (gnu packages emacs-xyz)
   #:use-module (gnu packages mail)
   #:use-module (gnu packages tree-sitter)
   #:use-module (guix packages)
   #:use-module (guix profiles)
   #:use-module (guix transformations)
+  #:use-module (guix utils)
+  #:use-module (guix gexp)
   #:use-module (nonguix utils)
   #:use-module (rosenthal home services emacs)
   #:use-module (rosenthal packages emacs-xyz)
   #:use-module (supervoid gnu packages emacs-xyz)
+  #:use-module (guix git-download)
   #:export (%emacs-package
 	    +home-emacs-service-type))
+
+(define-public emacs-dap-mode/ph
+  (let ((revision "0")
+	(commit "fc78b2a1db5f30e65875653b4807b801c0ef23bc")
+	(sha "1hclax156il2xj32nxslqnzwk98wqnpm9xd35xlx8dvgzm7h4i33"))
+    (package
+      (inherit emacs-dap-mode)
+      (name "emacs-dap-mode-ph")
+      (version (git-version "0.8" revision commit))
+      (source
+       (origin
+	 (method git-fetch)
+	 (uri (git-reference
+		(url "https://github.com/emacs-lsp/dap-mode")
+		(commit commit)))
+	 (file-name (git-file-name name version))
+	 (sha256
+	  (base32 sha))))
+      (native-inputs (list emacs-ert-runner))
+      (inputs
+       (list emacs-bui
+	     emacs-lsp-docker
+	     emacs-lsp-mode
+	     emacs-posframe
+	     emacs-dash
+	     emacs-f
+	     emacs-ht
+	     emacs-s
+	     emacs-lsp-treemacs))
+      (arguments
+       (list #:include #~(cons* "\\.png$" %default-include)
+	     #:tests? #f)))))
 
 (define %emacs-packages
   (list emacs-evil/ph
 	emacs-evil-collection/ph
 	emacs-agent-shell/ph
 	emacs-rustic/ph
-	emacs-dape
+	emacs-lsp-mode
+	emacs-lsp-ui
+	emacs-dap-mode/ph
 	emacs-rust-mode
 	emacs-prism
 	emacs-symex-core
@@ -48,6 +86,7 @@
 	emacs-kind-icon
 	emacs-orderless
 	emacs-eglot-x
+	emacs-consult-lsp
 	emacs-nix-mode
 	emacs-yaml-mode
 	emacs-json-mode
@@ -79,7 +118,6 @@
 	emacs-marginalia
 	emacs-vertico
 	emacs-consult
-	emacs-consult-eglot
 	emacs-rainbow-delimiters
 	mu ;; mu4e and mu cli
 	emacs-mu4e-dashboard
@@ -108,15 +146,5 @@
   (service home-emacs-service-type
 	   (home-emacs-configuration
 	    (emacs emacs-bin)
-	    (packages
-	     (with-transformation
-	      (compose (options->transformation
-			'((without-tests . "emacs-el-mock")))
-		       (package-input-rewriting
-			;; use the provided emacs package for every inputs,
-			;; we need to match byte code version.
-			`((,(@ (gnu packages emacs) emacs)         . ,emacs)
-			  (,(@ (gnu packages emacs) emacs-minimal) . ,emacs)
-			  (,(@ (gnu packages emacs) emacs-no-x)    . ,emacs))))
-	      (packages->manifest emacs-packages)))
+	    (packages (packages->manifest emacs-packages))
 	    (shepherd-requirement '(graphical-session)))))

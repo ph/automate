@@ -3,9 +3,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ARGS := --verbosity=1
-
-HOST?=$(subst .local.heyk.org,,$(shell hostname))
-
 GUIX := guix
 
 default: help
@@ -13,23 +10,6 @@ default: help
 ## dry-run: Test home in a local container
 dry-run: ## - dry-run test home configuration in a local container
 	$(GUIX) home container config/home.scm $< $(ARGS)
-
-## pull: update packages
-pull: ## - update guix distributions
-	$(GUIX) pull --channels=channels.scm $(ARGS)
-
-## home: apply guix home configuration.
-home: ## - apply guix home configuration
-	$(GUIX) home reconfigure config/home.scm $< $(ARGS)
-
-## system: apply guix system configuration.
-system: ## - apply guix system configuration
-	sudo -E $(GUIX) system reconfigure config/$(HOST).scm $< $(ARGS)
-
-## apply: apply guix configuration to local machine.
-apply: ## - apply guix configuration
-	$(MAKE) system
-	$(MAKE) home
 
 ## reuse: check for license header
 reuse: ## - check for license header

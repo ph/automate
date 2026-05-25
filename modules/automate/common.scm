@@ -11,6 +11,8 @@
   #:use-module (gnu packages networking)
   #:use-module (gnu packages nfs)
   #:use-module (gnu packages shells)
+  #:use-module (gnu packages base) 
+  #:use-module (gnu packages bash)
   #:use-module (gnu packages wm)
   #:use-module (gnu packages)
   #:use-module (gnu services avahi)
@@ -23,6 +25,8 @@
   #:use-module (gnu services nix)
   #:use-module (gnu services pm)
   #:use-module (gnu services sound)
+  #:use-module (gnu services shepherd)
+  #:use-module (gnu services admin)
   #:use-module (gnu services sysctl)
   #:use-module (gnu services xorg)
   #:use-module (gnu services)
@@ -76,8 +80,8 @@
 (define (btrfs-maintenance-service mount-points)
   (service mcron-service-type
 	   (mcron-configuration
-	    (jobs
-	     (apply append (map btrfs-maintenance-jobs mount-points))))))
+	     (jobs
+	      (apply append (map btrfs-maintenance-jobs mount-points))))))
 
 (define (sudoers-content-for-account-names names)
   (map  (lambda (name) (format #f "~a ALL=(ALL) ALL" name)) names))
@@ -94,21 +98,21 @@
 
 (define %ph
   (user-account
-   (name "ph")
-   (comment "Pier-Hugues Pellerin")
-   (shell (file-append fish "/bin/fish"))
-   (group "users")
-   (home-directory "/home/ph")
-   (supplementary-groups
-    '("lp"
-      "kvm"
-      "wheel"
-      "netdev"
-      "docker"
-      "audio"
-      "plugdev"
-      "video"
-      "realtime"))))
+    (name "ph")
+    (comment "Pier-Hugues Pellerin")
+    (shell (file-append fish "/bin/fish"))
+    (group "users")
+    (home-directory "/home/ph")
+    (supplementary-groups
+     '("lp"
+       "kvm"
+       "wheel"
+       "netdev"
+       "docker"
+       "audio"
+       "plugdev"
+       "video"
+       "realtime"))))
 
 (define %my-packages
   (map specification->package (list "awesome"
@@ -132,10 +136,10 @@
 				    "openssh"
 				    "niri"
 				    "dconf"
-                                    "wl-clipboard"
-                                    "xdg-desktop-portal-gnome"
-                                    "xdg-desktop-portal-gtk"
-                                    "xdg-utils"
+				    "wl-clipboard"
+				    "xdg-desktop-portal-gnome"
+				    "xdg-desktop-portal-gtk"
+				    "xdg-utils"
 				    "sway"
 				    "swaylock-effects"
 				    "xorg-server-xwayland"
@@ -147,87 +151,150 @@
    (local-file "../../files/udev/69-probe-rs.rules")))
 
 (define %my-system-services
-  (append (list
-	   ;; (service console-font-service-type
-	   ;; 	    (map (lambda (tty)
-	   ;; 		   ;; Use a larger font for HIDPI screens
-	   ;; 		   (cons tty (file-append
-	   ;; 			      font-terminus
-	   ;; 			      "/share/consolefonts/ter-132n")))
-	   ;; 		 '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
+  (list (service login-service-type)
 
-	   (simple-service 'blueman dbus-root-service-type (list blueman))
-           (simple-service 'mtp udev-service-type (list libmtp))
-           (service sane-service-type)
-           polkit-wheel-service
-           fontconfig-file-system-service
+	(service virtual-terminal-service-type)
+	(service console-font-service-type
+		 (map (lambda (tty)
+			(cons tty %default-console-font))
+                      '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
+
+	(service shepherd-system-log-service-type)
+	(service agetty-service-type (agetty-configuration
+                                       (extra-options '("-L")) ; no carrier detect
+                                       (term "vt100")
+                                       (tty #f) ; automatic
+                                       (shepherd-requirement '(syslogd))))
+
+	(service mingetty-service-type (mingetty-configuration
+					 (tty "tty1")))
+	(service mingetty-service-type (mingetty-configuration
+					 (tty "tty2")))
+	(service mingetty-service-type (mingetty-configuration
+					 (tty "tty3")))
+	(service mingetty-service-type (mingetty-configuration
+					 (tty "tty4")))
+	(service mingetty-service-type (mingetty-configuration
+					 (tty "tty5")))
+	(service mingetty-service-type (mingetty-configuration
+					 (tty "tty6")))
+
+	;; Extra Bash configuration including Bash completion and aliases.
+	(service etc-bashrc-d-service-type)
+
+	(service static-networking-service-type
+		 (list %loopback-static-networking))
+	(service urandom-seed-service-type)
+	(service guix-service-type
+		 (guix-configuration
+		   (privileged? #f)
+		   (extra-options '("--max-jobs=4"
+				    "--cores=2"))))
+	(service nscd-service-type)
+
+	(service log-rotation-service-type)
+
+	;; Convenient services brought by the Shepherd.
+	(service shepherd-timer-service-type)
+	(service shepherd-transient-service-type)
+
+	;; Periodically delete old build logs.
+	(service log-cleanup-service-type
+		 (log-cleanup-configuration
+		   (directory "/var/log/guix/drvs")))
+
+	;; The LVM2 rules are needed as soon as LVM2 or the device-mapper is
+	;; used, so enable them by default.  The FUSE and ALSA rules are
+	;; less critical, but handy.
+	(service udev-service-type
+		 (udev-configuration
+		   (rules (list lvm2 fuse alsa-utils crda))))
+
+	(service sysctl-service-type)
+
+	(service special-files-service-type
+		 `(("/bin/sh" ,(file-append bash "/bin/sh"))
+		   ("/usr/bin/env" ,(file-append coreutils "/bin/env"))))
+	;; (service console-font-service-type
+	;; 	    (map (lambda (tty)
+	;; 		   ;; Use a larger font for HIDPI screens
+	;; 		   (cons tty (file-append
+	;; 			      font-terminus
+	;; 			      "/share/consolefonts/ter-132n")))
+	;; 		 '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
+
+	(simple-service 'blueman dbus-root-service-type (list blueman))
+	(simple-service 'mtp udev-service-type (list libmtp))
+	(service sane-service-type)
+	polkit-wheel-service
+	fontconfig-file-system-service
 
 
-           ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-           (simple-service 'udp-buffer-size
-                           sysctl-service-type
-                           '(("net.core.rmem_max" . "7500000")
-                             ("net.core.wmem_max" . "7500000")))
+	;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
+	(simple-service 'udp-buffer-size
+			sysctl-service-type
+			'(("net.core.rmem_max" . "7500000")
+			  ("net.core.wmem_max" . "7500000")))
 
-           ;; NetworkManager and its applet.
-           (service network-manager-service-type)
-           (service wpa-supplicant-service-type)    ;needed by NetworkManager
-           (service modem-manager-service-type)
-           (service usb-modeswitch-service-type)
+	;; NetworkManager and its applet.
+	(service network-manager-service-type)
+	(service wpa-supplicant-service-type)    ;needed by NetworkManager
+	(service modem-manager-service-type)
+	(service usb-modeswitch-service-type)
 
-	   (service containerd-service-type)
-	   (service docker-service-type)
+	(service containerd-service-type)
+	(service docker-service-type)
 
-           ;; The D-Bus family of things.
-           (service avahi-service-type)
-           (service udisks-service-type)
-           (service upower-service-type)
-           (service accountsservice-service-type)
-           (service cups-pk-helper-service-type)
-           (service colord-service-type)
-           (service geoclue-service-type)
-           (service polkit-service-type)
-           (service elogind-service-type)
-           (service dbus-root-service-type)
-           (service ntp-service-type
-		    (ntp-configuration
-		     (servers (list (ntp-server
-				     (type 'pool)
-				     (address "2.guix.pool.ntp.org")
-				     (options '("iburst")))))))
-           (service x11-socket-directory-service-type)
-           (service pulseaudio-service-type)
-           (service alsa-service-type)
-	   (service openssh-service-type
-		    (openssh-configuration
-		     (openssh openssh-sans-x)))
-	   (service tlp-service-type
-		    (tlp-configuration
-		     (cpu-scaling-governor-on-ac (list "balanced" "performance"))
-		     (cpu-boost-on-ac? #f)
-		     (cpu-scaling-governor-on-bat (list "low-power"))
-		     (cpu-boost-on-bat? #f)
-		     (sched-powersave-on-bat? #t)))
-	   (udev-rules-service 'light light)
-	   (service thermald-service-type)
-	   (service nix-service-type
-		    (nix-configuration
-		     (extra-config '("trusted-users = ph\n"
-				     "extra-platforms = aarch64-linux arm-linux"))))
-	   (service qemu-binfmt-service-type
-		    (qemu-binfmt-configuration
-		     (platforms (lookup-qemu-platforms "aarch64"))))
-	   (service sddm-service-type
-		    (sddm-configuration
-		     (sddm sddm-qt5)
-		     (theme "chili")
+	;; The D-Bus family of things.
+	(service avahi-service-type)
+	(service udisks-service-type)
+	(service upower-service-type)
+	(service accountsservice-service-type)
+	(service cups-pk-helper-service-type)
+	(service colord-service-type)
+	(service geoclue-service-type)
+	(service polkit-service-type)
+	(service elogind-service-type)
+	(service dbus-root-service-type)
+	(service ntp-service-type
+		 (ntp-configuration
+		   (servers (list (ntp-server
+				    (type 'pool)
+				    (address "2.guix.pool.ntp.org")
+				    (options '("iburst")))))))
+	(service x11-socket-directory-service-type)
+	(service pulseaudio-service-type)
+	(service alsa-service-type)
+	(service openssh-service-type
+		 (openssh-configuration
+		   (openssh openssh-sans-x)))
+	(service tlp-service-type
+		 (tlp-configuration
+		   (cpu-scaling-governor-on-ac (list "balanced"
+						     "performance"))
+		   (cpu-boost-on-ac? #f)
+		   (cpu-scaling-governor-on-bat (list "low-power"))
+		   (cpu-boost-on-bat? #f)
+		   (sched-powersave-on-bat? #t)))
+	(udev-rules-service 'light light)
+	(service thermald-service-type)
+	(service nix-service-type
+		 (nix-configuration
+		   (extra-config '("trusted-users = ph\n"
+				   "extra-platforms = aarch64-linux arm-linux"))))
+	(service qemu-binfmt-service-type
+		 (qemu-binfmt-configuration
+		   (platforms (lookup-qemu-platforms "aarch64"))))
+	(service sddm-service-type
+		 (sddm-configuration
+		   (sddm sddm-qt5)
+		   (theme "chili")
+		   (xorg-configuration
 		     (xorg-configuration
-		      (xorg-configuration
 		       (keyboard-layout
 			(keyboard-layout "us" #:options '("ctrl:nocaps")))))))
-	   (service pam-limits-service-type
-		    (list
-		     (pam-limits-entry "@realtime" 'both 'rtprio 99)
-		     (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
-		     (pam-limits-entry "*" 'both 'nofile 524288))))
-	  %base-services))
+	(service pam-limits-service-type
+		 (list
+		  (pam-limits-entry "@realtime" 'both 'rtprio 99)
+		  (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
+		  (pam-limits-entry "*" 'both 'nofile 524288)))))

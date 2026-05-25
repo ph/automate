@@ -311,6 +311,7 @@ set -g fish_term24bit 1 ")
      (simple-service 'emacs-environment home-environment-variables-service-type
 		     `(("EDITOR" . "emacsclient")
 		       ("VISUAL" . "$EDITOR")
+		       ("LSP_USE_PLISTS" . "true")
 		       ("ESHELL" . ,(file-append fish "/bin/fish"))))
      (+home-emacs-service-type)
      (simple-service 'fish-emacs-eat home-fish-service-type

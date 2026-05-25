@@ -2,6 +2,7 @@
   #:use-module (automate common)
   #:use-module (automate config home)
   #:use-module (automate microvm)
+  #:use-module (automate config shared)
   #:use-module (gnu packages freedesktop)
   #:use-module (gnu packages games)
   #:use-module (gnu packages gnome)
@@ -29,9 +30,6 @@
   #:use-module (nongnu system linux-initrd)
   #:use-module (rosenthal services networking)
   #:use-module (srfi srfi-1))
-
-(load "../../../config/shared.scm")
-
 
 (define %hellboy
   (operating-system
@@ -243,8 +241,7 @@
 	       (system? #t))
 	      (operating-system-groups os))))))
 
-;; (define (add-service service)
-;;   )
+;; (define (add-service service)   )
 
 ;; (define +firewall
 ;;   (add-service))

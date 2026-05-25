@@ -247,7 +247,8 @@
 ;; Display bindings.
 (use-package which-key
   :after (evil)
-  :init (which-key-mode)
+  :init
+  (which-key-mode)
   :config
   (which-key-setup-minibuffer))
 
@@ -418,6 +419,7 @@
   (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK"
 					 "PATH"
 					 "MANPATH"
+					 "LSP_USE_PLISTS"	 
 					 "SSH_AGENT_PID"
 					 "GPG_AGENT_INFO"
 					 "LANG"
@@ -437,7 +439,7 @@
 	corfu-auto-prefix 2
 	corfu-quit-no-match 'separator
 	corfu-count 16
-	corfu-max-width 120)
+	corfu-max-width 120)chore: Update copyright year
 
   (add-hook 'evil-insert-state-exit-hook #'corfu-quit)
   :custom
@@ -471,17 +473,7 @@
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
 ;; Manage multiples autocomplete sources.
-(use-package cape
-  :init
-  (defun ph/eglot-capf ()
-    (setq-local completion-at-point-functions
-		(list (cape-capf-super
-		       #'eglot-completion-at-point
-		       #'cape-file
-		       #'cape-dabbrev
-		       #'cape-keyword))))
-  (advice-add 'eglot-completion-at-point :around #'cape-wrap-buster)
-  (add-hook 'eglot-managed-mode-hook #'ph/eglot-capf))
+(use-package cape)
 
 (use-package orderless
   :custom
@@ -928,9 +920,6 @@
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
   )
 
-(use-package consult-eglot
-  :after (consult eglot))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
 
@@ -1002,31 +991,10 @@
   :hook
   (after-init . global-treesit-auto-mode))
 
-(use-package eglot
-  :general
-  (ph/leader-key
-    "a" '(:ignore t :wk "actions")
-    "aR" '(eglot-rename :wk "rename")
-    "aa" '(eglot-code-actions :wk "code action")
-    "aq" '(eglot-code-action-quickfix :wk "quickfix")
-    "ae" '(eglot-code-action-extract :wk "extract")
-    "ai" '(eglot-code-action-organize-imports :wk "organize imports")
-    "aI" '(eglot-code-action-inline :wk "inline"))
-  :config
-  (add-to-list 'eglot-server-programs '(nix-mode . ("nil")))
-  (advice-add 'jsonrpc--log-event :override #'ignore))
-
-;; Add extension to eglot to be similar to LSP.
-(use-package eglot-x
-  :config
-  (eglot-x-setup)
-  (define-key eglot-mode-map (kbd "s-.") #'eglot-x-find-refs))
-
 (use-package rustic
   :init
   (setq rust-mode-treesitter-derive t)
   :config
-  (setq rustic-lsp-client 'eglot)
   (setq rustic-format-on-save nil)
   :custom
   (rustic-cargo-use-last-stored-arguments t))
@@ -1139,6 +1107,7 @@
 	(agent-shell-anthropic-make-authentication :login t))
   (setq agent-shell-anthropic-claude-environment
 	(agent-shell-make-environment-variables :inherit-env t))
+  ;; TODO(ph): just use the proc directly.
   (setq agent-shell-command-prefix (lambda (buffer) (ph/guix-container-prefix buffer))))
 
 (use-package symex-core)
@@ -1195,7 +1164,60 @@
   :custom
   (repeat-mode +1))
 
-;; Left and right side windows occupy full frame height
 (use-package emacs
   :custom
+  (setq read-process-output-max (* 1024 1024)) ;; 1mb
   (window-sides-vertical t))
+
+(use-package lsp-mode
+  :custom
+  (lsp-completion-provider :none)
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  (setq lsp-auto-install-server nil)
+  (setq lsp-enable-suggest-server-download nil)
+  (setq lsp-auto-guess-root t)
+  (setq lsp-enable-snippet nil)
+  (setq lsp-log-io nil)
+  (defvar lsp-modeline-code-actions-segments '(count icon name))
+  (defun ph/orderless-dispatch-flex-first (_pattern index _total)
+    (and (eq index 0) 'orderless-flex))
+  (defun ph/autocomplete-cape ()
+    (list (cape-capf-buster #'lsp-completion-at-point)
+	  #'cape-file
+	  #'cape-dabbrev
+	  #'cape-keyword))
+  (defun ph/lsp-mode-setup-completion ()
+    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+	  '(orderless))
+    ;; Optionally configure the first word as flex filtered.
+    (setq-local orderless-style-dispatchers (list #'ph/orderless-dispatch-flex-first))
+    ;; Optionally configure the cape-capf-buster.
+    (setq-local completion-at-point-functions (ph/autocomplete-cape)))
+  :hook ((lsp-completion-mode . ph/lsp-mode-setup-completion)
+	 (rust-ts-mode . lsp-deferred)
+	 (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+(use-package dap-mode
+  :custom
+  (add-hook 'rustic-mode-hook (lambda ()
+				(dap-register-debug-template "Rust LLDB Debug Configuration"
+							     (list :type "cppdbg"
+								   :request "launch"
+								   :name "Rust::Run"
+								   :MIMode "lldb"
+								   :gdbpath "rust-lldb"
+								   :program (concat
+									     (project-root (current-project))
+									     "target/debug/"
+									     (project-name (current-project)))
+								   :environment []
+								   :cwd (project-root (current-project)))))))
+
+
+(use-package lsp-ui
+  :commands lsp-ui-mode)
+
+(use-package consult-lsp)
