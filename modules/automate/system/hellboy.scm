@@ -32,7 +32,7 @@
   #:use-module (nongnu system linux-initrd)
   #:use-module (srfi srfi-1))
 
-(define %hellboy
+(define %hellboy-os
   (operating-system
    (kernel linux-7.0)
    (kernel-arguments (cons*
@@ -114,5 +114,4 @@
 	   +system/power-management
 	   +profile/ph))
 
-((compose +profile/thinkpad-x1-carbon)
- %hellboy)
+((compose +profile/thinkpad-x1-carbon) %hellboy-os)

@@ -5,7 +5,9 @@
 	    +privileged-program
 	    +service
 	    +user
-	    +kernel-arguments))
+	    +kernel-arguments
+	    +sudo
+	    +ssh-key))
 
 (define (+service . args)
   (lambda (os)
@@ -45,6 +47,22 @@
 (define (+kernel-arguments args)
   (lambda (os)
     (operating-system
-     (inherit os)
-     (packages (append (operating-system-kernel-arguments os)
-		       args)))))
+      (inherit os)
+      (packages (append (operating-system-kernel-arguments os)
+			args)))))
+
+(define* (+sudo username
+		#:key
+		(permissions = "ALL = NOPASSWD: ALL"))
+  (lambda (os)
+    (let ((existing-content (operating-system-sudoers-file os))
+	  (new-sudo-entry (format #f "~a ~a\n" username permissions)))
+      (operating-system
+	(inherit os)
+	(sudoers-file
+	 (plain-file "sudoers" (string-append new-sudo-entry
+					      existing-content)))))))
+
+(define (+ssh-key user pubkey)
+  (+service (simple-service 'add-user-ssh-keys openssh-service-type
+			    `((,user ,(plain-file (format #f "~a.pub" user) pubkey))))))
