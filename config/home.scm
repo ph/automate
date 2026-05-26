@@ -118,6 +118,7 @@ set -g fish_term24bit 1
   (list git
 	;; mako
 	jujutsu
+	alacritty
 	`(,git "send-email")))
 
 (define %dev
@@ -513,7 +514,8 @@ set -g fish_term24bit 1
 		 "niri.kdl"
 		 (local-file "../files/plain/niri.kdl")
 		 (list xwayland-satellite
-		       signal-desktop)))))
+		       signal-desktop
+		       alacritty)))))
      ;; (service home-mako-service-type)
      (service home-noctalia-shell-service-type)
      (service home-polkit-gnome-service-type)
@@ -522,9 +524,11 @@ set -g fish_term24bit 1
      (service home-batsignal-service-type)
 
      ;; emacs
-     (simple-service 'emacs-environment home-environment-variables-service-type
+     (simple-service 'environment-variable home-environment-variables-service-type
 		     `(("EDITOR" . "emacsclient")
 		       ("VISUAL" . "$EDITOR")
+		       ("MOZ_VA_API_USE_BGRA" . "1")
+		       ("LIBVA_DRIVER_NAME" . "iHD")  ; for Intel Iris Xe
 		       ("ESHELL" . ,(file-append fish "/bin/fish"))))
 
 

@@ -1,4 +1,4 @@
-(define-module (automate config fragments)
+(define-module (automate fragments)
   #:use-module (gnu system)
   #:export (+group
 	    +user

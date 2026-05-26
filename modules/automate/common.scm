@@ -80,8 +80,8 @@
 (define (btrfs-maintenance-service mount-points)
   (service mcron-service-type
 	   (mcron-configuration
-	     (jobs
-	      (apply append (map btrfs-maintenance-jobs mount-points))))))
+	    (jobs
+	     (apply append (map btrfs-maintenance-jobs mount-points))))))
 
 (define (sudoers-content-for-account-names names)
   (map  (lambda (name) (format #f "~a ALL=(ALL) ALL" name)) names))
@@ -98,21 +98,21 @@
 
 (define %ph
   (user-account
-    (name "ph")
-    (comment "Pier-Hugues Pellerin")
-    (shell (file-append fish "/bin/fish"))
-    (group "users")
-    (home-directory "/home/ph")
-    (supplementary-groups
-     '("lp"
-       "kvm"
-       "wheel"
-       "netdev"
-       "docker"
-       "audio"
-       "plugdev"
-       "video"
-       "realtime"))))
+   (name "ph")
+   (comment "Pier-Hugues Pellerin")
+   (shell (file-append fish "/bin/fish"))
+   (group "users")
+   (home-directory "/home/ph")
+   (supplementary-groups
+    '("lp"
+      "kvm"
+      "wheel"
+      "netdev"
+      "docker"
+      "audio"
+      "plugdev"
+      "video"
+      "realtime"))))
 
 (define %my-packages
   (map specification->package (list "awesome"
@@ -161,23 +161,23 @@
 
 	(service shepherd-system-log-service-type)
 	(service agetty-service-type (agetty-configuration
-                                       (extra-options '("-L")) ; no carrier detect
-                                       (term "vt100")
-                                       (tty #f) ; automatic
-                                       (shepherd-requirement '(syslogd))))
+                                      (extra-options '("-L")) ; no carrier detect
+                                      (term "vt100")
+                                      (tty #f) ; automatic
+                                      (shepherd-requirement '(syslogd))))
 
 	(service mingetty-service-type (mingetty-configuration
-					 (tty "tty1")))
+					(tty "tty1")))
 	(service mingetty-service-type (mingetty-configuration
-					 (tty "tty2")))
+					(tty "tty2")))
 	(service mingetty-service-type (mingetty-configuration
-					 (tty "tty3")))
+					(tty "tty3")))
 	(service mingetty-service-type (mingetty-configuration
-					 (tty "tty4")))
+					(tty "tty4")))
 	(service mingetty-service-type (mingetty-configuration
-					 (tty "tty5")))
+					(tty "tty5")))
 	(service mingetty-service-type (mingetty-configuration
-					 (tty "tty6")))
+					(tty "tty6")))
 
 	;; Extra Bash configuration including Bash completion and aliases.
 	(service etc-bashrc-d-service-type)
@@ -187,9 +187,9 @@
 	(service urandom-seed-service-type)
 	(service guix-service-type
 		 (guix-configuration
-		   (privileged? #f)
-		   (extra-options '("--max-jobs=4"
-				    "--cores=2"))))
+		  ;; (privileged? #f)
+		  (extra-options '("--max-jobs=4"
+				   "--cores=2"))))
 	(service nscd-service-type)
 
 	(service log-rotation-service-type)
@@ -201,14 +201,14 @@
 	;; Periodically delete old build logs.
 	(service log-cleanup-service-type
 		 (log-cleanup-configuration
-		   (directory "/var/log/guix/drvs")))
+		  (directory "/var/log/guix/drvs")))
 
 	;; The LVM2 rules are needed as soon as LVM2 or the device-mapper is
 	;; used, so enable them by default.  The FUSE and ALSA rules are
 	;; less critical, but handy.
 	(service udev-service-type
 		 (udev-configuration
-		   (rules (list lvm2 fuse alsa-utils crda))))
+		  (rules (list lvm2 fuse alsa-utils crda))))
 
 	(service sysctl-service-type)
 
@@ -229,21 +229,11 @@
 	polkit-wheel-service
 	fontconfig-file-system-service
 
-
-	;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-	(simple-service 'udp-buffer-size
-			sysctl-service-type
-			'(("net.core.rmem_max" . "7500000")
-			  ("net.core.wmem_max" . "7500000")))
-
 	;; NetworkManager and its applet.
 	(service network-manager-service-type)
 	(service wpa-supplicant-service-type)    ;needed by NetworkManager
 	(service modem-manager-service-type)
 	(service usb-modeswitch-service-type)
-
-	(service containerd-service-type)
-	(service docker-service-type)
 
 	;; The D-Bus family of things.
 	(service avahi-service-type)
@@ -258,43 +248,14 @@
 	(service dbus-root-service-type)
 	(service ntp-service-type
 		 (ntp-configuration
-		   (servers (list (ntp-server
-				    (type 'pool)
-				    (address "2.guix.pool.ntp.org")
-				    (options '("iburst")))))))
+		  (servers (list (ntp-server
+				  (type 'pool)
+				  (address "2.guix.pool.ntp.org")
+				  (options '("iburst")))))))
 	(service x11-socket-directory-service-type)
 	(service pulseaudio-service-type)
 	(service alsa-service-type)
-	(service openssh-service-type
-		 (openssh-configuration
-		   (openssh openssh-sans-x)))
-	(service tlp-service-type
-		 (tlp-configuration
-		   (cpu-scaling-governor-on-ac (list "balanced"
-						     "performance"))
-		   (cpu-boost-on-ac? #f)
-		   (cpu-scaling-governor-on-bat (list "low-power"))
-		   (cpu-boost-on-bat? #f)
-		   (sched-powersave-on-bat? #t)))
-	(udev-rules-service 'light light)
 	(service thermald-service-type)
-	(service nix-service-type
-		 (nix-configuration
-		   (extra-config '("trusted-users = ph\n"
-				   "extra-platforms = aarch64-linux arm-linux"))))
 	(service qemu-binfmt-service-type
 		 (qemu-binfmt-configuration
-		   (platforms (lookup-qemu-platforms "aarch64"))))
-	(service sddm-service-type
-		 (sddm-configuration
-		   (sddm sddm-qt5)
-		   (theme "chili")
-		   (xorg-configuration
-		     (xorg-configuration
-		       (keyboard-layout
-			(keyboard-layout "us" #:options '("ctrl:nocaps")))))))
-	(service pam-limits-service-type
-		 (list
-		  (pam-limits-entry "@realtime" 'both 'rtprio 99)
-		  (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
-		  (pam-limits-entry "*" 'both 'nofile 524288)))))
+		  (platforms (lookup-qemu-platforms "aarch64"))))))
