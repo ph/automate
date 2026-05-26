@@ -51,9 +51,6 @@
 	    +system/zram-device 
 	    +vm/qemu-bridge-helper))
 
-(define %packages/server
-  (map specification->package (list "neovim")))
-
 ;; (define +hardware/fwupd
 ;;   (+service (service fwupd-service-type
 ;; 		     (fwupd-configuration
@@ -225,13 +222,8 @@
 					  #:options '("ctrl:nocaps")))))))))
 
 
-(define %packages/server
-  (map specification->package (list "neovim"))
-)
-
 (define +profile/desktop
   (compose
-   (+packages %packages/server)
    (+service (service sane-service-type))
    +system/pam-realtime-options
    +service/sddm-login-manager
@@ -270,13 +262,15 @@
 (define +networking/dhcp
   (+service (service dhcpcd-service-type)))
 
+;; (define %packages/server
+;;   (map specification->package (list "neovim")))
+
 (define +profile/server
   ;; todo ici bug map
   (compose
-   ;;(+packages %packages/server)
+   ;; (+packages %packages/server)
    +service/openssh
    +profile/deployable
    +system/substitutes
    +networking/ip-forwarding
    +networking/dhcp))
-

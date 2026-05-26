@@ -1,7 +1,6 @@
 (define-module (automate system lusk)
-  #:use-module (automate common)
-  #:use-module (automate fragments)
   #:use-module (automate profile)
+  #:use-module (automate fragments)
   #:use-module (automate config home)
   #:use-module (automate microvm)
   #:use-module (gnu packages freedesktop)
@@ -101,7 +100,5 @@
 			(dependencies (filter (file-system-mount-point-predicate "/.swap")
 					      file-systems)))))))
 
-(define +profile/lusk
-  (compose +profile/server))
-
-;; (+profile/lusk %lusk-os)
+(define +profile/lusk +profile/server)
+(+profile/lusk %lusk-os)

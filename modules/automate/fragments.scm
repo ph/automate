@@ -16,44 +16,44 @@
 (define (+service . args)
   (lambda (os)
     (operating-system
-      (inherit os)
-      (services (append args
-			(operating-system-user-services os))))))
+     (inherit os)
+     (services (append args
+		       (operating-system-user-services os))))))
 
 (define (+user user)
   (lambda (os)
     (operating-system
-      (inherit os)
-      (users (cons* user
-		    (operating-system-users os))))))
+     (inherit os)
+     (users (cons* user
+		   (operating-system-users os))))))
 
 (define (+group group)
   (lambda (os)
     (operating-system
-      (inherit os)
-      (groups (cons* group
-		     (operating-system-groups os))))))
+     (inherit os)
+     (groups (cons* group
+		    (operating-system-groups os))))))
 
 (define (+privileged-program programs)
   (lambda (os)
     (operating-system
-      (inherit os)
-      (privileged-programs (cons programs
-				 (operating-system-privileged-programs os))))))
+     (inherit os)
+     (privileged-programs (cons programs
+				(operating-system-privileged-programs os))))))
 
 (define (+packages system-packages)
   (lambda (os)
     (operating-system
-      (inherit os)
-      (packages (append (operating-system-packages os)
-			system-packages)))))
+     (inherit os)
+     (packages (append (operating-system-packages os)
+		       system-packages)))))
 
 (define (+kernel-arguments args)
   (lambda (os)
     (operating-system
-      (inherit os)
-      (packages (append (operating-system-kernel-arguments os)
-			args)))))
+     (inherit os)
+     (packages (append (operating-system-kernel-arguments os)
+		       args)))))
 
 (define* (+sudo username
 		#:key
@@ -62,10 +62,10 @@
     (let ((existing-content (plain-file-content (operating-system-sudoers-file os)))
 	  (new-sudo-entry (format #f "~a ~a\n" username permissions)))
       (operating-system
-	(inherit os)
-	(sudoers-file
-	 (plain-file "sudoers" (string-append new-sudo-entry
-					      existing-content)))))))
+       (inherit os)
+       (sudoers-file
+	(plain-file "sudoers" (string-append new-sudo-entry
+					     existing-content)))))))
 
 (define* (short-sha long-sha #:optional
 		    (sha-length  10))
