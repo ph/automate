@@ -1,10 +1,11 @@
 (define-module (automate fragments)
   #:use-module (gnu system)
   #:export (+group
-	    +user
-	    +service
+	    +packages
 	    +privileged-program
-	    +packages))
+	    +service
+	    +user
+	    +kernel-arguments))
 
 (define (+service . args)
   (lambda (os)
@@ -40,3 +41,10 @@
       (inherit os)
       (packages (append (operating-system-packages os)
 			system-packages)))))
+
+(define (+kernel-arguments args)
+  (lambda (os)
+    (operating-system
+     (inherit os)
+     (packages (append (operating-system-kernel-arguments os)
+		       args)))))

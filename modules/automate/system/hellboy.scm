@@ -6,41 +6,30 @@
   #:use-module (automate config shared)
   #:use-module (automate microvm)
   #:use-module (gnu packages freedesktop)
-  #:use-module (gnu packages games)
+  #:use-module (gnu system)
+  #:use-module (gnu bootloader)
+  #:use-module (gnu bootloader grub)
+  #:use-module (gnu system mapped-devices)
+  #:use-module (gnu system uuid)
+  #:use-module (gnu system file-systems)
+  #:use-module (gnu system keyboard)
   #:use-module (gnu packages gnome)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages vim)
-  #:use-module (gnu packages virtualization)
   #:use-module (gnu packages)
   #:use-module (gnu services authentication)
   #:use-module (gnu services desktop)
-  #:use-module (gnu services guix)
   #:use-module (gnu services nix)
   #:use-module (gnu services linux)
   #:use-module (gnu services networking)
   #:use-module (gnu services sddm)
   #:use-module (gnu services pm)
+  #:use-module (gnu services base)
   #:use-module (gnu services xorg) 
   #:use-module (gnu services docker)
-  #:use-module (gnu services ssh)
-  #:use-module (gnu packages ssh)
-  #:use-module (gnu packages display-managers)
-  #:use-module (gnu services shepherd)
-  #:use-module (gnu services sysctl)
-  #:use-module (gnu system privilege)
-  #:use-module (gnu)
-  #:use-module (guix gexp)
-  #:use-module (guix profiles)
-  #:use-module (microvm config microvm)
-  #:use-module (microvm gnu services microvm)
-  #:use-module (microvm gnu services tap)
-  #:use-module (microvm os)
-  #:use-module (microvm vmm cloud-hypervisor)
-  #:use-module (microvm)
   #:use-module (nongnu packages firmware)
   #:use-module (nongnu packages linux)
   #:use-module (nongnu system linux-initrd)
-  #:use-module (rosenthal services networking)
   #:use-module (srfi srfi-1))
 
 (define %hellboy
@@ -112,141 +101,6 @@
 		   (check? #f))
 		  %base-file-systems))))
 
-;; (define +hardware/fwupd
-;;   (+service (service fwupd-service-type
-;; 		     (fwupd-configuration
-;; 		      (fwupd fwupd-nonfree)))))
-
-(define +networking/tailscale
-  (compose ;;(+packages '(tailscale)) ;; ensure it's available int PATH to login.
-	   (+service (service tailscale-service-type))))
-
-(define +networking/ip-forwarding
-  (+service (simple-service 'sysctl-ip-forwarding
-			    sysctl-service-type
-			    '(("net.ipv4.ip_forward" . "1")
-			      ("net.ipv6.conf.all.forwarding" . "1")))))
-
-
-;; Increase UDP buffer size for data transfer, help with syncthing local transfer.
-;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
-(define +networking/increase-udp-buffer-size
-  (+service (simple-service 'udp-buffer-size sysctl-service-type
-			    '(("net.core.rmem_max" . "7500000")
-			      ("net.core.wmem_max" . "7500000")))))
-
-(define +vm/qemu-bridge-helper
-  (+privileged-program
-   (privileged-program
-    (program (file-append qemu "/libexec/qemu-bridge-helper"))
-    (setuid? #t))))
-
-(define +profile/gaming
-  (+service (udev-rules-service 'steam-devices steam-devices-udev-rules)))
-
-(define +profile/ph
-  (compose (+user %ph)
-	   (+group (user-group
-		    (system? #t)
-		    (name "plugdev")))
-	   (+service (service guix-home-service-type
-			      `((,(user-account-name %ph) ,(automate-home-environment)))))))
-
-(define +system/substitutes
-  (+service (simple-service 'extend-guix
-			    guix-service-type
-			    (guix-extension
-			     (substitute-urls
-			      (append (list
-				       "https://substitutes.supervoid.org"
-				       "https://cache-cdn.guix.moe")
-				      %default-substitute-urls))
-			     (authorized-keys
-			      (append %guix-keyring-all
-				      %default-authorized-guix-keys))))))
-
-(define +system/btrfs
-  (+service (btrfs-maintenance-service '("/"))))
-
-(define* (+system/zram-device #:key
-			      (ram-size "32G"))
-  (+service (service zram-device-service-type
-		     (zram-device-configuration
-		      (size ram-size)
-		      (compression-algorithm 'zstd)
-		      (priority 100)))))
-
-(define +profile/bluetooth
-  (lambda (os) 
-    ((+service (service bluetooth-service-type
-			(bluetooth-configuration
-			 (bluez bluez)
-			 (name (operating-system-host-name os))
-			 (auto-enable? #t)
-			 (multi-profile 'multiple)))) os)))
-
-(define +service/containers
-  (+service (service containerd-service-type)
-	    (service docker-service-type)))
-
-(define +system/pam-realtime-options
-  (compose
-   (+group (user-group
-	    (system? #t)
-	    (name "realtime")))
-   (+service (service pam-limits-service-type
-		      (list
-		       (pam-limits-entry "@realtime" 'both 'rtprio 99)
-		       (pam-limits-entry "@realtime" 'both 'memlock 'unlimited)
-		       (pam-limits-entry "*" 'both 'nofile 524288))))))
-
-(define* (+service/nix #:key
-		       (trusted-user "ph"))
-  (+service (service nix-service-type
-		     (nix-configuration
-		      (extra-config '((format #f "trusted-users = ~a\n" trusted-user)
-				      "extra-platforms = aarch64-linux arm-linux"))))))
-
-(define +profile/development
-  (compose +networking/ip-forwarding
-	   +service/containers
-	   (+service/nix)
-	   +vm/qemu-bridge-helper))
-
-(define +system/power-management
-  (+service (service tlp-service-type
-		     (tlp-configuration
-		      (cpu-scaling-governor-on-ac (list "balanced"
-							"performance"))
-		      (cpu-scaling-governor-on-bat (list "low-power"))
-		      (cpu-boost-on-ac? #t)
-		      (cpu-boost-on-bat? #f)
-		      (sched-powersave-on-bat? #t)))))
-
-(define +service/openssh
-  (+service (service openssh-service-type
-		     (openssh-configuration
-		      (openssh openssh-sans-x)))))
-
-(define +service/sddm-login-manager
-  (+service (service sddm-service-type
-		     (sddm-configuration
-		      (sddm sddm-qt5)
-		      (theme "chili")
-		      (xorg-configuration
-		       (xorg-configuration
-			(keyboard-layout
-			 (keyboard-layout "us"
-					  #:options '("ctrl:nocaps")))))))))
-
-(define +profile/desktop
-  (compose (+service (service sane-service-type)
-		     (udev-rules-service 'probe-rs %probe-rs-udev-rules))
-	   +system/pam-realtime-options
-	   +service/sddm-login-manager
-	   +profile/gaming
-	   +profile/bluetooth))
-
 (define +profile/thinkpad-x1-carbon
   (compose (+packages %my-packages)
 	   (+service (udev-rules-service 'light light))
@@ -260,4 +114,5 @@
 	   +system/power-management
 	   +profile/ph))
 
-((compose +profile/thinkpad-x1-carbon) %hellboy)
+((compose +profile/thinkpad-x1-carbon)
+ %hellboy)
