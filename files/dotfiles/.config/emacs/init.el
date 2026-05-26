@@ -7,8 +7,12 @@
     (make-empty-file custom-file)
   (load custom-file))
 
-(if (not (file-exists-p "~/.config/emacs-backup"))
-    (make-directory "~/.config/emacs-backup"))
+
+(defvar ph/emacs-backup-directory
+  (expand-file-name ".config/emacs-backup" (getenv "HOME")))
+
+(if (not (file-exists-p ph/emacs-backup-directory))
+  (make-directory ph/emacs-backup-directory))
 
 (use-package gcmh
   :init
@@ -81,7 +85,8 @@
    load-prefer-newer t
 
    ;; Opinions how backups are done.
-   backup-directory-alist '((".*" . "~/.config/emacs-backup"))
+   backup-directory-alist '(("." . ph/emacs-backup-directory))
+
    revert-without-query '(".*")
    make-backup-files nil
    create-lockfiles nil

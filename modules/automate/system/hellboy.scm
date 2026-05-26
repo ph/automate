@@ -110,8 +110,8 @@
 	   +service/openssh
 	   +system/substitutes
 	   +networking/tailscale
-	   ;; +system/zram-device
+	   (+system/zram-device)
 	   +system/power-management
 	   +profile/ph))
 
-((compose +profile/thinkpad-x1-carbon) %hellboy-os)
+(+profile/thinkpad-x1-carbon %hellboy-os)

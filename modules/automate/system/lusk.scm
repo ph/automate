@@ -1,157 +1,50 @@
-;;; SPDX-FileCopyrightText: 2025 2025 Pier-Hugues Pellerin <ph@heykimo.com>
-;;;
-;;; SPDX-License-Identifier: GPL-3.0-or-later
-(define-module (automate system lusk))
+(define-module (automate system lusk)
+  #:use-module (automate common)
+  #:use-module (automate fragments)
+  #:use-module (automate profile)
+  #:use-module (automate config home)
+  #:use-module (automate microvm)
+  #:use-module (gnu packages freedesktop)
+  #:use-module (gnu system)
+  #:use-module (gnu bootloader)
+  #:use-module (gnu bootloader grub)
+  #:use-module (gnu system mapped-devices)
+  #:use-module (gnu system uuid)
+  #:use-module (gnu system file-systems)
+  #:use-module (gnu system keyboard)
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages vim)
+  #:use-module (gnu packages)
+  #:use-module (gnu services authentication)
+  #:use-module (gnu services desktop)
+  #:use-module (gnu services nix)
+  #:use-module (gnu services linux)
+  #:use-module (gnu services networking)
+  #:use-module (gnu services sddm)
+  #:use-module (gnu services pm)
+  #:use-module (gnu services base)
+  #:use-module (gnu services xorg) 
+  #:use-module (gnu services docker)
+  #:use-module (nongnu packages firmware)
+  #:use-module (nongnu packages linux)
+  #:use-module (nongnu system linux-initrd)
+  #:use-module (srfi srfi-1))
 
-(load "../../../shared.scm")
-
-(use-modules (gnu)
-	     (automate common)
-	     (gnu packages ssh)
-	     (gnu services dbus)
-	     (gnu services docker)
-	     (gnu services cuirass)
-	     (gnu services avahi)
-	     (gnu system)
-	     (guix gexp)
-	     (nongnu packages linux)
-	     (nongnu system linux-initrd)
-	     (rosenthal services networking)
-	     (rosenthal services web)
-	     (gnu services networking)
-	     (gnu services nfs)
-	     (gnu services base)
-	     (gnu services shepherd)
-	     (heyk nongnu services arm)
-	     (guix packages)
-	     (gnu packages ssh))
-
-(use-service-modules cups
-		     desktop
-		     networking
-		     ssh
-		     sysctl
-		     virtualization)
-
-(define %deploy-key
-  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCiRJsoVbDvQYsRe94WC0kaRrru1+loCl6xZecdR4kEMfuJWz4NvyZNgD2q7KtXmQ+flvIdPuN0uxHbIzm+f1L500ZGoeOSo9GT2HPSJT8nUjgzLzKkwEs35uraxMQicjEnoUf9v+qx7s8Tv/mmKuMPrqMiNt337PlEL6llRkNtJ8srOd8pDXd40WOtHcPjRN0if78VnjESDTufAuqLoGs6yCe5j3QpcGlFneQ164AATwUMcuMQc9TVFc2pRjZRaWOFDSIAqF6NsaE3D4K6NvbTl8YIhi/seGKkvp6jfnv4T53JnY4TwbOEyPUS9dp3yfaz3NThy5r1AYAETz9s8mJC4KT2dKatShzU9tGGCyg409HNe/nOZQZrpBzfYLLwiBkxSZaCesJ0s4tyiKNW26asub0rM9DTnfCbcrEzzRtmCph3yZIC7yvNl3BAhKGIodsC07tk5zCR+kTyLntRBTIvev7Y98jz0/WA2Jaa3tQZCH8vhF0PCeiPh5c+z4A2z19ZdsLauKUs833Tj5amZg6H8t67pyFXGa2N8dptzsssk/BDEdO/YT6hohjEFI9kqtvNQbtTi6vwHjPCkpeV8MDRHWDNZsnLVz/2VR8oLH2suWDKGz4GlY0DfWRnmswu2rijGkD7U8eHt/6xrrtVxWZ9yJGnc90+RKz1LjwReRmkPw== openpgp:0xC6D3E079")
-
-(define (add-key user key)
-  (simple-service 'add-user-ssh-keys openssh-service-type
-		  `((,user ,(plain-file (format #f "~a.pub" user) key)))))
-
-(define %deploy-user-account
-  (user-account
-   (name "deploy")
-   (comment "deploy")
-   (group "users")
-   (create-home-directory? #f)
-   (supplementary-groups '("wheel"))))
-
-(define (make-deployable os)
-  (operating-system
-   (inherit os)
-   (users (append (list %deploy-user-account)
-		  (operating-system-users os)))
-   (sudoers-file
-    (plain-file
-     "sudoers"
-     (string-append
-      (plain-file-content (operating-system-sudoers-file os))
-      "deploy ALL = NOPASSWD: ALL\n")))
-   (services (append (list (add-key "deploy" %deploy-key))
-		     (operating-system-user-services os)))))
-
-
-(define %my-packages
-  (map specification->package (list
-			       "nfs-utils"
-			       "mosh")))
-
-(define %lusk
+(define %lusk-os
   (operating-system
    (locale "en_CA.utf8")
    (timezone "America/Toronto")
    (keyboard-layout (keyboard-layout "us"))
    (host-name "lusk")
-   (kernel linux)
+   (kernel linux-7.0)
    (initrd microcode-initrd)
    (firmware (list linux-firmware
 		   amdgpu-firmware))
-   (users (cons* %ph
-		 %base-user-accounts))
-   (packages (append
-	      %my-packages
-	      %base-packages))
-   (services
-    (append (list
-	     ;; Install the required dependencies to interact with NFS shares.
-	     (service nfs-service-type)
-	     (service autofs-service-type
-		      (autofs-configuration
-		       (mounts
-			(list
-			 (autofs-indirect-map
-			  (mount-point "/-")
-			  (entries
-			   (list
-			    (autofs-map-entry
-			     (type "nfs")
-			     (options '(rw vers=4))
-			     (device "ogdru-jahad:/volume1/Music")
-			     (mount-point "/var/lib/docker-arm/music"))
-
-			    (autofs-map-entry
-			     (type "nfs")
-			     (options '(rw vers=4))
-			     (device "ogdru-jahad:/volume1/Media")
-			     (mount-point "/var/lib/docker-arm/media/completed")))))))))
-
-	     (simple-service 'nfs-ensure-perms
-			     shepherd-root-service-type
-			     (list (shepherd-timer '(nfs-check-perms)
-						   #~(calendar-event #:minutes '(0 10 20 30 40 50))
-						   #~("chown" "-R" "arm:arm" "/var/lib/docker-arm/")
-						   #:requirement '(user-processes))))
-
-	     (simple-service 'extend-sysctl
-			     sysctl-service-type
-			     '(("net.ipv4.ip_forward" . "1")
-			       ("net.ipv6.conf.all.forwarding" . "1")))
-
-	     (simple-service 'extend-guix
-			     guix-service-type
-			     (guix-extension
-			      (substitute-urls
-			       (append (list
-					"https://cache-cdn.guix.moe"
-					;; "https://substitutes.nonguix.org"
-					"https://substitutes.supervoid.org")
-				       %default-substitute-urls))
-			      (authorized-keys
-			       (append %guix-keyring-all
-				       %default-authorized-guix-keys))))
-	     (service avahi-service-type)
-	     (service ntp-service-type)
-	     (service dhcpcd-service-type)
-	     (service containerd-service-type)
-	     (service dbus-root-service-type)
-	     (service docker-service-type)
-	     (service elogind-service-type)
-	     (service openssh-service-type
-		      (openssh-configuration
-		       (openssh openssh-sans-x)
-		       (permit-root-login #f)
-		       (authorized-keys
-			`(("ph"
-			   ,(plain-file "ph.pub" %deploy-key)))))))
-	    %base-services))
-
    (bootloader (bootloader-configuration
 		(bootloader grub-efi-bootloader)
 		(targets (list "/efi"))
 		(keyboard-layout keyboard-layout)))
-
    (file-systems (cons*
 		  (file-system
                    (mount-point "/")
@@ -197,8 +90,6 @@
 		   (options "size=40G")
 		   (check? #f))
 
-
-
 		  %base-file-systems))
    ;; This is somewhat problematic, there is no guixy way to create a swapfile
    ;; and creating them on btrfs is still a bit hairy.
@@ -209,4 +100,8 @@
 			(target "/.swap/swapfile")
 			(dependencies (filter (file-system-mount-point-predicate "/.swap")
 					      file-systems)))))))
-(make-deployable %lusk)
+
+(define +profile/lusk
+  (compose +profile/server))
+
+;; (+profile/lusk %lusk-os)

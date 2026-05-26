@@ -1,8 +1,10 @@
 (define-module (automate profile)
   #:use-module (automate fragments)
   #:use-module (gnu services)
+  #:use-module (gnu packages)
   #:use-module (gnu system accounts)
   #:use-module (gnu services sysctl)
+  #:use-module (gnu services linux)
   #:use-module (guix gexp)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages linux)
@@ -18,6 +20,7 @@
   #:use-module (gnu services sddm)
   #:use-module (gnu services ssh)
   #:use-module (gnu services desktop)
+  #:use-module (gnu services networking)
   #:use-module (gnu system keyboard)
   #:use-module (gnu packages ssh)
   #:use-module (gnu services mcron)
@@ -35,6 +38,8 @@
 	    +profile/development
 	    +profile/gaming
 	    +profile/ph
+	    +profile/deployable
+	    +profile/server
 	    +service/containers
 	    +service/nix
 	    +service/openssh
@@ -45,6 +50,9 @@
 	    +system/substitutes
 	    +system/zram-device 
 	    +vm/qemu-bridge-helper))
+
+(define %packages/server
+  (map specification->package (list "neovim")))
 
 ;; (define +hardware/fwupd
 ;;   (+service (service fwupd-service-type
@@ -140,9 +148,9 @@
 			      (ram-size "32G"))
   (+service (service zram-device-service-type
 		     (zram-device-configuration
-		      (size ram-size)
-		      (compression-algorithm 'zstd)
-		      (priority 100)))))
+		       (size ram-size)
+		       (compression-algorithm 'zstd)
+		       (priority 100)))))
 
 (define +profile/bluetooth
   (lambda (os) 
@@ -216,15 +224,41 @@
 			 (keyboard-layout "us"
 					  #:options '("ctrl:nocaps")))))))))
 
+
+(define %packages/server
+  (map specification->package (list "neovim"))
+)
+
 (define +profile/desktop
-  (compose (+service (service sane-service-type))
-	   +system/pam-realtime-options
-	   +service/sddm-login-manager
-	   +profile/gaming
-	   +profile/bluetooth))
+  (compose
+   (+packages %packages/server)
+   (+service (service sane-service-type))
+   +system/pam-realtime-options
+   +service/sddm-login-manager
+   +profile/gaming
+   +profile/bluetooth))
+
+;; (define (make/deployable add-user ssh-pubkey)
+;;   (compose (+user add-user)
+;; 	   (+sudo (user-account-name add-user))
+;; 	   (+ssh-key (user-account-name add-user) ssh-pubkey)))
+
+;; (define +profile/deployable2
+;;   (make/deployable 
+;; 	    (user-account
+;; 		    (name "deploy")
+;; 		    (comment "deploy")
+;; 		    (group "users")
+;; 		    (create-home-directory? #f)
+;; 		    (supplementary-groups '("wheel")))
+
+
+	   ;; deploy" "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCiRJsoVbDvQYsRe94WC0kaRrru1+loCl6xZecdR4kEMfuJWz4NvyZNgD2q7KtXmQ+flvIdPuN0uxHbIzm+f1L500ZGoeOSo9GT2HPSJT8nUjgzLzKkwEs35uraxMQicjEnoUf9v+qx7s8Tv/mmKuMPrqMiNt337PlEL6llRkNtJ8srOd8pDXd40WOtHcPjRN0if78VnjESDTufAuqLoGs6yCe5j3QpcGlFneQ164AATwUMcuMQc9TVFc2pRjZRaWOFDSIAqF6NsaE3D4K6NvbTl8YIhi/seGKkvp6jfnv4T53JnY4TwbOEyPUS9dp3yfaz3NThy5r1AYAETz9s8mJC4KT2dKatShzU9tGGCyg409HNe/nOZQZrpBzfYLLwiBkxSZaCesJ0s4tyiKNW26asub0rM9DTnfCbcrEzzRtmCph3yZIC7yvNl3BAhKGIodsC07tk5zCR+kTyLntRBTIvev7Y98jz0/WA2Jaa3tQZCH8vhF0PCeiPh5c+z4A2z19ZdsLauKUs833Tj5amZg6H8t67pyFXGa2N8dptzsssk/BDEdO/YT6hohjEFI9kqtvNQbtTi6vwHjPCkpeV8MDRHWDNZsnLVz/2VR8oLH2suWDKGz4GlY0DfWRnmswu2rijGkD7U8eHt/6xrrtVxWZ9yJGnc90+RKz1LjwReRmkPw== openpgp:0xC6D3E079")))
+;;   )
 
 (define +profile/deployable
-  (compose (+user (user-account
+  (compose (+user
+	    (user-account
 		    (name "deploy")
 		    (comment "deploy")
 		    (group "users")
@@ -232,3 +266,17 @@
 		    (supplementary-groups '("wheel"))))
 	   (+sudo "deploy")
 	   (+ssh-key "deploy" "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCiRJsoVbDvQYsRe94WC0kaRrru1+loCl6xZecdR4kEMfuJWz4NvyZNgD2q7KtXmQ+flvIdPuN0uxHbIzm+f1L500ZGoeOSo9GT2HPSJT8nUjgzLzKkwEs35uraxMQicjEnoUf9v+qx7s8Tv/mmKuMPrqMiNt337PlEL6llRkNtJ8srOd8pDXd40WOtHcPjRN0if78VnjESDTufAuqLoGs6yCe5j3QpcGlFneQ164AATwUMcuMQc9TVFc2pRjZRaWOFDSIAqF6NsaE3D4K6NvbTl8YIhi/seGKkvp6jfnv4T53JnY4TwbOEyPUS9dp3yfaz3NThy5r1AYAETz9s8mJC4KT2dKatShzU9tGGCyg409HNe/nOZQZrpBzfYLLwiBkxSZaCesJ0s4tyiKNW26asub0rM9DTnfCbcrEzzRtmCph3yZIC7yvNl3BAhKGIodsC07tk5zCR+kTyLntRBTIvev7Y98jz0/WA2Jaa3tQZCH8vhF0PCeiPh5c+z4A2z19ZdsLauKUs833Tj5amZg6H8t67pyFXGa2N8dptzsssk/BDEdO/YT6hohjEFI9kqtvNQbtTi6vwHjPCkpeV8MDRHWDNZsnLVz/2VR8oLH2suWDKGz4GlY0DfWRnmswu2rijGkD7U8eHt/6xrrtVxWZ9yJGnc90+RKz1LjwReRmkPw== openpgp:0xC6D3E079")))
+
+(define +networking/dhcp
+  (+service (service dhcpcd-service-type)))
+
+(define +profile/server
+  ;; todo ici bug map
+  (compose
+   ;;(+packages %packages/server)
+   +service/openssh
+   +profile/deployable
+   +system/substitutes
+   +networking/ip-forwarding
+   +networking/dhcp))
+
