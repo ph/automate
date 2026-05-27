@@ -102,8 +102,7 @@
 		  %base-file-systems))))
 
 (define +profile/thinkpad-x1-carbon
-  (compose (+packages %my-packages)
-	   (+service (udev-rules-service 'light light))
+  (compose (+service (udev-rules-service 'light light))
 	   +networking/increase-udp-buffer-size
 	   +profile/desktop
 	   +profile/development

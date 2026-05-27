@@ -1,44 +1,58 @@
 (define-module (automate profile)
-  #:use-module (automate fragments)
-  #:use-module (gnu services)
-  #:use-module (gnu packages)
-  #:use-module (gnu system accounts)
-  #:use-module (gnu services sysctl)
-  #:use-module (gnu services linux)
-  #:use-module (guix gexp)
-  #:use-module (gnu packages shells)
-  #:use-module (gnu packages linux)
-  #:use-module (gnu packages display-managers)
-  #:use-module (gnu system)
-  #:use-module (gnu system pam)
-  #:use-module (automate config shared)
   #:use-module (automate config home)
+  #:use-module (automate config shared)
+  #:use-module (automate fragments)
+  #:use-module (gnu packages audio)
+  #:use-module (gnu packages cups)
+  #:use-module (gnu packages display-managers)
+  #:use-module (gnu packages freedesktop)
+  #:use-module (gnu packages games)
+  #:use-module (gnu packages ghostscript)
+  #:use-module (gnu packages gl)
+  #:use-module (gnu packages gnome)
+  #:use-module (gnu packages linux)
+  #:use-module (gnu packages package-management)
+  #:use-module (gnu packages scanner)
+  #:use-module (gnu packages shells)
+  #:use-module (gnu packages ssh)
+  #:use-module (gnu packages version-control)
+  #:use-module (gnu packages video)
+  #:use-module (gnu packages virtualization)
+  #:use-module (gnu packages wm)
+  #:use-module (gnu packages xdisorg)
+  #:use-module (gnu packages xorg)
   #:use-module (gnu services base)
+  #:use-module (gnu services desktop)
+  #:use-module (gnu services docker)
+  #:use-module (gnu services guix)
+  #:use-module (gnu services linux)
+  #:use-module (gnu services mcron)
+  #:use-module (gnu services networking)
   #:use-module (gnu services nix)
-  #:use-module (gnu services xorg)
   #:use-module (gnu services pm)
   #:use-module (gnu services sddm)
   #:use-module (gnu services ssh)
-  #:use-module (gnu services desktop)
-  #:use-module (gnu services networking)
+  #:use-module (gnu services sysctl)
+  #:use-module (gnu services xorg)
+  #:use-module (gnu services)
+  #:use-module (gnu system accounts)
   #:use-module (gnu system keyboard)
-  #:use-module (gnu packages ssh)
-  #:use-module (gnu services mcron)
-  #:use-module (gnu services docker)
-  #:use-module (gnu services guix)
-  #:use-module (rosenthal services networking)
-  #:use-module (gnu packages virtualization)
+  #:use-module (gnu system pam)
   #:use-module (gnu system privilege)
-  #:use-module (gnu packages games)
+  #:use-module (gnu system)
+  #:use-module (guix gexp)
+  #:use-module (nongnu packages video)
+  #:use-module (rosenthal packages networking)
+  #:use-module (rosenthal services networking)
   #:export (+networking/increase-udp-buffer-size
 	    +networking/ip-forwarding
 	    +networking/tailscale
 	    +profile/bluetooth
+	    +profile/deployable
 	    +profile/desktop
 	    +profile/development
 	    +profile/gaming
 	    +profile/ph
-	    +profile/deployable
 	    +profile/server
 	    +service/containers
 	    +service/nix
@@ -57,7 +71,7 @@
 ;; 		      (fwupd fwupd-nonfree)))))
 
 (define +networking/tailscale
-  (compose ;;(+packages '(tailscale)) ;; ensure it's available int PATH to login.
+  (compose ;;(+packages '(tailscale)) ;; ensure it's available in the PATH to login.
    (+service (service tailscale-service-type))))
 
 (define +networking/ip-forwarding
@@ -221,9 +235,38 @@
 			 (keyboard-layout "us"
 					  #:options '("ctrl:nocaps")))))))))
 
+(define (%packages/desktop)
+  (list awesome
+	bluez
+	bluez-alsa
+	chili-sddm-theme
+	dconf
+	egl-wayland
+	ghostscript
+	git
+	hplip
+	intel-media-driver/nonfree
+	intel-vaapi-driver
+	ldacbt
+	libfreeaptx
+	light
+	mesa
+	niri
+	nix
+	openssh
+	sane-airscan
+	simple-scan
+	sway
+	swaylock-effects
+	wl-clipboard
+	xdg-desktop-portal-gnome
+	xdg-desktop-portal-gtk
+	xdg-utils
+	xorg-server-xwayland))
 
 (define +profile/desktop
   (compose
+   (+packages (%packages/desktop))
    (+service (service sane-service-type))
    +system/pam-realtime-options
    +service/sddm-login-manager
@@ -262,13 +305,26 @@
 (define +networking/dhcp
   (+service (service dhcpcd-service-type)))
 
-;; (define %packages/server
-;;   (map specification->package (list "neovim")))
+;; (define %packages/installer-disk-utilities
+;;   (list btrfs-progs
+;; 	cryptsetup
+;; 	ddrescue
+;; 	dosfstools
+;; 	e2fsprogs
+;; 	f2fs-tools
+;; 	gptfdisk
+;; 	jfsutils
+;; 	lvm2-static
+;; 	mdadm
+;; 	xfsprogs
+;;      parted))
+
+(define %packages/server
+  (list mosh))
 
 (define +profile/server
-  ;; todo ici bug map
   (compose
-   ;; (+packages %packages/server)
+   (+packages %packages/server)
    +service/openssh
    +profile/deployable
    +system/substitutes
