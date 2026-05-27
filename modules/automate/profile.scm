@@ -291,19 +291,9 @@
 (define +networking/dhcp
   (+service (service dhcpcd-service-type)))
 
-;; (define %packages/installer-disk-utilities
-;;   (list btrfs-progs
-;; 	cryptsetup
-;; 	ddrescue
-;; 	dosfstools
-;; 	e2fsprogs
-;; 	f2fs-tools
-;; 	gptfdisk
-;; 	jfsutils
-;; 	lvm2-static
-;; 	mdadm
-;; 	xfsprogs
-;;      parted))
+;; Reuse the internal tools list from the Guix installer.
+(define %packages/installer-disk-utilities
+  (@@ (gnu system install) %installer-disk-utilities))
 
 (define %packages/server
   (list mosh))
