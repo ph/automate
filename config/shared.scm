@@ -2,15 +2,6 @@
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
 (define-module (automate config shared)
-  #:use-module (gnu packages disk)
-  #:use-module (gnu system accounts)
-  #:use-module (gnu packages cryptsetup)
-  #:use-module (gnu packages rsync)
-  #:use-module (gnu packages)
-  #:use-module (guix gexp)
-  #:use-module (gnu system)
-  #:use-module (gnu packages file-systems)
-  #:use-module (gnu packages linux)
   #:export (%guix-authorized-key-azzael
 	    %guix-authorized-key-lusk
 	    %guix-authorized-key-babayaga
@@ -25,11 +16,7 @@
 	    %guix-keyring-build-farm
 	    %guix-keyring-lan
 	    %guix-keyring-other
-	    %guix-keyring-all
-	    %user/deploy-web
-	    %user/deploy
-	    %user/deploy/key
-	    %installer-disk-utilities))
+	    %guix-keyring-all))
 
 (define %guix-authorized-key-azzael
   (plain-file "azzael.pub"
@@ -95,37 +82,3 @@
   (append %guix-keyring-lan
 	  %guix-keyring-ephemeral-workers
 	  %guix-keyring-other))
-
-(define %user/deploy/key
-  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCiRJsoVbDvQYsRe94WC0kaRrru1+loCl6xZecdR4kEMfuJWz4NvyZNgD2q7KtXmQ+flvIdPuN0uxHbIzm+f1L500ZGoeOSo9GT2HPSJT8nUjgzLzKkwEs35uraxMQicjEnoUf9v+qx7s8Tv/mmKuMPrqMiNt337PlEL6llRkNtJ8srOd8pDXd40WOtHcPjRN0if78VnjESDTufAuqLoGs6yCe5j3QpcGlFneQ164AATwUMcuMQc9TVFc2pRjZRaWOFDSIAqF6NsaE3D4K6NvbTl8YIhi/seGKkvp6jfnv4T53JnY4TwbOEyPUS9dp3yfaz3NThy5r1AYAETz9s8mJC4KT2dKatShzU9tGGCyg409HNe/nOZQZrpBzfYLLwiBkxSZaCesJ0s4tyiKNW26asub0rM9DTnfCbcrEzzRtmCph3yZIC7yvNl3BAhKGIodsC07tk5zCR+kTyLntRBTIvev7Y98jz0/WA2Jaa3tQZCH8vhF0PCeiPh5c+z4A2z19ZdsLauKUs833Tj5amZg6H8t67pyFXGa2N8dptzsssk/BDEdO/YT6hohjEFI9kqtvNQbtTi6vwHjPCkpeV8MDRHWDNZsnLVz/2VR8oLH2suWDKGz4GlY0DfWRnmswu2rijGkD7U8eHt/6xrrtVxWZ9yJGnc90+RKz1LjwReRmkPw== openpgp:0xC6D3E079")
-
-(define %user/deploy
-  (user-account
-    (name "deploy")
-    (group "users")
-    (comment "deploy configuration")
-    (supplementary-groups '("audio" "video" "wheel"))
-    (shell (file-append (specification->package "bash") "/bin/bash"))))
-
-(define %user/deploy-web
-  (user-account
-    (name "deploy-web")
-    (comment "deploy web")
-    (group "users")
-    (supplementary-groups '("caddy"))))
-
-;; based on the list defined in guix/system/install.scm
-(define %installer-disk-utilities
-  (list parted
-	gptfdisk
-	ddrescue
-	lvm2-static
-	cryptsetup
-	mdadm
-	dosfstools
-	btrfs-progs
-	e2fsprogs
-	rsync
-	f2fs-tools
-	jfsutils
-	xfsprogs))

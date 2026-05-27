@@ -48,12 +48,14 @@
   #:export (+networking/increase-udp-buffer-size
 	    +networking/ip-forwarding
 	    +networking/tailscale
+	    +networking/dhcp
 	    +profile/bluetooth
 	    +profile/deployable
 	    +profile/desktop
 	    +profile/development
 	    +profile/gaming
 	    +profile/ph
+	    +profile/root-disabled-login-passwd
 	    +profile/server
 	    +service/containers
 	    +service/nix
@@ -64,7 +66,8 @@
 	    +system/power-management
 	    +system/substitutes
 	    +system/zram-device 
-	    +vm/qemu-bridge-helper))
+	    +vm/qemu-bridge-helper
+	    %packages/installer-disk-utilities))
 
 ;; (define +hardware/fwupd
 ;;   (+service (service fwupd-service-type
@@ -76,15 +79,14 @@
    (+service (service tailscale-service-type))))
 
 (define +networking/ip-forwarding
-  (+service (simple-service 'sysctl-ip-forwarding
-			    sysctl-service-type
+  (+service (simple-service 'sysctl-ip-forwarding sysctl-service-type
 			    '(("net.ipv4.ip_forward" . "1")
 			      ("net.ipv6.conf.all.forwarding" . "1")))))
 
 ;; Increase UDP buffer size for data transfer, help with syncthing local transfer.
 ;; https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes
 (define +networking/increase-udp-buffer-size
-  (+service (simple-service 'udp-buffer-size sysctl-service-type
+  (+service (simple-service 'sysctl-increase-udp-buffer-size sysctl-service-type
 			    '(("net.core.rmem_max" . "7500000")
 			      ("net.core.wmem_max" . "7500000")))))
 
@@ -105,6 +107,9 @@
 		     (name "plugdev")))
 	   (+service (service guix-home-service-type
 			      `(("ph" ,(automate-home-environment)))))))
+
+(define +profile/root-disabled-login-passwd
+  (+user (auth-account %user/root-disabled-login-passwd)))
 
 (define +system/substitutes
   (+service (simple-service 'extend-guix
@@ -209,7 +214,9 @@
 (define +service/openssh
   (+service (service openssh-service-type
 		     (openssh-configuration
-		      (openssh openssh-sans-x)))))
+		       (openssh openssh-sans-x)
+		       ;; (port-number 2222
+		       ))))
 
 (define +service/sddm-login-manager
   (+service (service sddm-service-type
@@ -273,10 +280,6 @@
 (define +networking/dhcp
   (+service (service dhcpcd-service-type)))
 
-;; Reuse the internal tools list from the Guix installer.
-(define %packages/installer-disk-utilities
-  (@@ (gnu system install) %installer-disk-utilities))
-
 (define %packages/server
   (list mosh))
 
@@ -288,3 +291,7 @@
    +system/substitutes
    +networking/ip-forwarding
    +networking/dhcp))
+
+;; Reuse the internal tools list from the Guix installer.
+(define %packages/installer-disk-utilities
+  (@@ (gnu system install) %installer-disk-utilities))

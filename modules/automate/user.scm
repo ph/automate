@@ -1,6 +1,7 @@
 (define-module (automate user)
   #:use-module (gnu packages shells)
   #:use-module (gnu system accounts)
+  #:use-module (gnu system)
   #:use-module (guix gexp)
   #:use-module (guix records)
   #:export (auth
@@ -8,7 +9,8 @@
 	    auth-account
 	    auth-pubkey
 	    %user/deploy
-	    %user/ph))
+	    %user/ph
+	    %user/root-disabled-login-passwd))
 
 (define-record-type* <auth> auth
   make-auth
@@ -45,3 +47,12 @@
 		"plugdev"
 		"video"
 		"realtime"))))))
+
+(define %user/root-disabled-login-passwd
+  (auth
+   (account
+    (user-account
+      (inherit %root-account)
+      (password #f)))))
+
+;;guix time-machine -C channels.lock.scm -L modules -- system image modules/automate/image/remote-boot.scm

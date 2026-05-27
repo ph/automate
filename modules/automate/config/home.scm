@@ -123,7 +123,7 @@ set -g fish_term24bit 1 ")
 	mosh
 	fish-foreign-env
 	zathura-pdf-mupdf
-	atuin
+	(@ (rosenthal packages rust-apps) atuin)
 	guile-gcrypt
 	guile-readline
 	guile-colorized))
