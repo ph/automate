@@ -21,7 +21,7 @@
     `(let ((time (current-time)))
        ,@body
        (float-time (time-since time))))
-  
+
   ;; Set garbage collection threshold to 1GB.
   (setq gc-cons-threshold #x40000000)
 
@@ -34,14 +34,17 @@
 			     )))))
 
 (use-package emacs
+  :hook
+  ((before-save . delete-trailing-whitespace)
+   (after-init . electric-pair-mode)
+   (after-init . transient-mark-mode)
+   (minibuffer-setup . cursor-intangible-mode))
   :custom
   ;; TAB cycle if there are only few candidates
   (completion-cycle-threshold 3)
-
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
   (tab-always-indent 'complete)
-
 
   ;; Emacs 30 and newer: Disable Ispell completion function.
   ;; Try `cape-dict' as an alternative.
@@ -51,6 +54,45 @@
   ;; commands are hidden, since they are not used via M-x. This setting is
   ;; useful beyond Corfu.
   (read-extended-command-predicate #'command-completion-default-include-p)
+
+  ;; When recompiling kill current process, in rust case it
+  ;; could be `cargo run` or `cargo test`.
+  (compilation-always-kill t)
+
+  (make-backup-files nil)
+
+  ;; Only edit left-to-right files so we can make reduce runtime cost.
+  ;; This is not really visible in small buffer but in large yes.
+  (bidi-display-reordering 'left-to-right)
+  (bidi-paragraph-direction 'left-to-right)
+  (bidi-inhibit-bpa t)
+
+  ;; Dont' bug me to save.
+  (compilation-ask-about-save nil)
+
+  (revert-without-query '(".*"))
+  (create-lockfiles nil)
+  (auto-save-default nil)
+
+  :config
+  ;; Make the UI less clunky.
+  (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (scroll-bar-mode -1)
+  (add-to-list 'default-frame-alist '(alpha-background . 95))
+  (set-frame-parameter nil 'alpha-background 95)
+
+  ;; Fonts
+  (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 100)
+
+  (global-auto-revert-mode 1)
+  (global-hl-line-mode)
+  ;; Automatic parenthesis pairing.
+  (global-display-line-numbers-mode t)
+  (pixel-scroll-precision-mode)
+
+
+
 
   ;; Less keys to type on confirmation.
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -65,27 +107,18 @@
   ;; (show-paren-style 'mixed)
 
   (setq
-   ;; When recompiling kill current process, in rust case it
-   ;; could be `cargo run` or `cargo test`.
-   compilation-always-kill t
 
    ;; Reduce elisp compilation warning in the buffers on startup.
    byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local)
    native-comp-async-report-warnings-errors nil
 
-   ;; Dont' bug me to save.
-   compilation-ask-about-save nil
-   
+
    ;; If new changes load them.
    load-prefer-newer t
 
    ;; Opinions how backups are done.
    backup-directory-alist `(("." . ,ph/emacs-backup-directory))
 
-   revert-without-query '(".*")
-   make-backup-files nil
-   create-lockfiles nil
-   auto-save-default nil
 
    ;; Minibuffer options
    minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt)
@@ -98,34 +131,8 @@
    ;; Delay syntax highlight to after we are done typing.
    redisplay-skip-fontification-on-input t
 
-   ;; Only edit left-to-right files so we can make reduce runtime cost.
-   ;; This is not really visible in small buffer but in large yes.
-   bidi-display-reordering 'left-to-right
-   bidi-paragraph-direction 'left-to-right
-   bidi-inhibit-bpa t)
+   )
 
-  ;; Make the UI less clunky.
-  (tool-bar-mode -1)
-  (menu-bar-mode -1)
-  (scroll-bar-mode -1)
-  (add-to-list 'default-frame-alist '(alpha-background . 95))
-  (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
-  (set-frame-parameter nil 'alpha-background 95)
-
-  ;; Fonts
-  ;; TODO(ph): more work is needed here
-  ;; (add-to-list 'default-frame-alist '(font . "Lilex-10"))
-  (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 110)
-
-  ;; Create a closing pair automatically
-  ;; TODO(ph): evaluate with symex if needed.
-  ;; (electric-pair-mode 1)
-
-  (global-auto-revert-mode 1)
-  (global-hl-line-mode)
-  (global-display-line-numbers-mode t)
-  (pixel-scroll-precision-mode)
-  (transient-mark-mode 1)
   ;; Change obsolete buffer behavior to just ignore.
   (defun ask-user-about-supersession-threat (fn)
     "ignore"))
@@ -145,7 +152,7 @@
   (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK"
 					 "PATH"
 					 "MANPATH"
-					 "LSP_USE_PLISTS"	 
+					 "LSP_USE_PLISTS"
 					 "SSH_AGENT_PID"
 					 "GPG_AGENT_INFO"
 					 "LANG"
@@ -477,7 +484,7 @@
   :custom
   (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
   (corfu-preview-current 'insert)
-  (corfu-preselect 'prompt)     
+  (corfu-preselect 'prompt)
   (corfu-on-exact-match 'insert) ;; Configure handling of exact matches
 
   :bind
@@ -840,22 +847,22 @@
   :custom
   ;; (lambda-line-icon-time t) ;; requires ClockFace font (see below)
   ;; (lambda-line-clockface-update-fontset "ClockFaceRect") ;; set clock icon
-  (lambda-line-position 'bottom) ;; Set position of status-line 
+  (lambda-line-position 'bottom) ;; Set position of status-line
   (lambda-line-abbrev t) ;; abbreviate major modes
   (lambda-line-hspace "  ")  ;; add some cushion
   (lambda-line-prefix t) ;; use a prefix symbol
-  (lambda-line-prefix-padding nil) ;; no extra space for prefix 
+  (lambda-line-prefix-padding nil) ;; no extra space for prefix
   (lambda-line-status-invert nil)  ;; no invert colors
   (lambda-line-gui-ro-symbol  " ⨂") ;; symbols
-  (lambda-line-gui-mod-symbol " ⬤") 
-  (lambda-line-gui-rw-symbol  " ◯") 
+  (lambda-line-gui-mod-symbol " ⬤")
+  (lambda-line-gui-rw-symbol  " ◯")
   (lambda-line-vc-symbol "")
   (lambda-line-space-top +.50)  ;; padding on top and bottom of line
   (lambda-line-space-bottom -.50)
   (lambda-line-symbol-position 0.1) ;; adjust the vertical placement of symbol
   :config
-  ;; activate lambda-line 
-  (lambda-line-mode) 
+  ;; activate lambda-line
+  (lambda-line-mode)
   ;; set divider line in footer
   (when (eq lambda-line-position 'top)
     (setq-default mode-line-format (list "%_"))
@@ -904,11 +911,11 @@
   :general
   (ph/leader-key
     "b" '(:ignore t :wk "buffer")
-    "bb" '(consult-project-buffer :wk "buffer") 
+    "bb" '(consult-project-buffer :wk "buffer")
     "ba" '(consult-buffer :wk "all buffer")
     "h" '(:ignore t :wk "help")
     "hm" '(consult-man :wk "man")
-    "ai" '(consult-imenu :wk "imenu") 
+    "ai" '(consult-imenu :wk "imenu")
     "aI" '(consult-imenu-multi :wk "imenu multi"))
 
   ;; The :init configuration is always executed (Not lazy)
@@ -1130,8 +1137,8 @@
   ;; Evil state-specific RET behavior: insert mode = newline, normal mode = send
   (evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'newline)
   (evil-define-key 'normal agent-shell-mode-map (kbd "RET") #'comint-send-input)
-  
-  ;; Configure *agent-shell-diff* buf  
+
+  ;; Configure *agent-shell-diff* buf
   ;; Configure *agent-shell-diff* buffers to start in Emacs state
   (add-hook 'diff-mode-hook
 	    (lambda ()
@@ -1264,7 +1271,7 @@
   (lsp-ui-doc-show
    lsp-ui-doc-glance)
   :bind (:map lsp-mode-map
-              ("C-c C-d" . 'lsp-ui-doc-glance))
+	      ("C-c C-d" . 'lsp-ui-doc-glance))
   :after (lsp-mode evil)
   :config (setq lsp-ui-doc-enable t
                 evil-lookup-func #'lsp-ui-doc-glance
