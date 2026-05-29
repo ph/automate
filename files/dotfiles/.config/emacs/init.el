@@ -128,7 +128,8 @@
   (set-frame-parameter nil 'alpha-background 95)
 
   ;; Fonts
-  (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 100)
+  ;; (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 120)
+  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 120)
 
   ;; Less keys to type on confirmation.
   (fset 'yes-or-no-p 'y-or-n-p)

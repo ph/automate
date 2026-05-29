@@ -106,6 +106,19 @@
   #:use-module (automate config shared emacs)
   #:export (automate-home-environment))
 
+(define-public font-jetbrains-mono-nerd-font
+  (package/inherit font-jetbrains-mono
+    (name "font-jetbrains-mono-nerd-font")
+    (version "3.4.0-2.304")
+    (source
+     (origin
+       (method url-fetch)
+       ;; aggregate the two versions number from nerd font and jetbrain font.
+       (uri
+	"https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.zip")
+       (sha256
+	(base32 "0g29gj9d6720grfr2vasnvdppzw4hycpfyd5di54d2p4mkrmzw3n"))))))
+
 (define %fish-hydro-config
   " set -g hydro_always_show_user true
 set -g hydro_color_pwd \"brcyan\"
@@ -153,7 +166,7 @@ set -g fish_term24bit 1 ")
 	pandoc
 	shellcheck
 	ispell
-	gnutls 
+	gnutls
 	libnotify
 	qemu
 	nmap
@@ -190,23 +203,24 @@ set -g fish_term24bit 1 ")
     )))
 
 (define %fonts
-  (list font-dejavu
-	font-lilex-nerd-font
-	font-fira-code-nerd
-	font-fira-code
-	font-fira-code-regular-symbols
-	font-iosevka
-	font-fira-mono
-	font-fira-sans
-	font-opendyslexic
-	font-google-noto
-	font-awesome
-	font-google-material-design-icons
-	font-google-roboto
-	font-montserrat
-	font-google-noto
-	font-google-noto-emoji
-	font-ghostscript))
+  (list
+   font-dejavu font-awesome
+   font-fira-code
+   font-fira-code-nerd
+   font-fira-code-regular-symbols
+   font-fira-mono
+   font-fira-sans
+   font-ghostscript
+   font-google-material-design-icons
+   font-google-noto
+   font-google-noto
+   font-google-noto-emoji
+   font-google-roboto
+   font-iosevka
+   font-lilex-nerd-font
+   font-montserrat
+   font-opendyslexic
+   font-jetbrains-mono-nerd-font))
 
 (define %wm
   (list
