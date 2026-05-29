@@ -55,7 +55,6 @@
   ;; Less keys to type on confirmation.
   (fset 'yes-or-no-p 'y-or-n-p)
 
-
   ;; TODO(ph): experimenting wiht paren-face
   ;; Highlight matching paren.
   ;; (show-paren-mode 1)
@@ -66,9 +65,6 @@
   ;; (show-paren-style 'mixed)
 
   (setq
-   ;; Disable customs files
-   custom-file null-device
-
    ;; When recompiling kill current process, in rust case it
    ;; could be `cargo run` or `cargo test`.
    compilation-always-kill t
@@ -84,7 +80,7 @@
    load-prefer-newer t
 
    ;; Opinions how backups are done.
-   backup-directory-alist '(("." . ph/emacs-backup-directory))
+   backup-directory-alist `(("." . ,ph/emacs-backup-directory))
 
    revert-without-query '(".*")
    make-backup-files nil
@@ -245,10 +241,38 @@
     "bp" '(previous-buffer :wk "previous buffer")
     "bn" '(next-buffer :wk "next buffer")))
 
-(use-package modus-catppuccin
+;; (use-package modus-catppuccin
+;;   :config
+;;   ;; (load-theme 'modus-catppuccin-macchiato :no-confirm)
+;;   (load-theme 'modus-catppuccin-latte :no-confirm))
+
+(use-package ef-themes
+  :ensure t
+  :init
+  ;; This makes the Modus commands listed below consider only the Ef
+  ;; themes.  For an alternative that includes Modus and all
+  ;; derivative themes (like Ef), enable the
+  ;; `modus-themes-include-derivatives-mode' instead.  The manual of
+  ;; the Ef themes has a section that explains all the possibilities:
+  ;;
+  ;; - Evaluate `(info "(ef-themes) Working with other Modus themes or taking over Modus")'
+  ;; - Visit <https://protesilaos.com/emacs/ef-themes#h:6585235a-5219-4f78-9dd5-6a64d87d1b6e>
+  (ef-themes-take-over-modus-themes-mode 1)
+  :bind
+  (("<f5>" . modus-themes-rotate)
+   ("C-<f5>" . modus-themes-select)
+   ("M-<f5>" . modus-themes-load-random))
   :config
-  ;; (load-theme 'modus-catppuccin-macchiato :no-confirm)
-  (load-theme 'modus-catppuccin-latte :no-confirm))
+  ;; All customisations here.
+  (setq modus-themes-mixed-fonts t)
+  (setq modus-themes-italic-constructs t)
+  (setq modus-themes-bold-constructs t)
+  (setq modus-themes-prompts '(bold intense))
+
+  ;; Finally, load your theme of choice (or a random one with
+  ;; `modus-themes-load-random', `modus-themes-load-random-dark',
+  ;; `modus-themes-load-random-light').
+  (modus-themes-load-theme 'ef-dream))
 
 ;; Improved termibal experience
 (use-package eat
@@ -370,6 +394,7 @@
 			("*scratch*" :select t :popup t :align below :size 0.2)
 			("*eat*" :select t :popup t :align below :size 0.2)
 			("*Geiser Guile REPL*", :select t :popup below :size 0.2)
+			("*Fennel Proto REPL.*?", :select t :popup below :size 0.2)
 			("*arei.*?", :regexp t :select t :popup below :size 0.2)
 			("*cargo-run*" :select t)
 			(helpful-mode :select t :popup t :align right :size 0.35)
@@ -403,6 +428,7 @@
 	  "*cargo-test"
 	  "*cargo-run"
 	  "*Geiser Guile REPL*"
+	  "*Fennel Proto REPL.*"
 	  "*helpful"
           "\\*Async Shell Command\\*"
 	  "*rustic-compilation*"
@@ -836,7 +862,9 @@
     (setq mode-line-format (list "%_"))))
 
 ;; Make the HL line more suitable for selection UI.
-(use-package lin)
+(use-package lin
+  :init
+  (lin-mode))
 
 ;; Highlight TODO, FIXME, HACK and other
 (use-package hl-todo
@@ -1249,6 +1277,36 @@
 (use-package fennel-mode
   :after (envrc inheritenv)
   :mode "\\.fnl\\'"
+  :hook (fennel-mode-hook . fennel-proto-repl-minor-mode)
   :config
   (advice-add 'fennel-repl :around #'envrc-propagate-environment))
 
+(use-package colorful-mode
+  :custom
+  (colorful-use-prefix t)
+  (colorful-only-strings 'only-prog)
+  (css-fontify-colors nil)
+  :config
+  (global-colorful-mode t)
+  (add-to-list 'global-colorful-modes 'helpful-mode))
+
+;; monokai-pro-machine
+;; return {
+;;   dark2 = "#161b1e",
+;;   dark1 = "#1d2528",
+;;   background = "#273136",
+;;   text = "#f2fffc",
+;;   accent1 = "#ff6d7e",
+;;   accent2 = "#ffb270",
+;;   accent3 = "#ffed72",
+;;   accent4 = "#a2e57b",
+;;   accent5 = "#7cd5f1",
+;;   accent6 = "#baa0f8",
+;;   dimmed1 = "#b8c4c3",
+;;   dimmed2 = "#8b9798",
+;;   dimmed3 = "#6b7678",
+;;   dimmed4 = "#545f62",
+;;   dimmed5 = "#3a4449",
+;; }
+
+;; VIM mode, file with shorthen path, project, branch, changes in directory, LSP, position, major mode, smaller.

@@ -88,23 +88,23 @@ output "DP-3" {
 }
 
   binds {
-      XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "increase"; }
-      XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "decrease"; }
-      XF86AudioMute         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteOutput"; }
-      XF86AudioMicMute      allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "volume" "muteInput"; }
-      XF86AudioPlay         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "playPause"; }
-      XF86AudioStop         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "pause"; }
-      XF86AudioPrev         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "previous"; }
-      XF86AudioNext         allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "media" "next"; }
-      XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "increase"; }
-      XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia-shell" "ipc" "call" "brightness" "decrease"; }
+      XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
+      XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
+      XF86AudioMute         allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+      XF86AudioMicMute      allow-when-locked=true { spawn "noctalia" "msg" "volume" "mic-mute"; }
+      XF86AudioPlay         allow-when-locked=true { spawn "noctalia" "msg" "media" "toggle"; }
+      XF86AudioStop         allow-when-locked=true { spawn "noctalia" "msg" "media" "stop"; }
+      XF86AudioPrev         allow-when-locked=true { spawn "noctalia" "msg" "media" "previous"; }
+      XF86AudioNext         allow-when-locked=true { spawn "noctalia" "msg" "media" "next"; }
+      XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
+      XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
 
-      Mod+A           { spawn "noctalia-shell" "ipc" "call" "controlCenter" "toggle"; }
-      Mod+D           { spawn "noctalia-shell" "ipc" "call" "launcher" "toggle"; }
-      Mod+S           { spawn "noctalia-shell" "ipc" "call" "settings" "toggle"; }
-      Mod+Alt+L           { spawn "noctalia-shell" "ipc" "call" "lockScreen" "lock"; }
-      Ctrl+Alt+Delete { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
-      Mod+Shift+E     { spawn "herd" "restart" "noctalia-shell"; }
+      Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+      Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+      Mod+S           { spawn "noctalia" "msg" "settings-toggle"; } 
+      Mod+Alt+L       { spawn "noctalia" "msg" "screen-lock"; }
+      Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
+      Mod+Shift+E     { spawn "herd" "restart" "noctalia"; }
 
       Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
       Mod+Return  { spawn "alacritty"; }

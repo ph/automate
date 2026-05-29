@@ -68,6 +68,7 @@
 	emacs-symex-evil
 	emacs-evil-commentary
 	emacs-evil-surround
+	emacs-ef-themes
 	emacs-general
 	emacs-magit
 	emacs-guix

@@ -97,25 +97,14 @@
   #:use-module (nongnu packages mozilla)
   #:use-module (nonguix utils)
   #:use-module (rosenthal packages rust-apps)
+  #:use-module (rosenthal home services desktop)
+  #:use-module (rosenthal services shellutils)
   #:use-module (rosenthal services desktop)
   #:use-module (rosenthal utils file)
   #:use-module (supervoid gnu packages shells)
+  #:use-module (supervoid gnu packages fonts)
   #:use-module (automate config shared emacs)
   #:export (automate-home-environment))
-
-(define font-lilex-nerd-font
-  (package/inherit font-lilex
-    (name "font-lilex-nerd-font")
-    (version "3.4.0-2.600")
-    (source
-     (origin
-       (method url-fetch)
-       ;; This seems kinda weird, there are actually two versions:
-       ;; The font version which is 2.600 and the nerd font version which is 3.4.0.
-       ;; In the version of the pachage i am merging both.
-       (uri "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Lilex.zip")
-       (sha256
-	(base32 "1q94iflq0lbya5w185y47xgx89arswyp38aax693r4m27hxckazh"))))))
 
 (define %fish-hydro-config
   " set -g hydro_always_show_user true
@@ -138,7 +127,7 @@ set -g fish_term24bit 1 ")
 	mosh
 	fish-foreign-env
 	zathura-pdf-mupdf
-	(@ (rosenthal packages rust-apps) atuin)
+	;; (@ (rosenthal packages rust-apps) atuin)
 	guile-gcrypt
 	guile-readline
 	guile-colorized))
@@ -197,7 +186,7 @@ set -g fish_term24bit 1 ")
   (append
    %vim
    (list
-    direnv
+    ;; direnv
     )))
 
 (define %fonts
@@ -324,11 +313,14 @@ set -g fish_term24bit 1 ")
 		 (list xwayland-satellite
 		       signal-desktop)))))
 
-     (service home-noctalia-shell-service-type)
+     (service home-noctalia-service-type)
      (service home-polkit-gnome-service-type)
      (service home-zathura-service-type)
      (service home-pipewire-service-type)
      (service home-batsignal-service-type)
+     (service home-fish-plugin-atuin-service-type)
+     (service home-fish-plugin-direnv-service-type)
+     (service home-fish-plugin-zoxide-service-type)
 
      ;; emacs
      (simple-service 'emacs-environment home-environment-variables-service-type
@@ -353,15 +345,24 @@ set -g fish_term24bit 1 ")
 	       (default
 		 '((text/html . librewolf.desktop)
 		   (x-scheme-handler/http . librewolf.desktop)
-		   (x-scheme-handler/https . librewolf.desktop)))))
+		   (x-scheme-handler/https . librewolf.desktop)))
+	       (desktop-entries
+		(list (xdg-desktop-entry
+		       (file "simple-scan")
+		       (name "Scanner")
+		       (type 'application)
+		       (config
+			'((exec . "env LD_LIBRARY_PATH=$HOME/.guix-home/profile/lib/sane SANE_CONFIG_DIR=$HOME/.guix-home/profile/etc/sane.d/ simle-scan"))))))
+	       ))
      (service home-fish-service-type
 	      (home-fish-configuration
-	       (config (list (mixed-text-file
-			      "fish-config-direnv"
-			      direnv "/bin/direnv hook fish | source")
-			     (mixed-text-file
-			      "fish-config-atuin"
-			      atuin "/bin/atuin init fish | source")
+	       (config (list
+			;; (mixed-text-file
+			;;       "fish-config-direnv"
+			;;       direnv "/bin/direnv hook fish | source")
+			;;      (mixed-text-file
+			;;       "fish-config-atuin"
+			;;       atuin "/bin/atuin init fish | source")
 			     (mixed-text-file
 			      "disable-fish-greetings" "set -U fish_greeting")
 			     (mixed-text-file
@@ -372,7 +373,3 @@ fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environ
 			     (plain-file "fish-hydro-config.fish" %fish-hydro-config)
 			     (plain-file "add-npm-bin.fish" "fish_add_path $HOME/.local/npm/bin")))))
      %base-home-services))))
-
-;; https://guix.gnu.org/manual/en/html_node/Search-Paths.html
-;; TODO: Create wrapper for this.
-;; LD_LIBRARY_PATH=/home/ph/.guix-home/profile/lib/sane SANE_CONFIG_DIR=/home/ph/.guix-home/profile/etc/sane.d/ simple-scan
