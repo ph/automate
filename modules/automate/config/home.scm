@@ -357,12 +357,6 @@ set -g fish_term24bit 1 ")
      (service home-fish-service-type
 	      (home-fish-configuration
 	       (config (list
-			;; (mixed-text-file
-			;;       "fish-config-direnv"
-			;;       direnv "/bin/direnv hook fish | source")
-			;;      (mixed-text-file
-			;;       "fish-config-atuin"
-			;;       atuin "/bin/atuin init fish | source")
 			     (mixed-text-file
 			      "disable-fish-greetings" "set -U fish_greeting")
 			     (mixed-text-file
