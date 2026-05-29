@@ -61,6 +61,7 @@
 	emacs-lsp-ui
 	emacs-dap-mode/ph
 	emacs-rust-mode
+	emacs-colorful-mode
 	emacs-prism
 	emacs-symex-core
 	emacs-symex

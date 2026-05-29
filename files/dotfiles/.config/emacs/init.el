@@ -32,19 +32,47 @@
 			   (let ((gc-time (k-time (garbage-collect))))
 			     ;; (message "Garbage Collector has run for %.06fsec" gc-time)
 			     )))))
-
 (use-package emacs
   :hook
   ((before-save . delete-trailing-whitespace)
+   ;; Automatic parenthesis pairing.
    (after-init . electric-pair-mode)
+
+   ;; Show matching parens
+   ;; (after-init . show-paren-mode)
+
    (after-init . transient-mark-mode)
+
+   ;; Make the UI less clunky.
+   (after-init . tool-bar-mode)
+   (after-init . menu-bar-mode)
+   (after-init . scroll-bar-mode)
+
+   (after-init . global-auto-revert-mode)
+   (after-init . global-hl-line-mode)
+
+   (after-init . global-display-line-numbers-mode)
+   (after-init . pixel-scroll-precision-mode)
+
    (minibuffer-setup . cursor-intangible-mode))
   :custom
+  ;; Three options for paren-style: 'expression, 'parenthesis, and
+  ;; 'mixed The first one highlights the complete region between
+  ;; parens, the second only highlights the matching paren, the third
+  ;; does 'expression when the matching paren is not visible.
+  ;; (show-paren-style 'mixed)
+
   ;; TAB cycle if there are only few candidates
   (completion-cycle-threshold 3)
+
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
   (tab-always-indent 'complete)
+
+  (window-sides-vertical t)
+
+  ;; Larger read to improve lsp-mode.
+  (read-process-output-max (* 1024 1024)) ;; 1mb
 
   ;; Emacs 30 and newer: Disable Ispell completion function.
   ;; Try `cape-dict' as an alternative.
@@ -74,68 +102,42 @@
   (create-lockfiles nil)
   (auto-save-default nil)
 
+  ;; Reduce elisp compilation warning in the buffers on startup.
+  (byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
+  (native-comp-async-report-warnings-errors nil)
+
+  ;; If new changes load them.
+  (load-prefer-newer t)
+
+  ;; Opinions how backups are done.
+  (backup-directory-alist `(("." . ,ph/emacs-backup-directory)))
+
+  ;; Minibuffer options
+  (minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt))
+  (enable-recursive-minibuffers t)
+
+  ;; Load the squash buffer directly.
+  (inhibit-splash-screen t)
+
+  ;; Skip Fontification During Input
+  ;; Delay syntax highlight to after we are done typing.
+  (redisplay-skip-fontification-on-input t)
+
   :config
-  ;; Make the UI less clunky.
-  (tool-bar-mode -1)
-  (menu-bar-mode -1)
-  (scroll-bar-mode -1)
   (add-to-list 'default-frame-alist '(alpha-background . 95))
   (set-frame-parameter nil 'alpha-background 95)
 
   ;; Fonts
   (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 100)
 
-  (global-auto-revert-mode 1)
-  (global-hl-line-mode)
-  ;; Automatic parenthesis pairing.
-  (global-display-line-numbers-mode t)
-  (pixel-scroll-precision-mode)
-
-
-
-
   ;; Less keys to type on confirmation.
   (fset 'yes-or-no-p 'y-or-n-p)
 
-  ;; TODO(ph): experimenting wiht paren-face
-  ;; Highlight matching paren.
-  ;; (show-paren-mode 1)
-  ;; Three options for paren-style: 'expression, 'parenthesis, and
-  ;; 'mixed The first one highlights the complete region between
-  ;; parens, the second only highlights the matching paren, the third
-  ;; does 'expression when the matching paren is not visible.
-  ;; (show-paren-style 'mixed)
-
-  (setq
-
-   ;; Reduce elisp compilation warning in the buffers on startup.
-   byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local)
-   native-comp-async-report-warnings-errors nil
-
-
-   ;; If new changes load them.
-   load-prefer-newer t
-
-   ;; Opinions how backups are done.
-   backup-directory-alist `(("." . ,ph/emacs-backup-directory))
-
-
-   ;; Minibuffer options
-   minibuffer-prompt-properties '(read-only t cursor-intangible t face minibuffer-prompt)
-   enable-recursive-minibuffers t
-
-   ;; Load the squash buffer directly.
-   inhibit-splash-screen t
-
-   ;; Skip Fontification During Input
-   ;; Delay syntax highlight to after we are done typing.
-   redisplay-skip-fontification-on-input t
-
-   )
-
+  ;; FIXME: Remove after some time if not needed.
   ;; Change obsolete buffer behavior to just ignore.
-  (defun ask-user-about-supersession-threat (fn)
-    "ignore"))
+  ;; (defun ask-user-about-supersession-threat (fn)
+  ;;   "ignore")
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Environment
@@ -1204,11 +1206,6 @@
 (use-package repeat
   :custom
   (repeat-mode +1))
-
-(use-package emacs
-  :custom
-  (setq read-process-output-max (* 1024 1024)) ;; 1mb
-  (window-sides-vertical t))
 
 (use-package lsp-mode
   :custom
