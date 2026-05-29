@@ -1,0 +1,165 @@
+# blink parens.
+set blink-matching-paren on
+# file completion ignore case.
+set completion-ignore-case on
+# hyper or underscore is equivalent.
+set completion-map-case on
+# show matches for ambiguous on first tab.
+set show-all-if-ambiguous on
+# add slashes on symlink dir.
+set mark-symlinked-directories on
+# no paging.
+set page-completions off
+set colored-completion-prefix on
+set colored-stats on
+# unless we ask for hidden file.
+set match-hidden-files off
+set completion-query-items 200
+set visible-stats off
+set skip-completed-text on
+# we support utf8
+set input-meta on
+set output-meta on
+set convert-meta off
+# evil all the way.
+set editing-mode vi
+set colored-stats on
+set show-mode-in-prompt on
+set vi-ins-mode-string i❱\1\e[5 q\2
+set vi-cmd-mode-string c❱\1\e[5 q\2
+set menu-complete-display-prefix on
+set completion-prefix-display-length 5
+set bell-style visible
+# https://deut-erium.github.io/2024/01/28/inputrc.html
+$if mode=vi
+#vi mode settings
+    set keymap vi-command
+
+    # go into insert mode, re run last command with !! and press enter
+    ".": "i!!\r"
+    "|": "A | "
+
+    # delete rest of the line (vi "D" behavior)
+    "D": kill-line
+    # change line -> delete then go in insert mode
+    "C":  "Da"
+    "dw": kill-word
+    "dd": kill-whole-line
+    "db": backward-kill-word
+    # delete and change line
+    "cc": "ddi"
+    # change word
+    "cw": "dwi"
+    # change backward word
+    "cb": "dbi"
+    # vi equivalent of delete all word i.e delete the current word entirely
+    "daw": "lbdW"
+    "yaw": "lbyW"
+
+    # change all word, delete and edit the current word
+    "caw": "lbcW"
+
+    # delete inner word (word under the cursor without the surrounding whitespaces)
+    "diw": "lbdw"
+    # yank inner word
+    "yiw": "lbyw"
+    # change inner word
+    "ciw": "lbcw"
+
+    # delete around double quoted string -> delete the text in double quoted strings and the quotes themselves
+    # F search backward for a double quote, then delete till first forward search of double quotes
+    "da\"": "lF\"df\""
+
+    # delete inside double quoted string -> delete the text inside the double quoted strings but not the quotes
+    "di\"": "lF\"lmtf\"d`t"
+    # change inside double quoted string basically delete inside double quoted string and go in insert mode
+    "ci\"": "di\"i"
+
+    # change around double quoted string
+    "ca\"": "da\"i"
+
+    # delete around single quoted string
+    "da'": "lF'df'"
+    "di'": "lF'lmtf'd`t"
+    "ci'": "di'i"
+    "ca'": "da'i"
+
+    # delete around tilde
+    "da`": "lF\`df\`"
+    "di`": "lF\`lmtf\`d`t"
+    "ci`": "di`i"
+    "ca`": "da`i"
+
+    # delete around parenthesis
+    "da(": "lF(df)"
+    "di(": "lF(lmtf)d`t"
+    "ci(": "di(i"
+    "ca(": "da(i"
+    "da)": "lF(df)"
+    "di)": "lF(lmtf)d`t"
+    "ci)": "di(i"
+    "ca)": "da(i"
+
+    # delete around curly
+    "da{": "lF{df}"
+    "di{": "lF{lmtf}d`t"
+    "ci{": "di{i"
+    "ca{": "da{i"
+    "da}": "lF{df}"
+    "di}": "lF{lmtf}d`t"
+    "ci}": "di}i"
+    "ca}": "da}i"
+
+    # delete around square brackets
+    "da[": "lF[df]"
+    "di[": "lF[lmtf]d`t"
+    "ci[": "di[i"
+    "ca[": "da[i"
+    "da]": "lF[df]"
+    "di]": "lF[lmtf]d`t"
+    "ci]": "di]i"
+    "ca]": "da]i"
+
+    # delete around angled brackets
+    "da<": "lF<df>"
+    "di<": "lF<lmtf>d`t"
+    "ci<": "di<i"
+    "ca<": "da<i"
+    "da>": "lF<df>"
+    "di>": "lF<lmtf>d`t"
+    "ci>": "di>i"
+    "ca>": "da>i"
+
+    # delete around forward slash
+    "da/": "lF/df/"
+    "di/": "lF/lmtf/d`t"
+    "ci/": "di/i"
+    "ca/": "da/i"
+
+    # delete around colon
+    "da:": "lF:df:"
+    "di:": "lF:lmtf:d`t"
+    "ci:": "di:i"
+    "ca:": "da:i"
+
+    "gg": beginning-of-history
+    "G" : end-of-history
+
+
+    # backward history search on up arrow
+    "\e\e[A": history-search-backward
+    # forward history search on down arrow
+    "\e\e[B": history-search-forward
+
+    # settings to be changed in insert mode
+    set keymap vi-insert
+    ";;": vi-movement-mode
+	# using ;; to easily move to command mode from insert mode instead of going to press Escape key each time
+	# ;; as I find it relatively easily on the home row and it doesnt interfere with typing in insert mode
+	# as commands to come by with ;; are rare?
+    TAB: menu-complete
+    # shift tab to menu complete backward
+    "\e[Z": menu-complete-backward
+
+# end vi mode settingss
+$endif
