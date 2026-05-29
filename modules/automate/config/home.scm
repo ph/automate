@@ -82,6 +82,7 @@
   #:use-module (guix channels)
   #:use-module (guix gexp)
   #:use-module (guix git-download)
+  #:use-module (guix download)
   #:use-module (guix packages)
   #:use-module (guix profiles)
   #:use-module (guix store)
@@ -103,7 +104,7 @@
   #:export (automate-home-environment))
 
 (define font-lilex-nerd-font
-  (package/inherit lilex
+  (package/inherit font-lilex
     (name "font-lilex-nerd-font")
     (version "3.4.0-2.600")
     (source
@@ -114,8 +115,7 @@
        ;; In the version of the pachage i am merging both.
        (uri "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Lilex.zip")
        (sha256
-	(base32
-	 "1hn19sigsv6i1dm5lxn0gfldqfcn9yvzhg5cs4v2sv13crwxf0wf"))))))
+	(base32 "1q94iflq0lbya5w185y47xgx89arswyp38aax693r4m27hxckazh"))))))
 
 (define %fish-hydro-config
   " set -g hydro_always_show_user true
@@ -202,6 +202,7 @@ set -g fish_term24bit 1 ")
 
 (define %fonts
   (list font-dejavu
+	font-lilex-nerd-font
 	font-fira-code-nerd
 	font-fira-code
 	font-fira-code-regular-symbols

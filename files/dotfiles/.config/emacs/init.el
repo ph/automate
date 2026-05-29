@@ -118,7 +118,8 @@
 
   ;; Fonts
   ;; TODO(ph): more work is needed here
-  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
+  ;; (add-to-list 'default-frame-alist '(font . "Lilex-10"))
+  (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 110)
 
   ;; Create a closing pair automatically
   ;; TODO(ph): evaluate with symex if needed.
@@ -582,8 +583,8 @@
 			    ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
 			    ;; *> */ *)  ** *** ****
 			    ("*" (rx (or ">" "/" ")" (+ "*"))))
-			    ;; www wwww
-			    ("w" (rx (+ "w")))
+			    ;; ;; www wwww
+			    ;; ("w" (rx (+ "w")))
 			    ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
 			    ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
 			    ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
