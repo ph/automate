@@ -102,6 +102,21 @@
   #:use-module (automate config shared emacs)
   #:export (automate-home-environment))
 
+(define font-lilex-nerd-font
+  (package/inherit lilex
+    (name "font-lilex-nerd-font")
+    (version "3.4.0-2.600")
+    (source
+     (origin
+       (method url-fetch)
+       ;; This seems kinda weird, there are actually two versions:
+       ;; The font version which is 2.600 and the nerd font version which is 3.4.0.
+       ;; In the version of the pachage i am merging both.
+       (uri "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/Lilex.zip")
+       (sha256
+	(base32
+	 "1hn19sigsv6i1dm5lxn0gfldqfcn9yvzhg5cs4v2sv13crwxf0wf"))))))
+
 (define %fish-hydro-config
   " set -g hydro_always_show_user true
 set -g hydro_color_pwd \"brcyan\"
@@ -291,7 +306,13 @@ set -g fish_term24bit 1 ")
 
      (service home-files-service-type
 	      `((".guile" ,%default-dotguile)
-		(".face" ,(local-file "../../../files/plain/ph.jpg"))))
+		(".face" ,(local-file "../../../files/plain/ph.jpg"))
+		(".fennelrc"  ,(plain-file "fennelrc" "
+(case package.loaded.readline
+  rl   (rl.set_options {:histfile  \"~/.fennel_history\"
+			:keeplines 1000}))
+" ))
+		(".inputrc" ,(local-file "../../../files/plain/inputrc"))))
 
      (service home-niri-service-type
 	      (home-niri-configuration

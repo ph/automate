@@ -7,12 +7,11 @@
     (make-empty-file custom-file)
   (load custom-file))
 
-
 (defvar ph/emacs-backup-directory
   (expand-file-name ".config/emacs-backup" (getenv "HOME")))
 
 (if (not (file-exists-p ph/emacs-backup-directory))
-  (make-directory ph/emacs-backup-directory))
+    (make-directory ph/emacs-backup-directory))
 
 (use-package gcmh
   :init
@@ -119,7 +118,7 @@
 
   ;; Fonts
   ;; TODO(ph): more work is needed here
-  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font 10"))
+  (add-to-list 'default-frame-alist '(font . "FiraCode Nerd Font-10"))
 
   ;; Create a closing pair automatically
   ;; TODO(ph): evaluate with symex if needed.
@@ -133,6 +132,30 @@
   ;; Change obsolete buffer behavior to just ignore.
   (defun ask-user-about-supersession-threat (fn)
     "ignore"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Environment
+(use-package envrc
+  :hook (after-init . envrc-global-mode))
+
+(use-package inheritenv
+  :after envrc)
+
+;; Exec the command and keep some of the shell environment values.
+(use-package exec-path-from-shell
+  :after (envrc inheritenv)
+  :config
+  (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK"
+					 "PATH"
+					 "MANPATH"
+					 "LSP_USE_PLISTS"	 
+					 "SSH_AGENT_PID"
+					 "GPG_AGENT_INFO"
+					 "LANG"
+					 "LC_CTYPE"))
+  (setq exec-path-from-shell-arguments nil)
+  (when (daemonp)
+    (exec-path-from-shell-initialize)))
 
 ;; Clean old buffers.
 (use-package midnight
@@ -409,29 +432,6 @@
       (unless no-error
 	(error "Cannot have two rust processes at once")))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Environment
-(use-package envrc
-  :config
-  (envrc-global-mode))
-
-(use-package inheritenv
-  :after envrc)
-
-;; Exec the command and keep some of the shell environment values.
-(use-package exec-path-from-shell
-  :config
-  (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK"
-					 "PATH"
-					 "MANPATH"
-					 "LSP_USE_PLISTS"	 
-					 "SSH_AGENT_PID"
-					 "GPG_AGENT_INFO"
-					 "LANG"
-					 "LC_CTYPE"))
-  (setq exec-path-from-shell-arguments nil)
-  (when (daemonp)
-    (exec-path-from-shell-initialize)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -444,7 +444,7 @@
 	corfu-auto-prefix 2
 	corfu-quit-no-match 'separator
 	corfu-count 16
-	corfu-max-width 120)chore: Update copyright year
+	corfu-max-width 120)
 
   (add-hook 'evil-insert-state-exit-hook #'corfu-quit)
   :custom
@@ -1185,6 +1185,8 @@
   (setq lsp-auto-guess-root t)
   (setq lsp-enable-snippet nil)
   (setq lsp-log-io nil)
+  (setq lsp-keep-workspace-alive nil)
+  (setq lsp-headerline-breadcrumb-enable nil)
   (defvar lsp-modeline-code-actions-segments '(count icon name))
   (defun ph/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1202,7 +1204,9 @@
     (setq-local completion-at-point-functions (ph/autocomplete-cape)))
   :hook ((lsp-completion-mode . ph/lsp-mode-setup-completion)
 	 (rust-ts-mode . lsp-deferred)
+	 (fennel-mode . lsp-deferred)
 	 (lsp-mode . lsp-enable-which-key-integration))
+
   :commands lsp)
 
 (use-package dap-mode
@@ -1222,7 +1226,28 @@
 								   :cwd (project-root (current-project)))))))
 
 
+;; (use-package lsp-ui
+;;   :commands lsp-ui-mode)
+
 (use-package lsp-ui
-  :commands lsp-ui-mode)
+  :ensure t
+  :commands
+  (lsp-ui-doc-show
+   lsp-ui-doc-glance)
+  :bind (:map lsp-mode-map
+              ("C-c C-d" . 'lsp-ui-doc-glance))
+  :after (lsp-mode evil)
+  :config (setq lsp-ui-doc-enable t
+                evil-lookup-func #'lsp-ui-doc-glance
+                lsp-ui-doc-show-with-cursor nil
+                lsp-ui-doc-include-signature t
+		lsp-ui-doc-position 'top))
 
 (use-package consult-lsp)
+
+(use-package fennel-mode
+  :after (envrc inheritenv)
+  :mode "\\.fnl\\'"
+  :config
+  (advice-add 'fennel-repl :around #'envrc-propagate-environment))
+

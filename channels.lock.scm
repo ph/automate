@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "47dffdc2f6e2166bb2c17d235e350abcbb31182a")
+       (commit "9873d2c433b7dc8e2d510fc437c5b13c98d0a4ff")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "ffa33d200e1c930e79d00021f03b2f8c31d00b61")
+       (commit "e1273e751bb4a65cd8f817b871bfde740373d917")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -42,7 +42,7 @@
        (name 'bluebox)
        (url "https://codeberg.org/lapislazuli/bluebox")
        (branch "main")
-       (commit "f7f3b1565d626099dd68aae20abb36371ab8a9af")
+       (commit "71628770c8612c041e06672f34c0c8e6fc67c13c")
        (introduction
         (make-channel-introduction
          "63350484aaacc362aea28fb14236019fced4050f"
@@ -62,7 +62,7 @@
        (name 'supervoid)
        (url "https://codeberg.org/pierhugues/supervoid.git")
        (branch "trunk")
-       (commit "1b4e82ef9b48d6478043d25a1f85fbf33eeb93bb")
+       (commit "08a3ea95b951f667b03bb7b9305eb0c630a6337e")
        (introduction
         (make-channel-introduction
          "245db3d4ef2a29559b7dccef67afba453c9f6563"

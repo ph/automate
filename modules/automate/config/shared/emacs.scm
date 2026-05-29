@@ -53,6 +53,7 @@
 
 (define %emacs-packages
   (list emacs-evil/ph
+	emacs-fennel-mode/ph
 	emacs-evil-collection/ph
 	emacs-agent-shell/ph
 	emacs-rustic/ph

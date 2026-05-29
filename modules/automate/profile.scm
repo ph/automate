@@ -105,6 +105,8 @@
 	   (+group (user-group
 		     (system? #t)
 		     (name "plugdev")))
+	   (+sudo (user-account-name
+		   (auth-account %user/ph)))
 	   (+service (service guix-home-service-type
 			      `(("ph" ,(automate-home-environment)))))))
 
@@ -183,7 +185,8 @@
 		       (trusted-user "ph"))
   (+service (service nix-service-type
 		     (nix-configuration
-		      (extra-config '((format #f "trusted-users = ~a\n" trusted-user)
+		      (extra-config `(,(format #f "trusted-users = ~a\n" trusted-user)
+				      "experimental-features = nix-command flakes\n"
 				      "extra-platforms = aarch64-linux arm-linux"))))))
 
 (define %probe-rs-udev-rules
