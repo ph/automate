@@ -150,16 +150,17 @@
 ;; Exec the command and keep some of the shell environment values.
 (use-package exec-path-from-shell
   :after (envrc inheritenv)
+  :custom
+  (exec-path-from-shell-variables '("SSH_AUTH_SOCK"
+				    "PATH"
+				    "MANPATH"
+				    "LSP_USE_PLISTS"
+				    "SSH_AGENT_PID"
+				    "GPG_AGENT_INFO"
+				    "LANG"
+				    "LC_CTYPE"))
+  (exec-path-from-shell-arguments nil)
   :config
-  (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK"
-					 "PATH"
-					 "MANPATH"
-					 "LSP_USE_PLISTS"
-					 "SSH_AGENT_PID"
-					 "GPG_AGENT_INFO"
-					 "LANG"
-					 "LC_CTYPE"))
-  (setq exec-path-from-shell-arguments nil)
   (when (daemonp)
     (exec-path-from-shell-initialize)))
 
