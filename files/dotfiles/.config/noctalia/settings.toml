@@ -1,0 +1,32 @@
+[bar.default]
+margin_edge = 3.0
+margin_ends = 3.0
+padding = 9
+radius = 3
+shadow = false
+
+[dock]
+radius = 6
+
+[shell]
+corner_radius_scale = 0.30000000447034836
+offline_mode = true
+show_location = false
+
+[theme]
+builtin = "Gruvbox"
+
+[wallpaper]
+directory = "/home/ph/src/automate/wallpapers"
+
+    [wallpaper.default]
+    path = "/home/ph/src/automate/wallpapers/kanagwa.jpg"
+
+    [wallpaper.last]
+    path = "/home/ph/src/automate/wallpapers/kanagwa.jpg"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/ph/src/automate/wallpapers/kanagwa.jpg"
+
+[weather]
+enabled = false
