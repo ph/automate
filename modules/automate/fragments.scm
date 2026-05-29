@@ -57,7 +57,7 @@
 
 (define* (+sudo username
 		#:key
-		(permissions "ALL = NOPASSWD: ALL"))
+		(permissions "ALL=(ALL) NOPASSWD:ALL"))
   (lambda (os)
     (let ((existing-content (plain-file-content (operating-system-sudoers-file os)))
 	  (new-sudo-entry (format #f "~a ~a\n" username permissions)))
