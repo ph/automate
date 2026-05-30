@@ -91,6 +91,12 @@
   ;; useful beyond Corfu.
   (read-extended-command-predicate #'command-completion-default-include-p)
 
+  ;; Idle time delay before ‘which-function-mode‘ updates its display.
+  (which-func-update-delay 1.0)
+
+  ;; UTF-8
+  (locale-coding-system   'utf-8)
+
   ;; When recompiling kill current process, in rust case it
   ;; could be `cargo run` or `cargo test`.
   (compilation-always-kill t)
@@ -132,6 +138,14 @@
   (redisplay-skip-fontification-on-input t)
 
   :config
+  ;; Ensure UTF-8
+  (set-language-environment    "UTF-8")
+  (prefer-coding-system        'utf-8)
+  (set-default-coding-systems  'utf-8)
+  (set-terminal-coding-system  'utf-8)
+  (set-keyboard-coding-system  'utf-8)
+  (set-selection-coding-system 'utf-8)
+
   (add-to-list 'default-frame-alist '(alpha-background . 95))
   (set-frame-parameter nil 'alpha-background 95)
 
@@ -141,6 +155,11 @@
 
   ;; Less keys to type on confirmation.
   (fset 'yes-or-no-p 'y-or-n-p))
+
+(use-package uniquify
+  :custom
+  ;; Disambiguate buffers with same name using path.
+  (uniquify-buffer-name-style 'forward))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Environment
@@ -1285,13 +1304,9 @@
 (use-package fennel-mode
   :after (envrc inheritenv)
   :mode "\\.fnl\\'"
-  :hook ((fennel-mode-hook . fennel-proto-repl-minor-mode)
-	 (fennel-mode-hook . 'fennel-ls-flymake))
+  :hook (fennel-mode-hook . fennel-proto-repl-minor-mode)
   :config
-  (advice-add 'fennel-repl :around #'envrc-propagate-environment)
-  ;; active in org-babel
-  (with-eval-after-load 'org
-    (require 'ob-fennel)))
+  (advice-add 'fennel-repl :around #'envrc-propagate-environment))
 
 (use-package colorful-mode
   :custom
