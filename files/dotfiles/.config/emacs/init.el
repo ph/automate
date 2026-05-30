@@ -54,6 +54,11 @@
    (after-init . global-display-line-numbers-mode)
    (after-init . pixel-scroll-precision-mode)
 
+   ;; enable pretty symbols for lisp/scheme
+   (lisp-mode . prettify-symbols-mode)
+   (scheme-mode . prettify-symbols-mode)
+   (fennel-mode . prettify-symbols-mode)
+
    (minibuffer-setup . cursor-intangible-mode))
   :custom
   ;; Three options for paren-style: 'expression, 'parenthesis, and
@@ -70,6 +75,9 @@
   (tab-always-indent 'complete)
 
   (window-sides-vertical t)
+
+  ;; replace `(lambda () ...)' to `(λ () ... )'
+  (prettify-symbols-alist '(("lambda" . λ)))
 
   ;; Larger read to improve lsp-mode.
   (read-process-output-max (* 1024 1024)) ;; 1mb
@@ -132,13 +140,7 @@
   (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 120)
 
   ;; Less keys to type on confirmation.
-  (fset 'yes-or-no-p 'y-or-n-p)
-
-  ;; FIXME: Remove after some time if not needed.
-  ;; Change obsolete buffer behavior to just ignore.
-  ;; (defun ask-user-about-supersession-threat (fn)
-  ;;   "ignore")
-  )
+  (fset 'yes-or-no-p 'y-or-n-p))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Environment
@@ -1222,6 +1224,7 @@
   (setq lsp-log-io nil)
   (setq lsp-keep-workspace-alive nil)
   (setq lsp-headerline-breadcrumb-enable nil)
+  (setq lsp-auto-guess-root nil)
   (defvar lsp-modeline-code-actions-segments '(count icon name))
   (defun ph/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1241,7 +1244,6 @@
 	 (rust-ts-mode . lsp-deferred)
 	 (fennel-mode . lsp-deferred)
 	 (lsp-mode . lsp-enable-which-key-integration))
-
   :commands lsp)
 
 (use-package dap-mode
@@ -1283,9 +1285,13 @@
 (use-package fennel-mode
   :after (envrc inheritenv)
   :mode "\\.fnl\\'"
-  :hook (fennel-mode-hook . fennel-proto-repl-minor-mode)
+  :hook ((fennel-mode-hook . fennel-proto-repl-minor-mode)
+	 (fennel-mode-hook . 'fennel-ls-flymake))
   :config
-  (advice-add 'fennel-repl :around #'envrc-propagate-environment))
+  (advice-add 'fennel-repl :around #'envrc-propagate-environment)
+  ;; active in org-babel
+  (with-eval-after-load 'org
+    (require 'ob-fennel)))
 
 (use-package colorful-mode
   :custom

@@ -106,6 +106,20 @@
   #:use-module (automate config shared emacs)
   #:export (automate-home-environment))
 
+(define-public font-commit-mono-nerd-font
+  (package/inherit font-commit-mono
+    (name "font-commit-mono-nerd-font")
+    (version "3.4.0-1.143")
+    (source
+     (origin
+       (method url-fetch)
+       ;; aggregate the two versions number from nerd font and commit mono.
+       (uri
+	"https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/CommitMono.zip")
+       (sha256
+	(base32
+	 "08vzlrx5wdz1czifrmjv5nl68fiq01ki8nb4xa53j153ar08qrgs"))))))
+
 (define-public font-jetbrains-mono-nerd-font
   (package/inherit font-jetbrains-mono
     (name "font-jetbrains-mono-nerd-font")
@@ -204,6 +218,7 @@ set -g fish_term24bit 1 ")
 
 (define %fonts
   (list
+   font-commit-mono-nerd-font
    font-dejavu font-awesome
    font-fira-code
    font-fira-code-nerd
@@ -331,7 +346,6 @@ set -g fish_term24bit 1 ")
      (service home-polkit-gnome-service-type)
      (service home-zathura-service-type)
      (service home-pipewire-service-type)
-     (service home-batsignal-service-type)
      (service home-fish-plugin-atuin-service-type)
      (service home-fish-plugin-direnv-service-type)
      (service home-fish-plugin-zoxide-service-type)
