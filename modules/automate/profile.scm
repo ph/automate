@@ -55,6 +55,7 @@
 	    +profile/development
 	    +profile/gaming
 	    +profile/ph
+	    +profile/ph-shell
 	    +profile/root-disabled-login-passwd
 	    +profile/server
 	    +service/containers
@@ -65,7 +66,7 @@
 	    +system/pam-realtime-options
 	    +system/power-management
 	    +system/substitutes
-	    +system/zram-device 
+	    +system/zram-device
 	    +vm/qemu-bridge-helper
 	    %packages/installer-disk-utilities))
 
@@ -99,14 +100,17 @@
 (define +profile/gaming
   (+service (udev-rules-service 'steam-devices steam-devices-udev-rules)))
 
-(define +profile/ph
+(define +profile/ph-shell
   (compose (+user
 	    (auth-account %user/ph))
 	   (+group (user-group
 		     (system? #t)
 		     (name "plugdev")))
 	   (+sudo (user-account-name
-		   (auth-account %user/ph)))
+		   (auth-account %user/ph)))))
+
+(define +profile/ph
+  (compose +profile/ph-shell
 	   (+service (service guix-home-service-type
 			      `(("ph" ,(automate-home-environment)))))))
 
@@ -119,7 +123,7 @@
 			    (guix-extension
 			     (substitute-urls
 			      (append (list
-				       "https://substitutes.supervoid.org"
+				       ;; "https://substitutes.supervoid.org"
 				       "https://cache-cdn.guix.moe")
 				      %default-substitute-urls))
 			     (authorized-keys
@@ -158,7 +162,7 @@
 		       (priority 100)))))
 
 (define +profile/bluetooth
-  (lambda (os) 
+  (lambda (os)
     ((+service (service bluetooth-service-type
 			(bluetooth-configuration
 			 (bluez bluez)
@@ -276,7 +280,7 @@
 	   (+ssh-key (user-account-name add-user) ssh-pubkey)))
 
 (define +profile/deployable
-  (make/deployable 
+  (make/deployable
    (auth-account %user/deploy)
    (auth-pubkey %user/deploy)))
 
