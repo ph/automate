@@ -1,5 +1,6 @@
 (define-module (automate user)
   #:use-module (gnu packages shells)
+  #:use-module (gnu packages bash)
   #:use-module (gnu system accounts)
   #:use-module (gnu system)
   #:use-module (guix gexp)
@@ -9,6 +10,9 @@
 	    auth-account
 	    auth-pubkey
 	    %user/deploy
+	    %user/beatrice
+	    %user/ophelie
+	    %user/caroline
 	    %user/ph
 	    %user/live
 	    %user/root-disabled-login-passwd))
@@ -60,6 +64,33 @@
 	     (home-directory "/home/live")
 	     (supplementary-groups
 	      '("wheel"))))))
+
+(define %user/beatrice
+  (auth
+   (account (user-account
+	     (name "beatrice")
+	     (comment "Béatrice")
+	     (shell (file-append bash "/bin/bash"))
+	     (group "users")
+	     (home-directory "/home/beatrice")))))
+
+(define %user/caroline
+  (auth
+   (account (user-account
+	     (name "caroline")
+	     (comment "Caroline")
+	     (shell (file-append bash "/bin/bash"))
+	     (group "users")
+	     (home-directory "/home/caroline")))))
+
+(define %user/ophelie
+  (auth
+   (account (user-account
+	     (name "ophelie")
+	     (comment "Ophélie")
+	     (shell (file-append bash "/bin/bash"))
+	     (group "users")
+	     (home-directory "/home/ophelie")))))
 
 (define %user/root-disabled-login-passwd
   (auth

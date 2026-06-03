@@ -55,6 +55,9 @@
 	    +profile/development
 	    +profile/gaming
 	    +profile/ph
+	    +profile/caroline
+	    +profile/beatrice
+	    +profile/ophelie
 	    +profile/ph-shell
 	    +profile/live-user
 	    +profile/root-disabled-login-passwd
@@ -115,12 +118,23 @@
 	   (+service (service guix-home-service-type
 			      `(("ph" ,(automate-home-environment)))))))
 
+(define +profile/beatrice
+  (compose (+user (auth-account %user/beatrice))
+	   (+sudo (user-account-name
+		   (auth-account %user/beatrice)))))
+
+(define +profile/ophelie
+  (compose (+user (auth-account %user/ophelie))
+	   (+sudo (user-account-name
+		   (auth-account %user/ophelie)))))
+
+(define +profile/caroline
+  (compose (+user (auth-account %user/caroline))
+	   (+sudo (user-account-name
+		   (auth-account %user/caroline)))))
+
 (define +profile/live-user
-  (compose (+user
-	    (auth-account %user/live))
-	   (+group (user-group
-		     (system? #t)
-		     (name "plugdev")))
+  (compose (+user (auth-account %user/live))
 	   (+sudo (user-account-name
 		   (auth-account %user/live)))))
 
