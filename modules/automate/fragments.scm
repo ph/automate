@@ -64,18 +64,15 @@
       (operating-system
        (inherit os)
        (sudoers-file
-	(plain-file "sudoers" (string-append new-sudo-entry
-					     existing-content)))))))
+	(plain-file "sudoers" (string-append existing-content
+					     new-sudo-entry)))))))
 
 (define* (short-sha long-sha #:optional
 		    (sha-length  10))
-  ;; Skip the prefix of the key like `ssh-rsa` and start with the actual key.
-  (let ((str-length (string-length long-sha)))
-    (substring long-sha
-	       (or (string-contains long-sha " ")
-		   0)
-	       (or (and (> sha-length str-length) str-length)
-		   sha-length))))
+  (let* ((str-length (string-length long-sha))
+	 (start (or (string-contains long-sha " ") 0))
+	 (end (min str-length (+ start sha-length))))
+    (substring long-sha start end)))
 
 (define (+ssh-key user pubkey)
   (let* ((key-id (short-sha pubkey))

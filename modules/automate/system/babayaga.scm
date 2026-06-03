@@ -20,7 +20,10 @@
   #:use-module (gnu services authentication)
   #:use-module (gnu services desktop)
   #:use-module (gnu services nix)
+  #:use-module (gnu services)
+  #:use-module (gnu services containers)
   #:use-module (gnu services linux)
+  #:use-module (guix gexp)
   #:use-module (gnu services sddm)
   #:use-module (gnu services pm)
   #:use-module (gnu services base)
@@ -143,6 +146,21 @@
 	   +service/openssh
 	   +system/substitutes
 	   +networking/increase-udp-buffer-size
+	   (+service
+	    (simple-service 'ollama-directory activation-service-type
+			    #~(begin
+				(use-modules (guix build utils))
+				(mkdir-p "/var/ollama"))))
+	   (+service
+	    (simple-service 'ollama-container oci-service-type
+			    (oci-extension
+			     (containers
+			      (list (oci-container-configuration
+				     (image "ollama:rocm")
+				     (ports '(("11434" . "11434")))
+				     (volumes '(("/var/ollama" . "/root/.ollama")))
+				     (extra-arguments '("--device /dev/kfd"
+							"--device /dev/dri"))))))))
 	   (+system/zram-device #:ram-size "129G")))
 
 (+profile/babayaga %babayaga-os)
