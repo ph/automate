@@ -56,6 +56,7 @@
 	    +profile/gaming
 	    +profile/ph
 	    +profile/ph-shell
+	    +profile/live-user
 	    +profile/root-disabled-login-passwd
 	    +profile/server
 	    +service/containers
@@ -113,6 +114,15 @@
   (compose +profile/ph-shell
 	   (+service (service guix-home-service-type
 			      `(("ph" ,(automate-home-environment)))))))
+
+(define +profile/live-user
+  (compose (+user
+	    (auth-account %user/live))
+	   (+group (user-group
+		     (system? #t)
+		     (name "plugdev")))
+	   (+sudo (user-account-name
+		   (auth-account %user/live)))))
 
 (define +profile/root-disabled-login-passwd
   (+user (auth-account %user/root-disabled-login-passwd)))

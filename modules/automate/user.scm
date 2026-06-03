@@ -10,6 +10,7 @@
 	    auth-pubkey
 	    %user/deploy
 	    %user/ph
+	    %user/live
 	    %user/root-disabled-login-passwd))
 
 (define-record-type* <auth> auth
@@ -48,11 +49,21 @@
 		"video"
 		"realtime"))))))
 
+(define %user/live
+  (auth
+   (account (user-account
+	     (name "live")
+	     (password (crypt "live" "$5$livelive"))
+	     (comment "live")
+	     (shell (file-append fish "/bin/fish"))
+	     (group "users")
+	     (home-directory "/home/live")
+	     (supplementary-groups
+	      '("wheel"))))))
+
 (define %user/root-disabled-login-passwd
   (auth
    (account
     (user-account
       (inherit %root-account)
       (password #f)))))
-
-;;guix time-machine -C channels.lock.scm -L modules -- system image modules/automate/image/remote-boot.scm

@@ -1,4 +1,4 @@
-(define-module (automate image remote-boot)
+(define-module (automate image live-install)
   #:use-module (automate profile)
   #:use-module (gnu packages linux)
   #:use-module (gnu packages)
@@ -35,7 +35,9 @@
 	   +service/openssh
 	   +system/substitutes
 	   +profile/root-disabled-login-passwd
-	   +profile/deployable))
+	   +profile/live-user
+	   +profile/deployable ;; still allow remove deploy and configuration
+	   ))
 
 (+profile/remote-boot %remote-boot-os)
 
