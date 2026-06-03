@@ -24,6 +24,8 @@
   #:use-module (gnu services networking)
   #:use-module (gnu services sddm)
   #:use-module (gnu services pm)
+  #:use-module (gnu services dbus)
+  #:use-module (gnu services)
   #:use-module (gnu services base)
   #:use-module (gnu services xorg)
   #:use-module (gnu services docker)
@@ -47,7 +49,10 @@
 		(bootloader grub-efi-bootloader)
 		(targets (list "/efi"))
 		(keyboard-layout keyboard-layout)))
-
+   (services (append
+	      (list (service dbus-root-service-type)
+		    (service elogind-service-type))
+	      %base-services))
    (file-systems (cons*
 		  (file-system
                    (mount-point "/")
@@ -108,9 +113,10 @@
   (compose +networking/increase-udp-buffer-size
 	   +service/openssh
 	   +system/substitutes
-	   +networking/tailscale
+	   +service/containers
 	   +networking/dhcp
 	   +profile/deployable
+	   +system/pam-realtime-options
 	   +profile/ph-shell))
 
 (+profile/lusk %lusk-os)
