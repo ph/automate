@@ -22,4 +22,5 @@ return {
   enable_tab_bar = false,
   window_background_opacity = 0.9,  -- 0.0 transparent, 1.0 opaque
   text_background_opacity = 1.0,
+  window_close_confirmation = "NeverPrompt",
 }
