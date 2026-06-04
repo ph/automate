@@ -101,13 +101,14 @@ output "DP-3" {
 
       Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
       Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-      Mod+S           { spawn "noctalia" "msg" "settings-toggle"; } 
+      Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
       Mod+Alt+L       { spawn "noctalia" "msg" "screen-lock"; }
       Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
       Mod+Shift+E     { spawn "herd" "restart" "noctalia"; }
 
       Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
-      Mod+Return  { spawn "alacritty"; }
+      // Mod+Return  { spawn "alacritty"; }
+      Mod+Return  { spawn "wezterm"; }
 
       Mod+H                       { focus-column-left; }
       Mod+J                       { focus-window-down; }
