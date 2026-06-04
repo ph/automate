@@ -144,6 +144,7 @@ set -g fish_term24bit 1 ")
 (define %vcs
   (list git
 	lldb
+	wezterm
 	alacritty
 	jujutsu
 	`(,git "send-email")))
