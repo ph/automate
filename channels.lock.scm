@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 (list (channel
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")

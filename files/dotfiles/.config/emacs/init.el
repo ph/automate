@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 ;;; -*- lexical-binding: t -*-
 ;; records use-package time to reduce startup time.
 (setq use-package-compute-statistics t)

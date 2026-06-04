@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 ;;; -*- lexical-binding: t -*-
 
 (defgroup ph-mu4e nil

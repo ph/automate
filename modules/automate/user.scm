@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 (define-module (automate user)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages bash)

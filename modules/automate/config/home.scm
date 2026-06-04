@@ -1,3 +1,7 @@
+;;; SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
+;;;
+;;; SPDX-License-Identifier: GPL-3.0-or-later
+
 (define-module (automate config home)
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module ((ice-9 ftw) #:select (scandir))
