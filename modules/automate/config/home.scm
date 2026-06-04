@@ -219,8 +219,7 @@ set -g fish_term24bit 1 ")
   (append
    %vim
    (list
-    ;; direnv
-    )))
+    direnv)))
 
 (define %fonts
   (list

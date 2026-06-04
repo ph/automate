@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
  prefer-no-csd
   screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
