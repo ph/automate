@@ -273,8 +273,8 @@ set -g fish_term24bit 1 ")
    slurp
    light
    xdg-utils
+   xdg-desktop-portal-gnome
    xdg-desktop-portal-gtk
-   xdg-desktop-portal-wlr
    libwacom
    xournalpp
    blender
