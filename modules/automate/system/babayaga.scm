@@ -142,7 +142,7 @@
 	   +profile/desktop
 	   +profile/ph
 	   +service/containers
-	   +service/openssh
+	   (+service/openssh)
 	   +system/substitutes
 	   +networking/increase-udp-buffer-size
 	   (+service

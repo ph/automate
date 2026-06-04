@@ -25,7 +25,7 @@
   #:use-module (gnu services sddm)
   #:use-module (gnu services pm)
   #:use-module (gnu services base)
-  #:use-module (gnu services xorg) 
+  #:use-module (gnu services xorg)
   #:use-module (gnu services docker)
   #:use-module (nongnu packages firmware)
   #:use-module (nongnu packages linux)
@@ -106,7 +106,7 @@
 	   +networking/increase-udp-buffer-size
 	   +profile/desktop
 	   +profile/development
-	   +service/openssh
+	   (+service/openssh)
 	   +system/substitutes
 	   +networking/tailscale
 	   (+system/zram-device)

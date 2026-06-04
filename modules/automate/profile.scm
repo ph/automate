@@ -72,7 +72,8 @@
 	    +system/substitutes
 	    +system/zram-device
 	    +vm/qemu-bridge-helper
-	    %packages/installer-disk-utilities))
+	    %packages/installer-disk-utilities
+	    %packages/server))
 
 ;; (define +hardware/fwupd
 ;;   (+service (service fwupd-service-type
@@ -242,12 +243,14 @@
 		      (cpu-boost-on-bat? #f)
 		      (sched-powersave-on-bat? #t)))))
 
-(define +service/openssh
+(define* (+service/openssh #:key
+			   (port-number 22)
+			   (password-authentication? #t))
   (+service (service openssh-service-type
 		     (openssh-configuration
-		       (openssh openssh-sans-x)
-		       ;; (port-number 2222
-		       ))))
+		      (openssh openssh-sans-x)
+		      (password-authentication? password-authentication?)
+		      (port-number port-number)))))
 
 (define +service/sddm-login-manager
   (+service (service sddm-service-type
@@ -317,7 +320,7 @@
 (define +profile/server
   (compose
    (+packages %packages/server)
-   +service/openssh
+   (+service/openssh)
    +profile/deployable
    +system/substitutes
    +networking/ip-forwarding

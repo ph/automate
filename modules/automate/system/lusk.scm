@@ -112,7 +112,13 @@
 (define +profile/lusk
   (compose +networking/increase-udp-buffer-size
 	   +service/containers
-	   +profile/server
+	   (+packages %packages/server)
+	   (+service/openssh)
+	   +profile/deployable
+	   +system/substitutes
+	   +networking/ip-forwarding
+	   +profile/root-disabled-login-passwd
+	   +networking/dhcp
 	   +system/pam-realtime-options
 	   +profile/ph-shell))
 

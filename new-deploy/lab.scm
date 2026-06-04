@@ -29,7 +29,7 @@
 		   (host-name "supervoid.org")
 		   (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQXZQVZwePzspWxl9Ylzfj40ATdWRkLMIoJkfyNX/J0")
 		   (user "deploy")
-		   ;; (port 4222)
+		   (port 4222)
 		   (system "x86_64-linux")))))
 (list
  %azzael

@@ -91,9 +91,9 @@ table inet filter {
 		(targets (list "/boot/efi"))
 		(keyboard-layout keyboard-layout)))
    (swap-devices
-    (list (swap-space (target (file-system-label "swap-1"))
+    (list (swap-space (target (uuid "010786db-3aea-478a-9af3-2d1380e690fe"))
 		      (priority 10))
-	  (swap-space (target (file-system-label "swap-2"))
+	  (swap-space (target (uuid "d2792c57-8443-4444-a893-628d4faff30b"))
 		      (priority 5))))
    (file-systems (cons*
 		  (file-system
@@ -164,7 +164,13 @@ table inet filter {
 (define +profile/azzael
   (compose +networking/increase-udp-buffer-size
 	   +service/containers
-	   +profile/server
+	   (+packages %packages/server)
+	   (+service/openssh #:port-number 4222 #:password-authentication? #f)
+	   +profile/deployable
+	   +system/substitutes
+	   +networking/ip-forwarding
+	   +profile/root-disabled-login-passwd
+	   +networking/dhcp
 	   +system/pam-realtime-options
 	   +profile/ph-shell))
 
