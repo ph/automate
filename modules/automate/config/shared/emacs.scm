@@ -83,6 +83,7 @@
 	emacs-hl-todo
 	emacs-forge
 	emacs-modus-catppuccin
+	emacs-catppuccin-theme
 	emacs-gcmh
 	emacs-corfu
 	emacs-cape
