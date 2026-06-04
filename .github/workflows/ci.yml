@@ -49,7 +49,7 @@ jobs:
         run: sudo chown -R runner:users /var/guix/profiles/per-user/runner
 
       - name: install dependencies
-        run: guix shell -m manifest.scm
+        run: guix time-machine -C ./channels.lock.scm -- shell -m manifest.scm
 
       - name: make check
         run: make check
