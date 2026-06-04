@@ -1047,6 +1047,7 @@
   (require 'rust-ts-mode)
   (require 'typescript-ts-mode)
   (require 'yaml-ts-mode)
+  (require 'lua-ts-mode)
 
   ;; Make them available in org mode.
   (add-to-list 'org-src-lang-modes '("dockerfile" . dockerfile-ts))
@@ -1054,6 +1055,7 @@
   (add-to-list 'org-src-lang-modes '("rust" . rust-ts))
   (add-to-list 'org-src-lang-modes '("typescript" . typescript-ts))
   (add-to-list 'org-src-lang-modes '("yaml" . yaml-ts))
+  (add-to-list 'org-src-lang-modes '("lua" . lua-ts))
   :hook
   (after-init . global-treesit-auto-mode))
 
