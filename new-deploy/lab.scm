@@ -33,6 +33,5 @@
 		   (system "x86_64-linux")))))
 (list
  %azzael
- ;; %lusk
- ;; %babayaga
- )
+ %lusk
+ %babayaga)

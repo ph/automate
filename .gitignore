@@ -5,7 +5,6 @@
 *.go
 /wallpapers/
 /rpi/
-/deploy/
 /secrets/
 *.qcow2
 /target/
