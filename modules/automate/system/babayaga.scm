@@ -146,18 +146,22 @@
 	   +system/substitutes
 	   +networking/increase-udp-buffer-size
 	   (+service
-	    (simple-service 'ollama-directory activation-service-type
+	    (simple-service 'lemonade-directory activation-service-type
 			    #~(begin
 				(use-modules (guix build utils))
-				(mkdir-p "/var/ollama"))))
+				(mkdir-p "/var/lemonade/cache")
+				(mkdir-p "/var/lemonade/llama")
+				(mkdir-p "/var/lemonade/recipe"))))
 	   (+service
-	    (simple-service 'ollama-container oci-service-type
+	    (simple-service 'lemonade-container oci-service-type
 			    (oci-extension
 			     (containers
 			      (list (oci-container-configuration
-				     (image "ollama:rocm")
-				     (ports '(("11434" . "11434")))
-				     (volumes '(("/var/ollama" . "/root/.ollama")))
+				     (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
+				     (ports '(("13305" . "13305")))
+				     (volumes '(("/var/lemonade/cache" . "/root/.cache/huggingface")
+						("/var/lemonade/llama" . "/opt/lemonade/llama")
+						("/var/lemonade/recipe" . "/root/.cache/lemonade")))
 				     (extra-arguments '("--device /dev/kfd"
 							"--device /dev/dri"))))))))
 	   (+system/zram-device #:ram-size "129G")))

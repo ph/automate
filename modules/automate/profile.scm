@@ -321,6 +321,7 @@
    +profile/deployable
    +system/substitutes
    +networking/ip-forwarding
+   +profile/root-disabled-login-passwd
    +networking/dhcp))
 
 ;; Reuse the internal tools list from the Guix installer.

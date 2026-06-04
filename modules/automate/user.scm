@@ -30,7 +30,6 @@
 	     (name "deploy")
 	     (comment "deploy")
 	     (group "users")
-	     (create-home-directory? #f)
 	     (supplementary-groups '("wheel"))))
    (pubkey "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO7WiMbqiYriD1kyTQxUJgpfia8E31rJ6acC5Zp43Yfg openpgp:0x04795C04")))
 

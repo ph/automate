@@ -111,11 +111,8 @@
 
 (define +profile/lusk
   (compose +networking/increase-udp-buffer-size
-	   +service/openssh
-	   +system/substitutes
 	   +service/containers
-	   +networking/dhcp
-	   +profile/deployable
+	   +profile/server
 	   +system/pam-realtime-options
 	   +profile/ph-shell))
 

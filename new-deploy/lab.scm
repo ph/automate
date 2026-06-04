@@ -19,5 +19,20 @@
 		   (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIImlnWGsg8AN+zXcmWfy+BbPjlwW/EzNdH6MZ+ARvg2U")
 		   (user "deploy")
 		   (system "x86_64-linux")))))
-(list %lusk
-      %babayaga)
+
+(define %azzael
+  (machine
+   (operating-system (load "../modules/automate/system/azzael.scm"))
+   (environment managed-host-environment-type)
+   (configuration (machine-ssh-configuration
+		   (build-locally? #f)
+		   (host-name "supervoid.org")
+		   (host-key "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQXZQVZwePzspWxl9Ylzfj40ATdWRkLMIoJkfyNX/J0")
+		   (user "deploy")
+		   ;; (port 4222)
+		   (system "x86_64-linux")))))
+(list
+ %azzael
+ ;; %lusk
+ ;; %babayaga
+ )
