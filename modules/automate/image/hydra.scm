@@ -98,7 +98,7 @@
 
 (define +profile/hydra
   (compose +profile/desktop
-	   +service/openssh
+	   (+service/openssh)
 	   +system/substitutes
 	   +system/power-management
 	   +profile/deployable

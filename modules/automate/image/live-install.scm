@@ -32,7 +32,7 @@
 
 (define +profile/remote-boot
   (compose +networking/dhcp
-	   +service/openssh
+	   (+service/openssh)
 	   +system/substitutes
 	   +profile/root-disabled-login-passwd
 	   +profile/live-user
