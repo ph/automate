@@ -5,6 +5,7 @@
   #:use-module (gnu home services dotfiles)
   #:use-module (gnu home services gnupg)
   #:use-module (gnu home services guix)
+  #:use-module (gnu home services ssh)
   #:use-module (gnu home services pm)
   #:use-module (gnu home services shells)
   #:use-module (gnu home services shepherd)
@@ -308,6 +309,15 @@ set -g fish_term24bit 1 ")
 	       (default-cache-ttl-ssh 3600)
 	       (default-cache-ttl 3600)
 	       (ssh-support? #t)))
+
+     (service home-openssh-service-type
+	      (home-openssh-configuration
+		(hosts
+		 (list
+		  (openssh-host
+		    (name "supervoid.org")
+		    (host-name "supervoid.org")
+		    (port 4222))))))
 
      (service home-xdg-configuration-files-service-type
 	      `(("gdb/gdbinit" ,%default-gdbinit)
