@@ -158,12 +158,15 @@
 			     (containers
 			      (list (oci-container-configuration
 				     (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
-				     (ports '(("13305" . "13305")))
+				     (provision "lemonade-server")
+				     (log-file "/var/log/lemonade-server.log")
+				     (ports '(("13305" . "13305")
+					      ("9000" . "9000")))
 				     (volumes '(("/var/lemonade/cache" . "/root/.cache/huggingface")
 						("/var/lemonade/llama" . "/opt/lemonade/llama")
 						("/var/lemonade/recipe" . "/root/.cache/lemonade")))
-				     (extra-arguments '("--device /dev/kfd"
-							"--device /dev/dri"))))))))
+				     (extra-arguments '("--device" "/dev/kfd"
+							"--device" "/dev/dri"))))))))
 	   (+system/zram-device #:ram-size "129G")))
 
 (+profile/babayaga %babayaga-os)
