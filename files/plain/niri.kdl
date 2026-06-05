@@ -1,174 +1,172 @@
 // SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
- prefer-no-csd
-  screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
+prefer-no-csd
+screenshot-path "~/Pictures/Screenshots/%Y%m%d-%H%M%S.png"
 
-  xwayland-satellite {
-      path "$$bin/xwayland-satellite$$"
-  }
+xwayland-satellite {
+        path "$$bin/xwayland-satellite$$"
+}
 
-  spawn-at-startup "shepherd"
+spawn-at-startup "shepherd"
 
-  hotkey-overlay {
-      skip-at-startup
-  }
+hotkey-overlay {
+        skip-at-startup
+}
 
   // noctalia: https://docs.noctalia.dev/getting-started/compositor-settings/niri/
-  window-rule {
-      geometry-corner-radius 4
-      clip-to-geometry true
-      background-effect {
-	blur true
-	}
-  }
+window-rule {
+        geometry-corner-radius 4
+        clip-to-geometry true
+        background-effect {
+                blur true
+        }
+}
 
-  debug {
-      // Allows notification actions and window activation from Noctalia.
-      honor-xdg-activation-with-invalid-serial
-  }
+debug {
+        // Allows notification actions and window activation from Noctalia.
+        honor-xdg-activation-with-invalid-serial
+}
 
-  layer-rule {
-    match namespace="^noctalia-wallpaper*"
-    place-within-backdrop true
-  }
-  // end of noctalia
+layer-rule {
+        match namespace="^noctalia-wallpaper*"
+        place-within-backdrop true
+}
+// end of noctalia
 
-  overview {
-    workspace-shadow {
-      off
-    }
-  }
+overview {
+        workspace-shadow {
+                off
+        }
+}
 
-  layout {
-      gaps 4
+layout {
+        gaps 4
 
-      background-color "transparent"
-      focus-ring {
-          off
-      }
-      border {
-          off
-      }
-  }
+        background-color "transparent"
+        focus-ring {
+                off
+        }
+        border {
+                off
+        }
+}
 
+input {
+        keyboard {
+                repeat-delay 180
+                repeat-rate 20
 
- input {
-      keyboard {
-          repeat-delay 180
-          repeat-rate 20
+                xkb {
+                        layout "us,ca(fr)"
+                        options "ctrl:nocaps,grp:win_space_toggle"
+                }
+        }
 
-	  xkb {
-	    layout "us,ca(fr)"
-	    options "ctrl:nocaps,grp:win_space_toggle"
-	  }
-      }
+        touchpad {
+                tap
+                natural-scroll
+                scroll-method "two-finger"
+                accel-profile "adaptive"
+                click-method "button-areas"
+        }
 
-      touchpad {
-          tap
-          natural-scroll
-          scroll-method "two-finger"
-	  accel-profile "adaptive"
-	  click-method "button-areas"
-      }
-
-      warp-mouse-to-focus
-  }
-
+        warp-mouse-to-focus
+}
 
 output "eDP-1" {
-    scale 2.0
+        scale 2.0
 }
 
 output "DP-1" {
-    scale 1.4
+        scale 1.4
 }
 
 output "DP-3" {
-    scale 1.4
-    transform "90"
-    position x=0 y=0
+        scale 1.4
+        transform "90"
+        position x=0 y=0
 }
 
-  binds {
-      XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
-      XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
-      XF86AudioMute         allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
-      XF86AudioMicMute      allow-when-locked=true { spawn "noctalia" "msg" "volume" "mic-mute"; }
-      XF86AudioPlay         allow-when-locked=true { spawn "noctalia" "msg" "media" "toggle"; }
-      XF86AudioStop         allow-when-locked=true { spawn "noctalia" "msg" "media" "stop"; }
-      XF86AudioPrev         allow-when-locked=true { spawn "noctalia" "msg" "media" "previous"; }
-      XF86AudioNext         allow-when-locked=true { spawn "noctalia" "msg" "media" "next"; }
-      XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
-      XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
+binds {
+        XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
+        XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
+        XF86AudioMute         allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+        XF86AudioMicMute      allow-when-locked=true { spawn "noctalia" "msg" "volume" "mic-mute"; }
+        XF86AudioPlay         allow-when-locked=true { spawn "noctalia" "msg" "media" "toggle"; }
+        XF86AudioStop         allow-when-locked=true { spawn "noctalia" "msg" "media" "stop"; }
+        XF86AudioPrev         allow-when-locked=true { spawn "noctalia" "msg" "media" "previous"; }
+        XF86AudioNext         allow-when-locked=true { spawn "noctalia" "msg" "media" "next"; }
+        XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
+        XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
 
-      Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
-      Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
-      Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
-      Mod+Alt+L       { spawn "noctalia" "msg" "screen-lock"; }
-      Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
-      Mod+Shift+E     { spawn "herd" "restart" "noctalia"; }
+        Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
+        Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
+        Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
+        Mod+Alt+L       { spawn "noctalia" "msg" "screen-lock"; }
+        Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
+        Mod+Shift+E     { spawn "herd" "restart" "noctalia"; }
 
-      Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
-      // Mod+Return  { spawn "alacritty"; }
-      Mod+Return  { spawn "wezterm"; }
+        Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
+        // Mod+Return  { spawn "alacritty"; }
+        Mod+Return  { spawn "wezterm"; }
 
-      Mod+H                       { focus-column-left; }
-      Mod+J                       { focus-window-down; }
-      Mod+K                         { focus-window-up; }
-      Mod+L                      { focus-column-right; }
+        Mod+H                       { focus-column-left; }
+        Mod+J                       { focus-window-down; }
+        Mod+K                         { focus-window-up; }
+        Mod+L                      { focus-column-right; }
 
-      Mod+Shift+H                 { move-column-left; }
-      Mod+Shift+J                 { move-window-down; }
-      Mod+Shift+K                   { move-window-up; }
-      Mod+Shift+L                { move-column-right; }
+        Mod+Shift+H                 { move-column-left; }
+        Mod+Shift+J                 { move-window-down; }
+        Mod+Shift+K                   { move-window-up; }
+        Mod+Shift+L                { move-column-right; }
 
-      Mod+WheelScrollDown            { focus-column-right; }
-      Mod+WheelScrollUp              { focus-column-left; }
+        Mod+WheelScrollDown            { focus-column-right; }
+        Mod+WheelScrollUp              { focus-column-left; }
 
-      Mod+Shift+WheelScrollDown      { move-column-right; }
-      Mod+Shift+WheelScrollUp        { move-column-left; }
+        Mod+Shift+WheelScrollDown      { move-column-right; }
+        Mod+Shift+WheelScrollUp        { move-column-left; }
 
-      Mod+Ctrl+H                  { focus-monitor-left; }
-      Mod+Ctrl+L                 { focus-monitor-right; }
+        Mod+Ctrl+H                  { focus-monitor-left; }
+        Mod+Ctrl+L                 { focus-monitor-right; }
 
-      Mod+Ctrl+Shift+H            { move-column-to-monitor-left; }
-      Mod+Ctrl+Shift+L           { move-column-to-monitor-right; }
+        Mod+Ctrl+Shift+H            { move-column-to-monitor-left; }
+        Mod+Ctrl+Shift+L           { move-column-to-monitor-right; }
 
-      Mod+Ctrl+WheelScrollDown       { focus-monitor-right; }
-      Mod+Ctrl+WheelScrollUp         { focus-monitor-left; }
+        Mod+Ctrl+WheelScrollDown       { focus-monitor-right; }
+        Mod+Ctrl+WheelScrollUp         { focus-monitor-left; }
 
-      Mod+Ctrl+Shift+WheelScrollDown { move-column-to-monitor-right; }
-      Mod+Ctrl+Shift+WheelScrollUp   { move-column-to-monitor-left; }
+        Mod+Ctrl+Shift+WheelScrollDown { move-column-to-monitor-right; }
+        Mod+Ctrl+Shift+WheelScrollUp   { move-column-to-monitor-left; }
 
-      Mod+Comma                      { consume-or-expel-window-left; }
-      Mod+Period                     { consume-or-expel-window-right; }
-      Mod+F                          { maximize-column; }
-      Mod+Shift+F                    { fullscreen-window; }
-      Mod+C                          { center-column; }
-      Mod+V                          { toggle-window-floating; }
-      Mod+Shift+V                    { switch-focus-between-floating-and-tiling; }
+        Mod+Comma                      { consume-or-expel-window-left; }
+        Mod+Period                     { consume-or-expel-window-right; }
+        Mod+F                          { maximize-column; }
+        Mod+Shift+F                    { fullscreen-window; }
+        Mod+C                          { center-column; }
+        Mod+V                          { toggle-window-floating; }
+        Mod+Shift+V                    { switch-focus-between-floating-and-tiling; }
 
-      Mod+Shift+Q                    { close-window; }
+        Mod+Shift+Q                    { close-window; }
 
-      Mod+Tab repeat=false           { toggle-overview; }
+        Mod+Tab repeat=false           { toggle-overview; }
 
-      Print                          { screenshot; }
-      Ctrl+Print                     { screenshot-screen; }
-      Alt+Print                      { screenshot-window; }
-  }
-
-window-rule {
-  match app-id="signal"
-  match title="Signal"
-  open-floating true
-  min-width 400
-  min-height 400
+        Print                          { screenshot; }
+        Ctrl+Print                     { screenshot-screen; }
+        Alt+Print                      { screenshot-window; }
 }
 
 window-rule {
-    match app-id="zoom"
-    open-floating true
+        match app-id="signal"
+        match title="Signal"
+        open-floating true
+        min-width 400
+        min-height 400
+}
+
+window-rule {
+        match app-id="zoom"
+        open-floating true
 }
 
 spawn-sh-at-startup "sleep 15; $$bin/signal-desktop$$ --use-tray-icon --start-in-tray"
