@@ -3,13 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ARGS := --verbosity=1
-GUIX := guix
+GUIX := guix time-machine -C ./channels.lock.scm --
 
 default: help
-
-## dry-run: Test home in a local container
-dry-run: ## - dry-run test home configuration in a local container
-	$(GUIX) home container config/home.scm $< $(ARGS)
 
 ## reuse: check for license header
 reuse: ## - check for license header
