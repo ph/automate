@@ -126,6 +126,7 @@
 	emacs-marginalia
 	emacs-vertico
 	emacs-consult
+	emacs-kdl-mode
 	emacs-rainbow-delimiters
 	mu ;; mu4e and mu cli
 	emacs-mu4e-dashboard

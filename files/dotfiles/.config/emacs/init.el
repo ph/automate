@@ -1021,6 +1021,9 @@
 (use-package nix-mode
   :mode "\\.nix\\'")
 
+(use-package kdl-mode
+  :mode "\\.kdl\\'")
+
 (use-package yaml-mode
   :mode "\\.yml\\'")
 
