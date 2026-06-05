@@ -108,7 +108,6 @@ binds {
         Mod+Shift+E     { spawn "herd" "restart" "noctalia"; }
 
         Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
-        // Mod+Return  { spawn "alacritty"; }
         Mod+Return  { spawn "wezterm"; }
 
         Mod+H                       { focus-column-left; }
