@@ -48,7 +48,12 @@
    (keyboard-layout (keyboard-layout "us"
 				     #:options '("ctrl:nocaps")))
    (host-name "babayaga")
-   (services %my-system-services)
+   (services (modify-services %my-system-services
+	       (guix-service-type config =>
+				  (guix-configuration
+				   (inherit config)
+				   (extra-options '("--max-jobs=8"
+						    "--cores=0"))))))
    (bootloader (bootloader-configuration
 		(bootloader grub-efi-bootloader)
 		(targets (list "/boot/efi"))
