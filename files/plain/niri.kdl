@@ -16,7 +16,7 @@
 
   // noctalia: https://docs.noctalia.dev/getting-started/compositor-settings/niri/
   window-rule {
-      geometry-corner-radius 5
+      geometry-corner-radius 4
       clip-to-geometry true
       background-effect {
 	blur true
