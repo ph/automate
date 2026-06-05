@@ -55,7 +55,6 @@
   #:use-module (gnu packages mail)
   #:use-module (gnu packages music)
   #:use-module (gnu packages networking)
-  #:use-module (gnu packages node)
   #:use-module (gnu packages package-management)
   #:use-module (gnu packages password-utils)
   #:use-module (gnu packages pdf)
@@ -109,6 +108,7 @@
   #:use-module (supervoid gnu packages shells)
   #:use-module (supervoid gnu packages fonts)
   #:use-module (automate config shared emacs)
+  #:use-module (automate packages hack)
   #:export (automate-home-environment))
 
 (define-public font-commit-mono-nerd-font
@@ -155,7 +155,7 @@ set -g fish_term24bit 1 ")
 	`(,git "send-email")))
 
 (define %dev
-  (list node
+  (list node-next
 	gdb
 	mosh
 	fish-foreign-env
