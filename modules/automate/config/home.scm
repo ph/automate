@@ -151,6 +151,7 @@ set -g fish_term24bit 1 ")
 	lldb
 	wezterm
 	alacritty
+	btop
 	jujutsu
 	`(,git "send-email")))
 
