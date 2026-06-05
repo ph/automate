@@ -311,7 +311,7 @@
 ;;   (modus-themes-load-theme 'ef-dream))
 
 (use-package catppuccin-theme
-  :init
+  :custom
   (catppuccin-flavor 'latte) ;; or 'latte, 'macchiato, or 'mocha
   :config
   (load-theme 'catppuccin :no-confirm))
