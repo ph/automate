@@ -61,6 +61,10 @@
 	emacs-evil-collection/ph
 	emacs-agent-shell/ph
 	emacs-rustic/ph
+	emacs-treemacs
+	emacs-treemacs-extra
+	emacs-treemacs-nerd-icons
+	emacs-nerd-icons
 	emacs-lsp-mode
 	emacs-lsp-ui
 	emacs-dap-mode/ph
