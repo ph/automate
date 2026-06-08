@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "dae5c342b0f97dd20ef9f6fb3670a2c51b89540b")
+       (commit "9e5a77eff4624080ea0e0b315bf1fc6d94981cd4")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -22,7 +22,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "8d0f3f34c74864449399e489ff24e6ef1cf4fc12")
+       (commit "f1cdc992a24110fbca6a62b23a3e667f28e96c73")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"

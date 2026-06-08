@@ -148,6 +148,7 @@ set -g fish_term24bit 1 ")
 
 (define %vcs
   (list git
+	difftastic
 	lldb
 	wezterm
 	alacritty

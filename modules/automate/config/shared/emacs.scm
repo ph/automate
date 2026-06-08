@@ -64,6 +64,7 @@
 	emacs-treemacs
 	emacs-treemacs-extra
 	emacs-treemacs-nerd-icons
+	emacs-difftastic
 	emacs-nerd-icons
 	emacs-lsp-mode
 	emacs-lsp-ui

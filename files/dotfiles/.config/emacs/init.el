@@ -1448,6 +1448,12 @@
   :config
   (treemacs-load-theme "nerd-icons"))
 
+(use-package difftastic
+  :after (magit)
+  :config
+  (difftastic-bindings-mode))
+
+
 ;; monokai-pro-machine
 ;; return {
 ;;   dark2 = "#161b1e",
