@@ -28,6 +28,7 @@
   #:use-module (gnu packages compression)
   #:use-module (gnu packages curl)
   #:use-module (gnu packages dns)
+  #:use-module (gnu packages kde-graphics)
   #:use-module (gnu packages docker)
   #:use-module (gnu packages electronics)
   #:use-module (gnu packages emulators)
@@ -269,15 +270,12 @@ set -g fish_term24bit 1 ")
 
 (define %multimedia
   (list
+   krita
    qtwayland-5
-   rofi
-   rofi-themes-collection
    wl-clipboard
    foot
-   alacritty
    grim
    slurp
-   light
    xdg-utils
    xdg-desktop-portal-gnome
    xdg-desktop-portal-gtk
@@ -294,6 +292,7 @@ set -g fish_term24bit 1 ")
   (home-environment
    (packages (append
 	      %browsers
+	      %multimedia
 	      %vcs
 	      %games
 	      %dev

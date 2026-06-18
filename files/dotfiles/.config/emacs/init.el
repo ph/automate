@@ -52,12 +52,13 @@
    (after-init . menu-bar-mode)
    (after-init . scroll-bar-mode)
    (after-init . global-auto-revert-mode)
+   (after-init . global-hl-line-mode)
    (after-init . pixel-scroll-precision-mode)
 
    ;; Show line number for prog or text mode and leave them out for treemacs and
    ;; similar mode.
-   (prog-mode . hl-line-mode)
-   (text-mode . hl-line-mode)
+   (prog-mode . display-line-numbers-mode)
+   (text-mode . display-line-numbers-mode)
 
    ;; enable pretty symbols for lisp/scheme
    (lisp-mode . prettify-symbols-mode)
@@ -1006,9 +1007,11 @@
 ;; Syntax and prog mode.
 
 (use-package geiser
-  :when (locate-library "arei.el")
-  :custom (geiser-mode-auto-p nil))
+  ;; :when (locate-library "arei.el")
+  ;; :custom (geiser-mode-auto-p nil)
+  )
 
+(use-package 'geiser-hoot)
 
 (defun ph/start-ares-nrepl ()
   (interactive)
@@ -1017,12 +1020,12 @@
      (if default-directory
 	 (start-process "run make ares" "make ares" "make" "ares")))))
 
-(use-package arei
-  :when (locate-library "arei.el")
-  :init (global-arei-mode)
-  :general
-  (ph/leader-key
-    "am" '(ph/start-ares-nrepl :wk "arei nrepl")))
+;; (use-package arei
+;;   :when (locate-library "arei.el")
+;;   :init (global-arei-mode)
+;;   :general
+;;   (ph/leader-key
+;;     "am" '(ph/start-ares-nrepl :wk "arei nrepl")))
 
 (use-package nix-mode
   :mode "\\.nix\\'")
@@ -1265,6 +1268,7 @@
   (setq lsp-keep-workspace-alive nil)
   (setq lsp-headerline-breadcrumb-enable nil)
   (setq lsp-auto-guess-root nil)
+  (setq lsp-file-watch-threshold 500)
   (defvar lsp-modeline-code-actions-segments '(count icon name))
   (defun ph/orderless-dispatch-flex-first (_pattern index _total)
     (and (eq index 0) 'orderless-flex))
@@ -1285,6 +1289,7 @@
 	 (fennel-mode . lsp-deferred)
 	 (lsp-mode . lsp-enable-which-key-integration))
   :commands lsp)
+
 
 (use-package dap-mode
   :custom
@@ -1452,6 +1457,7 @@
   :after (magit)
   :config
   (difftastic-bindings-mode))
+
 
 
 ;; monokai-pro-machine

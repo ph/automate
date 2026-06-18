@@ -245,6 +245,8 @@
 		      (cpu-scaling-governor-on-bat (list "low-power"))
 		      (cpu-boost-on-ac? #t)
 		      (cpu-boost-on-bat? #t)
+		      (start-charge-thresh-bat0 75)
+		      (stop-charge-thresh-bat0 80)
 		      (sched-powersave-on-bat? #t)))))
 
 (define* (+service/openssh #:key

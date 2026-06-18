@@ -105,12 +105,15 @@
 	emacs-json-mode
 	emacs-arei
 	emacs-geiser
+	emacs-geiser-hoot
 	emacs-terraform-mode
 	emacs-restclient
 	emacs-dockerfile-mode
 	emacs-go-mode
 	emacs-org-modern
 	emacs-org-roam
+	emacs-htmlize
+	emacs-esxml
 	emacs-pass
 	emacs-password-store
 	emacs-auth-source-pass
