@@ -87,7 +87,7 @@
   ;; replace `(lambda () ...)' to `(λ () ... )'
   (prettify-symbols-alist '(("lambda" . λ)))
 
-  ;; Larger read to improve lsp-mode.
+  ;; Larger read to improve lsp-mode/eglot
   (read-process-output-max (* 1024 1024)) ;; 1mb
 
   ;; Emacs 30 and newer: Disable Ispell completion function.
@@ -184,7 +184,6 @@
   (exec-path-from-shell-variables '("SSH_AUTH_SOCK"
 				    "PATH"
 				    "MANPATH"
-				    "LSP_USE_PLISTS"
 				    "SSH_AGENT_PID"
 				    "GPG_AGENT_INFO"
 				    "LANG"
@@ -478,7 +477,6 @@
 	  "*helpful"
           "\\*Async Shell Command\\*"
 	  "*rustic-compilation*"
-	  "lsp-help"
 	  "*vterm*"
 	  "*eldoc*"
 	  "arei-debugger*"
@@ -1232,19 +1230,6 @@
 		  (symex-mode-interface))))
   (symex-evil-mode 1))
 
-;; (use-package mu4e-dashboard
-;;   :config
-;;   (setq mu4e-dashboard-file "~/src/automate/files/dotfiles/.config/emacs/side-dashboard.org"))
-
-;; TODO(ph): to evaluate, not sure I like all the colors in the code.
-;; (use-package prism
-;;   :hook
-;;   ((emacs-lisp-mode . prism-mode)
-;;    (scheme-mode . prism-mode)
-;;    (lisp-mode . prism-mode))
-;;   :custom
-;;   (prism-parens t))
-
 (use-package rainbow-delimiters
   :hook
   (prog-mode . rainbow-delimiters-mode))
@@ -1253,79 +1238,6 @@
 (use-package repeat
   :custom
   (repeat-mode +1))
-
-(use-package lsp-mode
-  :custom
-  (lsp-completion-provider :none)
-  :init
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c l")
-  (setq lsp-auto-install-server nil)
-  (setq lsp-enable-suggest-server-download nil)
-  (setq lsp-auto-guess-root t)
-  (setq lsp-enable-snippet nil)
-  (setq lsp-log-io nil)
-  (setq lsp-keep-workspace-alive nil)
-  (setq lsp-headerline-breadcrumb-enable nil)
-  (setq lsp-auto-guess-root nil)
-  (setq lsp-file-watch-threshold 500)
-  (defvar lsp-modeline-code-actions-segments '(count icon name))
-  (defun ph/orderless-dispatch-flex-first (_pattern index _total)
-    (and (eq index 0) 'orderless-flex))
-  (defun ph/autocomplete-cape ()
-    (list (cape-capf-buster #'lsp-completion-at-point)
-	  #'cape-file
-	  #'cape-dabbrev
-	  #'cape-keyword))
-  (defun ph/lsp-mode-setup-completion ()
-    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-	  '(orderless))
-    ;; Optionally configure the first word as flex filtered.
-    (setq-local orderless-style-dispatchers (list #'ph/orderless-dispatch-flex-first))
-    ;; Optionally configure the cape-capf-buster.
-    (setq-local completion-at-point-functions (ph/autocomplete-cape)))
-  :hook ((lsp-completion-mode . ph/lsp-mode-setup-completion)
-	 (rust-ts-mode . lsp-deferred)
-	 (fennel-mode . lsp-deferred)
-	 (lsp-mode . lsp-enable-which-key-integration))
-  :commands lsp)
-
-
-(use-package dap-mode
-  :custom
-  (add-hook 'rustic-mode-hook (lambda ()
-				(dap-register-debug-template "Rust LLDB Debug Configuration"
-							     (list :type "cppdbg"
-								   :request "launch"
-								   :name "Rust::Run"
-								   :MIMode "lldb"
-								   :gdbpath "rust-lldb"
-								   :program (concat
-									     (project-root (current-project))
-									     "target/debug/"
-									     (project-name (current-project)))
-								   :environment []
-								   :cwd (project-root (current-project)))))))
-
-
-;; (use-package lsp-ui
-;;   :commands lsp-ui-mode)
-
-(use-package lsp-ui
-  :ensure t
-  :commands
-  (lsp-ui-doc-show
-   lsp-ui-doc-glance)
-  :bind (:map lsp-mode-map
-	      ("C-c C-d" . 'lsp-ui-doc-glance))
-  :after (lsp-mode evil)
-  :config (setq lsp-ui-doc-enable t
-                evil-lookup-func #'lsp-ui-doc-glance
-                lsp-ui-doc-show-with-cursor nil
-                lsp-ui-doc-include-signature t
-		lsp-ui-doc-position 'top))
-
-(use-package consult-lsp)
 
 (use-package fennel-mode
   :after (envrc inheritenv)
