@@ -23,41 +23,10 @@
   #:export (%emacs-package
 	    +home-emacs-service-type))
 
-(define-public emacs-dap-mode/ph
-  (let ((revision "0")
-	(commit "fc78b2a1db5f30e65875653b4807b801c0ef23bc")
-	(sha "1hclax156il2xj32nxslqnzwk98wqnpm9xd35xlx8dvgzm7h4i33"))
-    (package
-      (inherit emacs-dap-mode)
-      (name "emacs-dap-mode-ph")
-      (version (git-version "0.8" revision commit))
-      (source
-       (origin
-	 (method git-fetch)
-	 (uri (git-reference
-		(url "https://github.com/emacs-lsp/dap-mode")
-		(commit commit)))
-	 (file-name (git-file-name name version))
-	 (sha256
-	  (base32 sha))))
-      (native-inputs (list emacs-ert-runner))
-      (inputs
-       (list emacs-bui
-	     emacs-lsp-docker
-	     emacs-lsp-mode
-	     emacs-posframe
-	     emacs-dash
-	     emacs-f
-	     emacs-ht
-	     emacs-s
-	     emacs-lsp-treemacs))
-      (arguments
-       (list #:include #~(cons* "\\.png$" %default-include)
-	     #:tests? #f)))))
-
 (define %emacs-packages
   (list emacs-evil/ph
 	emacs-fennel-mode/ph
+	emacs-xref
 	emacs-evil-collection/ph
 	emacs-agent-shell/ph
 	emacs-rustic/ph
@@ -66,9 +35,6 @@
 	emacs-treemacs-nerd-icons
 	emacs-difftastic
 	emacs-nerd-icons
-	emacs-lsp-mode
-	emacs-lsp-ui
-	emacs-dap-mode/ph
 	emacs-rust-mode
 	emacs-colorful-mode
 	emacs-prism
@@ -99,7 +65,7 @@
 	emacs-kind-icon
 	emacs-orderless
 	emacs-eglot-x
-	emacs-consult-lsp
+	emacs-eldoc-box
 	emacs-nix-mode
 	emacs-yaml-mode
 	emacs-json-mode
@@ -134,6 +100,7 @@
 	emacs-marginalia
 	emacs-vertico
 	emacs-consult
+	emacs-consult-eglot
 	emacs-kdl-mode
 	emacs-rainbow-delimiters
 	mu ;; mu4e and mu cli

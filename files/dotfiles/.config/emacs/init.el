@@ -17,6 +17,12 @@
 (if (not (file-exists-p ph/emacs-backup-directory))
     (make-directory ph/emacs-backup-directory))
 
+(defun ph/ensure-fonts ()
+  "Ensure fonts are configured correctly this need to be executed with `server-after-make-frame-hook`
+ when running as server or `after-init-hook` otherwise."
+  (interactive)
+  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 100))
+
 (use-package gcmh
   :init
   (gcmh-mode 1)
@@ -27,7 +33,8 @@
        (float-time (time-since time))))
 
   ;; Set garbage collection threshold to 1GB.
-  (setq gc-cons-threshold #x40000000)
+  ;; see https://github.com/ianyepan/yay-evil-emacs/blob/master/init.el#L18
+  (setq gc-cons-threshold most-positive-fixnum)
 
   ;; When idle for 15sec run the GC no matter what.
   (defvar k-gc-timer
@@ -36,14 +43,24 @@
 			   (let ((gc-time (k-time (garbage-collect))))
 			     ;; (message "Garbage Collector has run for %.06fsec" gc-time)
 			     )))))
+(use-package elec-pair
+  :hook (prog-mode . electric-pair-mode))
+
+(use-package paren
+  :ensure nil
+  :init
+  (setq show-paren-delay 0)
+  :config
+  (show-paren-mode +1)
+  :custom
+  (show-paren-style 'expression))
+
 (use-package emacs
   :hook
   ((before-save . delete-trailing-whitespace)
    ;; Automatic parenthesis pairing.
-   (after-init . electric-pair-mode)
 
    ;; Show matching parens
-   ;; (after-init . show-paren-mode)
 
    (after-init . transient-mark-mode)
 
@@ -55,10 +72,10 @@
    (after-init . global-hl-line-mode)
    (after-init . pixel-scroll-precision-mode)
 
+   ;; Configure fonts
+
    ;; Show line number for prog or text mode and leave them out for treemacs and
    ;; similar mode.
-   (prog-mode . display-line-numbers-mode)
-   (text-mode . display-line-numbers-mode)
 
    ;; enable pretty symbols for lisp/scheme
    (lisp-mode . prettify-symbols-mode)
@@ -66,6 +83,10 @@
    (fennel-mode . prettify-symbols-mode)
 
    (minibuffer-setup . cursor-intangible-mode))
+  :init
+  (if (daemonp)
+      (add-hook 'server-after-make-frame-hook #'ph/ensure-fonts)
+    (add-hook ':after-init-hook #'ph/ensure-fonts))
   :custom
   ;; Three options for paren-style: 'expression, 'parenthesis, and
   ;; 'mixed The first one highlights the complete region between
@@ -75,8 +96,6 @@
 
   ;; TAB cycle if there are only few candidates
   (completion-cycle-threshold 3)
-
-  (show-paren-style 'expression)
 
   ;; Enable indentation+completion using the TAB key.
   ;; `completion-at-point' is often bound to M-TAB.
@@ -159,10 +178,18 @@
 
   ;; Fonts
   ;; (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 120)
-  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 100)
+  ;; (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 100)
 
   ;; Less keys to type on confirmation.
   (fset 'yes-or-no-p 'y-or-n-p))
+
+(use-package display-line-numbers
+  :ensure nil
+  :hook ((prog-mode . display-line-numbers-mode)
+         (yaml-mode . display-line-numbers-mode)
+         (text-mode . display-line-numbers-mode))
+  :config
+  (setq-default display-line-numbers-width 3))
 
 (use-package uniquify
   :custom
@@ -206,8 +233,6 @@
 (use-package general
   :config
   (general-evil-setup)
-  (general-define-key
-   "s-k" 'eldoc-doc-buffer)
   (general-create-definer ph/leader-key
     :states '(normal insert visual emacs)
     :keymaps 'override
@@ -253,9 +278,7 @@
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
   (ph/leader-key
-    ;; "f" '(:ignore t :wk "flymake")
     "f" '(consult-flymake :wk "toggle flymake")
-    ;;"f" '(consult-flycheck :wk "toggle flycheck")
 
     ;; window
     "w" '(:ignore t :wk "window")
@@ -438,10 +461,11 @@
 			("*Occur*" :select t :popup t :align below :size 0.2)
 			("*scratch*" :select t :popup t :align below :size 0.2)
 			("*eat*" :select t :popup t :align below :size 0.2)
-			("*Geiser Guile REPL*", :select t :popup below :size 0.2)
-			("*Fennel Proto REPL.*?", :select t :popup below :size 0.2)
-			("*arei.*?", :regexp t :select t :popup below :size 0.2)
+			("*Geiser Guile REPL*" :select t :popup below :size 0.2)
+			("*Fennel Proto REPL.*?" :select t :popup below :size 0.2)
+			("*arei.*?" :regexp t :select t :popup below :size 0.2)
 			("*cargo-run*" :select t)
+			("*eldoc.*?" :regexp t :select t :popup t :align right :size 0.3)
 			(helpful-mode :select t :popup t :align right :size 0.35)
 			(help-mode :select t :popup t :align right :size 0.3)))
   (shackle-mode 1))
@@ -464,7 +488,8 @@
     "wh" '(evil-window-left :wk "go left")
     "wl" '(evil-window-right :wk "go right")
     "wj" '(evil-window-bottom :wk "go down")
-    "wk" '(evil-window-top :wk "go top"))
+    "wk" '(evil-window-top :wk "go top")
+    "`" '(popper-kill-latest-popup :wk "kill latest popper"))
   :init
   (setq popper-display-function #'display-buffer-in-child-frame)
   (setq popper-reference-buffers
@@ -509,7 +534,6 @@
 ;; Autocomplete popup
 (use-package corfu
   :config
-
   (setq corfu-auto t
 	corfu-auto-delay 0.1
 	corfu-auto-prefix 2
@@ -618,69 +642,87 @@
   (add-hook 'org-mode-hook #'org-modern-mode)
   (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
 
-
 ;; Ligatures
+;; JetBrain Mono
 (use-package ligature
   :config
-  (ligature-set-ligatures 'prog-mode
-			  '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-			    ;; =:= =!=
-			    ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-			    ;; ;; ;;;
-			    (";" (rx (+ ";")))
-			    ;; && &&&
-			    ("&" (rx (+ "&")))
-			    ;; !! !!! !. !: !!. != !== !~
-			    ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-			    ;; ?? ??? ?:  ?=  ?.
-			    ("?" (rx (or ":" "=" "\." (+ "?"))))
-			    ;; %% %%%
-			    ("%" (rx (+ "%")))
-			    ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-			    ;; |->>-||-<<-| |- |== ||=||
-			    ;; |==>>==<<==<=>==//==/=!==:===>
-			    ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-					    "-" "=" ))))
-			    ;; \\ \\\ \/
-			    ("\\" (rx (or "/" (+ "\\"))))
-			    ;; ++ +++ ++++ +>
-			    ("+" (rx (or ">" (+ "+"))))
-			    ;; :: ::: :::: :> :< := :// ::=
-			    (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-			    ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-			    ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-					    "="))))
-			    ;; .. ... .... .= .- .? ..= ..<
-			    ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-			    ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-			    ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-			    ;; *> */ *)  ** *** ****
-			    ("*" (rx (or ">" "/" ")" (+ "*"))))
-			    ;; ;; www wwww
-			    ;; ("w" (rx (+ "w")))
-			    ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-			    ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-			    ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-			    ;; << <<< <<<<
-			    ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-					    "-"  "/" "|" "="))))
-			    ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-			    ;; >> >>> >>>>
-			    (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-			    ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-			    ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-					 (+ "#"))))
-			    ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-			    ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-			    ;; __ ___ ____ _|_ __|____|_
-			    ("_" (rx (+ (or "_" "|"))))
-			    ;; Fira code: 0xFF 0x12
-			    ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-			    ;; Fira code:
-			    "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-			    ;; The few not covered by the regexps.
-			    "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+  (ligature-set-ligatures 'prog-mode '("--" "---" "==" "===" "!=" "!==" "=!="
+				       "=:=" "=/=" "<=" ">=" "&&" "&&&" "&=" "++" "+++" "***" ";;" "!!"
+				       "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
+				       "<<" ">>" "||" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
+				       "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
+				       "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
+				       "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
+				       "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
+				       "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
+				       "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "|>" "<|" "||>" "<||"
+				       "|||>" "<|||" "<|>" "..." ".." ".=" "..<" ".?" "::" ":::" ":=" "::="
+				       ":?" ":?>" "//" "///" "/*" "*/" "/=" "//=" "/==" "@_" "__" "???"
+				       "<:<" ";;;"))
   (global-ligature-mode t))
+
+;; Fira Code
+;; (use-package ligature
+;;   :config
+;;   (ligature-set-ligatures 'prog-mode
+;; 			  '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
+;; 			    ;; =:= =!=
+;; 			    ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
+;; 			    ;; ;; ;;;
+;; 			    (";" (rx (+ ";")))
+;; 			    ;; && &&&
+;; 			    ("&" (rx (+ "&")))
+;; 			    ;; !! !!! !. !: !!. != !== !~
+;; 			    ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
+;; 			    ;; ?? ??? ?:  ?=  ?.
+;; 			    ("?" (rx (or ":" "=" "\." (+ "?"))))
+;; 			    ;; %% %%%
+;; 			    ("%" (rx (+ "%")))
+;; 			    ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
+;; 			    ;; |->>-||-<<-| |- |== ||=||
+;; 			    ;; |==>>==<<==<=>==//==/=!==:===>
+;; 			    ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
+;; 					    "-" "=" ))))
+;; 			    ;; \\ \\\ \/
+;; 			    ("\\" (rx (or "/" (+ "\\"))))
+;; 			    ;; ++ +++ ++++ +>
+;; 			    ("+" (rx (or ">" (+ "+"))))
+;; 			    ;; :: ::: :::: :> :< := :// ::=
+;; 			    (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
+;; 			    ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
+;; 			    ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
+;; 					    "="))))
+;; 			    ;; .. ... .... .= .- .? ..= ..<
+;; 			    ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
+;; 			    ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
+;; 			    ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
+;; 			    ;; *> */ *)  ** *** ****
+;; 			    ("*" (rx (or ">" "/" ")" (+ "*"))))
+;; 			    ;; ;; www wwww
+;; 			    ;; ("w" (rx (+ "w")))
+;; 			    ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
+;; 			    ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
+;; 			    ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
+;; 			    ;; << <<< <<<<
+;; 			    ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
+;; 					    "-"  "/" "|" "="))))
+;; 			    ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
+;; 			    ;; >> >>> >>>>
+;; 			    (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
+;; 			    ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
+;; 			    ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
+;; 					 (+ "#"))))
+;; 			    ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
+;; 			    ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
+;; 			    ;; __ ___ ____ _|_ __|____|_
+;; 			    ("_" (rx (+ (or "_" "|"))))
+;; 			    ;; Fira code: 0xFF 0x12
+;; 			    ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
+;; 			    ;; Fira code:
+;; 			    "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
+;; 			    ;; The few not covered by the regexps.
+;; 			    "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
+;;   (global-ligature-mode t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; email
@@ -1009,7 +1051,7 @@
   ;; :custom (geiser-mode-auto-p nil)
   )
 
-(use-package 'geiser-hoot)
+(use-package geiser-hoot)
 
 (defun ph/start-ares-nrepl ()
   (interactive)
@@ -1085,23 +1127,8 @@
   :config
   (setq rustic-format-on-save nil)
   :custom
-  (rustic-cargo-use-last-stored-arguments t))
-
-;; (use-package lispy
-;; NOTE(ph): Do not make it automatic for now.
-;; :hook
-;; ((emacs-lisp-mode . lispy-mode)
-;;  (lisp-mode . lispy-mode)
-;;  (scheme-mode .lispy-mode))
-;; )
-
-;; (use-package lispyville
-;;   :after lispy
-;;   :hook (lispy-mode . lispyville-mode))
-
-;; (use-package rainbow-delimiters
-;;   :hook
-;;   (prog-mode . rainbow-delimiters-mode))
+  (rustic-cargo-use-last-stored-arguments t)
+  (add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1))))
 
 ;; (use-package paredit
 ;;   :commands paredit-mode
@@ -1370,25 +1397,71 @@
   :config
   (difftastic-bindings-mode))
 
+(use-package eldoc
+  :ensure nil
+  :config
+  (eldoc-mode -1))
 
+(use-package eglot
+  :after (cape corfu)
+  :hook
+  ((rustic-mode . eglot-ensure)
+   (eglot-managed-mode . (lambda ()
+			   (setq eldoc-documentation-functions
+				 (cons #'flymake-eldoc-function
+				       (remove #'flymake-eldoc-function eldoc-documentation-functions)))
+			   (setq eldoc-documentation-strategy #'eldoc-documentation-compose))))
+  :bind (("C-c e i" . eglot-find-implementation)
+	 ("C-c e e" . eglot)
+	 ("C-c e k" . eglot-shutdown-all)
+	 ("C-c e r" . eglot-rename)
+	 ("C-c e x" . eglot-reconnect)
+	 ("C-c e a" . eglot-code-actions)
+	 ("C-c e m" . eglot-menu)
+	 ("C-c e f" . eglot-format-buffer)
+	 ("C-c e h" . eglot-inlay-hints-mode))
+  :init
+  (setq eglot-autoshutdown t
+	eglot-confirm-server-edits nil
+	eglot-report-progress nil
+	eglot-extend-to-xref t
+	eldoc-echo-area-use-multiline-p nil
+	eglot-autoreconnect t)
+  (defun ph/eglot-capf ()
+    (setq-local completion-at-point-functions
+		(list (cape-capf-super
+		       #'eglot-completion-at-point
+		       #'cape-file
+		       #'tempel-expand))))
+  (add-hook 'eglot-managed-mode-hook #'ph/eglot-capf)
+  :config
+  (evil-define-key 'normal 'eglot-mode-map (kbd "K") #'eldoc)
+  (setq-default eglot-workspace-configuration
+		'(:rust-analyzer (:check (:command "clippy")
+					 :cargo (:sysroot "discover"
+							  :features "all"
+							  :buildScripts (:enable t))
+					 :diagnostics (:disabled ["macro-error"
+								  "unresolved-proc-macro"
+								  "unresolved-macro-call"])
+					 :procMacro (:enable t)))))
 
-;; monokai-pro-machine
-;; return {
-;;   dark2 = "#161b1e",
-;;   dark1 = "#1d2528",
-;;   background = "#273136",
-;;   text = "#f2fffc",
-;;   accent1 = "#ff6d7e",
-;;   accent2 = "#ffb270",
-;;   accent3 = "#ffed72",
-;;   accent4 = "#a2e57b",
-;;   accent5 = "#7cd5f1",
-;;   accent6 = "#baa0f8",
-;;   dimmed1 = "#b8c4c3",
-;;   dimmed2 = "#8b9798",
-;;   dimmed3 = "#6b7678",
-;;   dimmed4 = "#545f62",
-;;   dimmed5 = "#3a4449",
-;; }
+(use-package eglot-x
+  :after (eglot)
+  :init
+  (setq eglot-x-enable-local-docs-support t)
+  :custom
+  (eglot-x-setup))
+
+(use-package consult-eglot
+  :after (eglot consult))
 
 ;; VIM mode, file with shorthen path, project, branch, changes in directory, LSP, position, major mode, smaller.
+;; throw away
+
+(use-package xref
+  :config
+  (setq xref-search-program 'ripgrep)
+  (setq xref-after-jump-hook '(xref-pulse-momentarily))
+  (setq xref-after-return-hook '(xref-pulse-momentarily))
+  (setq xref-prompt-for-identifier nil))
