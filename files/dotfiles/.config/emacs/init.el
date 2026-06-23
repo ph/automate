@@ -59,9 +59,7 @@
   :hook
   ((before-save . delete-trailing-whitespace)
    ;; Automatic parenthesis pairing.
-
    ;; Show matching parens
-
    (after-init . transient-mark-mode)
 
    ;; Make the UI less clunky.
@@ -208,8 +206,8 @@
   :custom
   (add-hook 'ben-after-apply-hook (lambda ()
 				    (when (member major-mode
-						  rustic-mode
-						  nix-mode)
+						  '(rustic-mode
+						    nix-mode))
 				      (eglot-ensure)))))
 
 (use-package inheritenv
@@ -618,7 +616,14 @@
 	   "**  %?\n%i\n%a" :preprend t :jump-to-captured t)))
 
   (setq org-todo-keywords
-	'((sequence "TODO(t)" "|" "NEXT(n)"  "|" "PROGRESS(p)" "|" "WAIT(w)" "|" "HOLD(h)" "|" "DELEGATED(l)" "|" "DONE(d)" "|" "KILL(k)")))
+	'((sequence "TODO(t)" "|"
+		    "NEXT(n)" "|"
+		    "PROGRESS(p)" "|"
+		    "WAIT(w)" "|"
+		    "HOLD(h)" "|"
+		    "DELEGATED(l)" "|"
+		    "DONE(d)" "|"
+		    "KILL(k)")))
 
   (setq org-refile-targets
 	`((,(expand-file-name "todo.org" org-directory) :maxlevel . 1))
@@ -636,7 +641,7 @@
 	     (interactive)
 	     (find-file-other-window (expand-file-name "todo.org" org-directory))) :wk "open todo" )
     "xc" '(org-capture :wk "capture")
-    "xi" '((lambda () (interactive) (org-capture nil "i")) :wk "capture todo")
+    "xt" '((lambda () (interactive) (org-capture nil "i")) :wk "capture todo")
     "xn" '(org-roam-capture :wk "new note")
     "xf" '(org-roam-find-file :wk "find note")))
 
@@ -1037,7 +1042,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
-
 (use-package geiser
   ;; :when (locate-library "arei.el")
   ;; :custom (geiser-mode-auto-p nil)
@@ -1426,6 +1430,9 @@
 		       #'cape-file
 		       #'tempel-expand))))
   (add-hook 'eglot-managed-mode-hook #'ph/eglot-capf)
+  :custom
+  (doList (mode '((nix-mode . ("nixd"))))
+	  (add-lo-list 'eglot-server-programs mode))
   :config
   (evil-define-key 'normal 'eglot-mode-map (kbd "K") #'eldoc)
   (setq-default eglot-workspace-configuration
@@ -1448,12 +1455,12 @@
 (use-package consult-eglot
   :after (eglot consult))
 
-;; VIM mode, file with shorthen path, project, branch, changes in directory, LSP, position, major mode, smaller.
-;; throw away
-
 (use-package xref
   :config
   (setq xref-search-program 'ripgrep)
   (setq xref-after-jump-hook '(xref-pulse-momentarily))
   (setq xref-after-return-hook '(xref-pulse-momentarily))
   (setq xref-prompt-for-identifier nil))
+
+;; VIM mode, file with shorthen path, project, branch, changes in directory, LSP, position, major mode, smaller.
+;; throw away

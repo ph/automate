@@ -41,12 +41,14 @@
 (define %emacs-packages
   (list emacs-evil/ph
 	emacs-ben/ph
+	;; Revisit later
+	;; emacs-flyover
 	emacs-fennel-mode/ph
 	emacs-xref
 	emacs-doom-modeline
 	emacs-lambda-line
 	emacs-evil-collection/ph
-	emacs-agent-shell/ph
+	emacs-agent-shell
 	emacs-rustic/ph
 	emacs-treemacs
 	emacs-treemacs-extra
