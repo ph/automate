@@ -200,8 +200,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Environment
 (use-package ben
-  :hook
-  (after-init . ben-global-mode)
+  :bind
+  (:map ben-mode-map
+	("C-c e" . ben-command-map))
+  :init
+  (add-hook 'after-init-hook #'ben-global-mode 99)
   :custom
   (add-hook 'ben-after-apply-hook (lambda ()
 				    (when (member major-mode
