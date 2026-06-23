@@ -43,6 +43,8 @@
 	emacs-ben/ph
 	emacs-fennel-mode/ph
 	emacs-xref
+	emacs-doom-modeline
+	emacs-lambda-line
 	emacs-evil-collection/ph
 	emacs-agent-shell/ph
 	emacs-rustic/ph
@@ -112,7 +114,6 @@
 	emacs-tempel
 	emacs-popper
 	emacs-shackle
-	emacs-lambda-line
 	emacs-marginalia
 	emacs-vertico
 	emacs-consult
