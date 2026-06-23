@@ -128,6 +128,9 @@
   ;; could be `cargo run` or `cargo test`.
   (compilation-always-kill t)
 
+  ;; Dont' bug me to save.
+  (compilation-ask-about-save nil)
+
   (make-backup-files nil)
 
   ;; Only edit left-to-right files so we can make reduce runtime cost.
@@ -136,8 +139,6 @@
   (bidi-paragraph-direction 'left-to-right)
   (bidi-inhibit-bpa t)
 
-  ;; Dont' bug me to save.
-  (compilation-ask-about-save nil)
 
   (revert-without-query '(".*"))
   (create-lockfiles nil)
@@ -198,15 +199,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Environment
-(use-package envrc
-  :hook (after-init . envrc-global-mode))
+(use-package ben
+  :hook
+  (after-init . ben-global-mode)
+  :custom
+  (add-hook 'ben-after-apply-hook (lambda ()
+				    (when (member major-mode
+						  rustic-mode
+						  nix-mode)
+				      (eglot-ensure)))))
 
 (use-package inheritenv
-  :after envrc)
+  :after ben)
 
 ;; Exec the command and keep some of the shell environment values.
 (use-package exec-path-from-shell
-  :after (envrc inheritenv)
+  :after (ben inheritenv)
   :custom
   (exec-path-from-shell-variables '("SSH_AUTH_SOCK"
 				    "PATH"
@@ -1267,11 +1275,12 @@
   (repeat-mode +1))
 
 (use-package fennel-mode
-  :after (envrc inheritenv)
+  :after (inheritenv)
   :mode "\\.fnl\\'"
   :hook (fennel-mode-hook . fennel-proto-repl-minor-mode)
   :config
-  (advice-add 'fennel-repl :around #'envrc-propagate-environment))
+  ;; (advice-add 'fennel-repl :around #'envrc-propagate-environment)
+  )
 
 (use-package colorful-mode
   :custom
@@ -1405,8 +1414,7 @@
 (use-package eglot
   :after (cape corfu)
   :hook
-  ((rustic-mode . eglot-ensure)
-   (eglot-managed-mode . (lambda ()
+  ((eglot-managed-mode . (lambda ()
 			   (setq eldoc-documentation-functions
 				 (cons #'flymake-eldoc-function
 				       (remove #'flymake-eldoc-function eldoc-documentation-functions)))
