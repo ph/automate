@@ -23,8 +23,24 @@
   #:export (%emacs-package
 	    +home-emacs-service-type))
 
+(define-public emacs-ben/ph
+  (package/inherit emacs-ben
+		   (name "emacs-ben-ph")
+		   (version "0.12.13-git")
+		   (source
+		    (origin
+		     (method git-fetch)
+		     (uri (git-reference
+			   (url "https://codeberg.org/pastor/ben.el")
+			   (commit "259f76f83efb03220e60bd799fb17fc49bddcda0")))
+		     (file-name (git-file-name name version))
+		     (sha256
+		      (base32
+		       "12qliyhk9ni10ks2hrwv74dhwakqb0jkvhip44qcfcrnhjvyacka"))))))
+
 (define %emacs-packages
   (list emacs-evil/ph
+	emacs-ben/ph
 	emacs-fennel-mode/ph
 	emacs-xref
 	emacs-evil-collection/ph
