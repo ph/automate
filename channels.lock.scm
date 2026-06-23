@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "6ea1ddbef3c607157366d9c82ced21ae3e18f03a")
+       (commit "e1c21547334ea99546b91520c57c7bcb5807ffe9")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -22,7 +22,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "05ac833e359ad1c40341052caec4ea391e353eed")
+       (commit "b8f6b048c97ef3c79c115f1933aac8b4c4a02bde")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
@@ -62,7 +62,7 @@
        (name 'supervoid)
        (url "https://codeberg.org/pierhugues/supervoid.git")
        (branch "trunk")
-       (commit "10edb45e6c33564abb06dbb8e40b687e5fca7a42")
+       (commit "4bcff83aaa7785f88fa5429a583fe7c1d9529c02")
        (introduction
         (make-channel-introduction
          "245db3d4ef2a29559b7dccef67afba453c9f6563"
