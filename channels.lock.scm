@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "e1c21547334ea99546b91520c57c7bcb5807ffe9")
+       (commit "91f22ec6878b007f2ccf513765ef248668e608e6")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -62,7 +62,7 @@
        (name 'supervoid)
        (url "https://codeberg.org/pierhugues/supervoid.git")
        (branch "trunk")
-       (commit "4bcff83aaa7785f88fa5429a583fe7c1d9529c02")
+       (commit "dcf36a8ef69342d2c50a03d0527d51cb9d9b1b8a")
        (introduction
         (make-channel-introduction
          "245db3d4ef2a29559b7dccef67afba453c9f6563"

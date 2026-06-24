@@ -396,6 +396,7 @@
 	magit-no-confirm '(stage-all-changes unstage-all-changes))
   ;; propagate projects into magit windows.
   (add-hook 'after-save-hook 'magit-after-save-refresh-status t)
+  (add-hook 'with-editor-mode-hook #'evil-insert-state)
   :general
   (ph/leader-key
     "g"  '(:ignore t :wk "magit")
