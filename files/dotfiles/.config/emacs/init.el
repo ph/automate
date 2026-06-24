@@ -1494,9 +1494,10 @@
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-hook #'kill-buffer)
   :init
+  ;; TODO: make it a package
   (defun lldb-rust-prettifier-for-lldb ()
-    (concat (getenv "HOME")
-	    "/src/_others/rust_prettifier_for_lldb.py"))
+    (concat (expand-file-name ".config/emacs" (getenv "HOME"))
+	    "/rust_prettifier_for_lldb.py"))
 
   (defun lldb-command-script-import (script)
     (concat "command script import " script))
