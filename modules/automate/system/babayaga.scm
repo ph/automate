@@ -166,7 +166,8 @@
 			    (oci-extension
 			     (containers
 			      (list (oci-container-configuration
-				     (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
+				     ;; (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
+				     (image "ghcr.io/lemonade-sdk/lemonade-server:v10.7.0")
 				     (provision "lemonade-server")
 				     (log-file "/var/log/lemonade-server.log")
 				     (ports '(("13305" . "13305")

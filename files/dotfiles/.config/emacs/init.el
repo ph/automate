@@ -1462,5 +1462,60 @@
   (setq xref-after-return-hook '(xref-pulse-momentarily))
   (setq xref-prompt-for-identifier nil))
 
+(use-package dape
+  ;; :preface
+  ;; By default dape shares the same keybinding prefix as `gud'
+  ;; If you do not want to use any prefix, set it to nil.
+  ;; (setq dape-key-prefix "\C-x\C-a")
+
+  ;; :hook
+  ;; Save breakpoints on quit
+  ;; (kill-emacs . dape-breakpoint-save)
+  ;; Load breakpoints on startup
+  ;; (after-init . dape-breakpoint-load)
+
+  ;; :custom
+  ;; Turn on global bindings for setting breakpoints with mouse
+  ;; (dape-breakpoint-global-mode +1)
+
+  ;; Info buffers to the right
+  ;; (dape-buffer-window-arrangement 'right)
+  ;; Info buffers like gud (gdb-mi)
+  ;; (dape-buffer-window-arrangement 'gud)
+  ;; (dape-info-hide-mode-line nil)
+
+  :config
+  ;; Pulse source line (performance hit)
+  (add-hook 'dape-display-source-hook #'pulse-momentary-highlight-one-line)
+
+  ;; Save buffers on startup, useful for interpreted languages
+  ;; (add-hook 'dape-start-hook (lambda () (save-some-buffers t t)))
+
+  ;; Kill compile buffer on build success
+  ;; (add-hook 'dape-compile-hook #'kill-buffer)
+  :init
+  (defun lldb-rust-prettifier-for-lldb ()
+    (concat (getenv "HOME")
+	    "/src/_others/rust_prettifier_for_lldb.py"))
+
+  (defun lldb-command-script-import (script)
+    (concat "command script import " script))
+
+  (defun lldb-rust-lookup-program ()
+    (let ((name (project-name (project-current t))))
+      (concat (project-root (project-current t))
+	      "target/debug/"
+	      name)))
+
+  (add-to-list 'dape-configs
+	       `(lldb-dap-rust
+		 modes (rustic-mode)
+		 command "lldb-dap"
+		 command-cwd dape-command-cwd
+		 :type "lldb-dap"
+		 :initCommands [(lldb-command-script-import (lldb-rust-lookup-py))]
+		 :cwd "."
+		 :program (lldb-rust-lookup-program))))
+
 ;; VIM mode, file with shorthen path, project, branch, changes in directory, LSP, position, major mode, smaller.
-;; throw away
+;; # Call LLDB with the commands added to the argument list

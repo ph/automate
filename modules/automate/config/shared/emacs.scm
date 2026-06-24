@@ -43,6 +43,7 @@
 	emacs-ben/ph
 	;; Revisit later
 	;; emacs-flyover
+	emacs-dape
 	emacs-fennel-mode/ph
 	emacs-xref
 	emacs-doom-modeline
