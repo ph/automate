@@ -171,7 +171,7 @@ set -g fish_term24bit 1 ")
 
 (define %browsers
   (list ;; firefox
-   ungoogled-chromium
+   ;; ungoogled-chromium
    librewolf))
 
 (define %tools

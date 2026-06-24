@@ -40,6 +40,7 @@
 
 (define %emacs-packages
   (list emacs-evil/ph
+	emacs-evil-collection/ph
 	emacs-ben/ph
 	;; Revisit later
 	;; emacs-flyover
@@ -48,7 +49,6 @@
 	emacs-xref
 	emacs-doom-modeline
 	emacs-lambda-line
-	emacs-evil-collection/ph
 	emacs-agent-shell
 	emacs-rustic/ph
 	emacs-treemacs

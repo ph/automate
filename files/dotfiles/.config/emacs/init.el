@@ -1,8 +1,8 @@
+;;; -*- lexical-binding: t; -*-
+;;;
 ;;; SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
-
-;;; -*- lexical-binding: t -*-
 ;; records use-package time to reduce startup time.
 (setq use-package-compute-statistics t)
 
@@ -347,7 +347,7 @@
 
 (use-package catppuccin-theme
   :custom
-  (catppuccin-flavor 'latte) ;; or 'latte, 'macchiato, or 'mocha
+  (catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
   :config
   (load-theme 'catppuccin :no-confirm))
 
@@ -396,7 +396,6 @@
 	magit-no-confirm '(stage-all-changes unstage-all-changes))
   ;; propagate projects into magit windows.
   (add-hook 'after-save-hook 'magit-after-save-refresh-status t)
-  (add-hook 'with-editor-mode-hook #'evil-insert-state)
   :general
   (ph/leader-key
     "g"  '(:ignore t :wk "magit")
@@ -663,8 +662,9 @@
 ;; JetBrain Mono
 (use-package ligature
   :config
+  ;; Remove ";;" and ";;;" from the list, it weird on long comment.
   (ligature-set-ligatures 'prog-mode '("--" "---" "==" "===" "!=" "!==" "=!="
-				       "=:=" "=/=" "<=" ">=" "&&" "&&&" "&=" "++" "+++" "***" ";;" "!!"
+				       "=:=" "=/=" "<=" ">=" "&&" "&&&" "&=" "++" "+++" "***"  "!!"
 				       "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
 				       "<<" ">>" "||" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
 				       "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
@@ -675,71 +675,8 @@
 				       "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "|>" "<|" "||>" "<||"
 				       "|||>" "<|||" "<|>" "..." ".." ".=" "..<" ".?" "::" ":::" ":=" "::="
 				       ":?" ":?>" "//" "///" "/*" "*/" "/=" "//=" "/==" "@_" "__" "???"
-				       "<:<" ";;;"))
+				       "<:<"))
   (global-ligature-mode t))
-
-;; Fira Code
-;; (use-package ligature
-;;   :config
-;;   (ligature-set-ligatures 'prog-mode
-;; 			  '(;; == === ==== => =| =>>=>=|=>==>> ==< =/=//=// =~
-;; 			    ;; =:= =!=
-;; 			    ("=" (rx (+ (or ">" "<" "|" "/" "~" ":" "!" "="))))
-;; 			    ;; ;; ;;;
-;; 			    (";" (rx (+ ";")))
-;; 			    ;; && &&&
-;; 			    ("&" (rx (+ "&")))
-;; 			    ;; !! !!! !. !: !!. != !== !~
-;; 			    ("!" (rx (+ (or "=" "!" "\." ":" "~"))))
-;; 			    ;; ?? ??? ?:  ?=  ?.
-;; 			    ("?" (rx (or ":" "=" "\." (+ "?"))))
-;; 			    ;; %% %%%
-;; 			    ("%" (rx (+ "%")))
-;; 			    ;; |> ||> |||> ||||> |] |} || ||| |-> ||-||
-;; 			    ;; |->>-||-<<-| |- |== ||=||
-;; 			    ;; |==>>==<<==<=>==//==/=!==:===>
-;; 			    ("|" (rx (+ (or ">" "<" "|" "/" ":" "!" "}" "\]"
-;; 					    "-" "=" ))))
-;; 			    ;; \\ \\\ \/
-;; 			    ("\\" (rx (or "/" (+ "\\"))))
-;; 			    ;; ++ +++ ++++ +>
-;; 			    ("+" (rx (or ">" (+ "+"))))
-;; 			    ;; :: ::: :::: :> :< := :// ::=
-;; 			    (":" (rx (or ">" "<" "=" "//" ":=" (+ ":"))))
-;; 			    ;; // /// //// /\ /* /> /===:===!=//===>>==>==/
-;; 			    ("/" (rx (+ (or ">"  "<" "|" "/" "\\" "\*" ":" "!"
-;; 					    "="))))
-;; 			    ;; .. ... .... .= .- .? ..= ..<
-;; 			    ("\." (rx (or "=" "-" "\?" "\.=" "\.<" (+ "\."))))
-;; 			    ;; -- --- ---- -~ -> ->> -| -|->-->>->--<<-|
-;; 			    ("-" (rx (+ (or ">" "<" "|" "~" "-"))))
-;; 			    ;; *> */ *)  ** *** ****
-;; 			    ("*" (rx (or ">" "/" ")" (+ "*"))))
-;; 			    ;; ;; www wwww
-;; 			    ;; ("w" (rx (+ "w")))
-;; 			    ;; <> <!-- <|> <: <~ <~> <~~ <+ <* <$ </  <+> <*>
-;; 			    ;; <$> </> <|  <||  <||| <|||| <- <-| <-<<-|-> <->>
-;; 			    ;; <<-> <= <=> <<==<<==>=|=>==/==//=!==:=>
-;; 			    ;; << <<< <<<<
-;; 			    ("<" (rx (+ (or "\+" "\*" "\$" "<" ">" ":" "~"  "!"
-;; 					    "-"  "/" "|" "="))))
-;; 			    ;; >: >- >>- >--|-> >>-|-> >= >== >>== >=|=:=>>
-;; 			    ;; >> >>> >>>>
-;; 			    (">" (rx (+ (or ">" "<" "|" "/" ":" "=" "-"))))
-;; 			    ;; #: #= #! #( #? #[ #{ #_ #_( ## ### #####
-;; 			    ("#" (rx (or ":" "=" "!" "(" "\?" "\[" "{" "_(" "_"
-;; 					 (+ "#"))))
-;; 			    ;; ~~ ~~~ ~=  ~-  ~@ ~> ~~>
-;; 			    ("~" (rx (or ">" "=" "-" "@" "~>" (+ "~"))))
-;; 			    ;; __ ___ ____ _|_ __|____|_
-;; 			    ("_" (rx (+ (or "_" "|"))))
-;; 			    ;; Fira code: 0xFF 0x12
-;; 			    ("0" (rx (and "x" (+ (in "A-F" "a-f" "0-9")))))
-;; 			    ;; Fira code:
-;; 			    "Fl"  "Tl"  "fi"  "fj"  "fl"  "ft"
-;; 			    ;; The few not covered by the regexps.
-;; 			    "{|"  "[|"  "]#"  "(*"  "}#"  "$>"  "^="))
-;;   (global-ligature-mode t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; email
@@ -851,10 +788,10 @@
     "Return a new path without the part defined in {ph/mu4e-maildir-path-to-remove}."
     (string-replace ph/mu4e-maildir-root-path-to-remove "" target))
 
-  (defun ph/prepend-icon-to-string-when-matched (match icon)
+  (defun ph/prepend-icon-to-string-when-matched (search-candidate icon)
     "Return a lambda that will prepend an icon to a string in argument."
     (lambda (target)
-      (if (string= target match)
+      (if (string= target search-candidate)
 	  (concat icon target)
 	target)))
 
@@ -1495,7 +1432,6 @@
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-hook #'kill-buffer)
   :init
-  ;; TODO: make it a package
   (defun lldb-rust-prettifier-for-lldb ()
     (concat (expand-file-name ".config/emacs" (getenv "HOME"))
 	    "/rust_prettifier_for_lldb.py"))
@@ -1520,4 +1456,6 @@
 		 :program (lldb-rust-lookup-program))))
 
 ;; VIM mode, file with shorthen path, project, branch, changes in directory, LSP, position, major mode, smaller.
-;; # Call LLDB with the commands added to the argument list
+;; (use-package tab-line
+;;   :config
+;;   )
