@@ -46,7 +46,6 @@
 					     "loadpin"
 					     "safesetid"
 					     "integrity"
-					     "apparmor"
 					     "selinux"
 					     "smack"
 					     "tomoyo") ","))

@@ -285,7 +285,7 @@ set -g fish_term24bit 1 ")
    blender
    inkscape
    ffmpeg
-   kicad
+   ;; kicad
    vlc))
 
 (define* (automate-home-environment #:key

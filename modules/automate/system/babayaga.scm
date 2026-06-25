@@ -41,6 +41,17 @@
 (define %babayaga-os
   (operating-system
    (kernel linux-7.0)
+   (kernel-arguments (cons*
+		      (format #f "lsm=~s"
+			      (string-join '("landlock"
+					     "yama"
+					     "loadpin"
+					     "safesetid"
+					     "integrity"
+					     "selinux"
+					     "smack"
+					     "tomoyo") ","))
+		      %default-kernel-arguments))
    (initrd microcode-initrd)
    (firmware (list linux-firmware sof-firmware))
    (locale "en_CA.utf8")
@@ -151,6 +162,7 @@
 	   +profile/desktop
 	   +profile/ph
 	   +service/containers
+	   (+service/nix)
 	   (+service/openssh)
 	   +system/substitutes
 	   +networking/increase-udp-buffer-size

@@ -1,8 +1,7 @@
+;;; -*- lexical-binding: t -*-
 ;;; SPDX-FileCopyrightText: 2026 Pier-Hugues Pellerin <ph@heykimo.com>
 ;;;
 ;;; SPDX-License-Identifier: GPL-3.0-or-later
-
-;;; -*- lexical-binding: t -*-
 
 (setq package-enable-at-startup nil)
 (setenv "LSP_USE_PLISTS" "true")
@@ -20,4 +19,3 @@
 (setq inhibit-splash-screen t ;; no thanks
       use-file-dialog nil ;; don't use system file dialog
       )
-

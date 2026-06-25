@@ -38,15 +38,35 @@
 		      (base32
 		       "12qliyhk9ni10ks2hrwv74dhwakqb0jkvhip44qcfcrnhjvyacka"))))))
 
+;; remove dependencies on jsonrpc
+(define-public emacs-dape/ph
+  (package/inherit emacs-dape
+		   (name "emacs-dape-ph")
+		   (propagated-inputs '())))
+
+;; remove dependencies on jsonrpc
+(define-public emacs-eglot-x/ph
+  (package/inherit emacs-eglot-x
+		   (name "emacs-eglot-x-ph")
+		   (inputs '())))
+
+;; remove dependencies on jsonrpc
+(define-public emacs-consult-eglot/ph
+  (package/inherit emacs-consult-eglot
+		   (name "emacs-consult-eglot-ph")
+		   (propagated-inputs (list emacs-consult emacs-embark))))
+
 (define %emacs-packages
   (list emacs-evil/ph
 	emacs-evil-collection/ph
 	emacs-ben/ph
+	emacs-dape/ph
+	emacs-fennel-mode/ph
+	emacs-eglot-x/ph
+	emacs-consult-eglot/ph
 	emacs-elfeed
 	;; Revisit later
 	;; emacs-flyover
-	emacs-dape
-	emacs-fennel-mode/ph
 	emacs-xref
 	emacs-doom-modeline
 	emacs-lambda-line
@@ -86,7 +106,6 @@
 	emacs-cape
 	emacs-kind-icon
 	emacs-orderless
-	emacs-eglot-x
 	emacs-eldoc-box
 	emacs-nix-mode
 	emacs-yaml-mode
@@ -121,7 +140,6 @@
 	emacs-marginalia
 	emacs-vertico
 	emacs-consult
-	emacs-consult-eglot
 	emacs-kdl-mode
 	emacs-rainbow-delimiters
 	mu ;; mu4e and mu cli
@@ -145,7 +163,7 @@
 	tree-sitter-typescript))
 
 (define* (+home-emacs-service-type #:key
-				   (emacs-bin emacs-pgtk)
+				   (emacs-bin emacs-next-pgtk)
 				   (emacs-packages %emacs-packages))
 
   (service home-emacs-service-type

@@ -1482,6 +1482,7 @@
 	  ("https://mmapped.blog/feed.xml" velocity:article culture)
 	  ("https://jyn.dev/atom.xml" velocity:news culture)
 	  ("https://blog.buenzli.dev/atom.xml" velocity:article culture)
+	  "https://blog.dave.tf/index.xml"
 	  "https://martinsos.com/rss.xml"
 	  "https://www.jamescherti.com/feed/"
 	  "https://sel4.systems/feed.xml"
@@ -1573,7 +1574,8 @@
        date
        (or tags ""))
       ))
-  (setq elfeed-search-print-entry-function #'elfeed-search-print-entry--default))
+  ;; (setq elfeed-search-print-entry-function #'elfeed-search-print-entry--default)
+  )
 
 ;; supervoid.org
 ;; The rise and decline of AI, encouraging power usage.
