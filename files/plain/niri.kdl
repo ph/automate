@@ -41,7 +41,14 @@ overview {
 }
 
 layout {
+        always-center-single-column
         gaps 4
+
+        preset-column-widths {
+                proportion 0.33333
+                proportion 0.5
+                proportion 0.66667
+        }
 
         background-color "transparent"
         focus-ring {
@@ -50,9 +57,16 @@ layout {
         border {
                 off
         }
+
+}
+
+animations {
+        slowdown 0.1
 }
 
 input {
+        workspace-auto-back-and-forth
+
         keyboard {
                 repeat-delay 180
                 repeat-rate 20
@@ -78,6 +92,7 @@ output "eDP-1" {
         scale 2.0
 }
 
+// Babayaga
 output "DP-1" {
         scale 1.4
 }
@@ -89,6 +104,7 @@ output "DP-3" {
 }
 
 binds {
+        // Media keys, mostly for the laptop.
         XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
         XF86AudioLowerVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
         XF86AudioMute         allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
@@ -100,6 +116,7 @@ binds {
         XF86MonBrightnessUp   allow-when-locked=true { spawn "noctalia" "msg" "brightness-up"; }
         XF86MonBrightnessDown allow-when-locked=true { spawn "noctalia" "msg" "brightness-down"; }
 
+        // Noctalia access
         Mod+A           { spawn "noctalia" "msg" "panel-toggle" "control-center"; }
         Mod+D           { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
         Mod+S           { spawn "noctalia" "msg" "settings-toggle"; }
@@ -107,18 +124,70 @@ binds {
         Ctrl+Alt+Delete { spawn "noctalia" "msg" "panel-toggle" "session"; }
         Mod+Shift+E     { spawn "herd" "restart" "noctalia"; }
 
+        // Application often used.
         Mod+E       { spawn "emacsclient" "--create-frame" "--no-wait"; }
         Mod+Return  { spawn "wezterm"; }
 
-        Mod+H                       { focus-column-left; }
-        Mod+J                       { focus-window-down; }
-        Mod+K                         { focus-window-up; }
-        Mod+L                      { focus-column-right; }
+        // Window management.
+        Mod+Shift+Q repeat=false { close-window; }
+        Mod+F                    { maximize-column; }
+        Mod+Shift+F              { fullscreen-window; }
+        Mod+V                    { toggle-window-floating; }
+        Mod+Shift+V              { switch-focus-between-floating-and-tiling; }
+        Mod+W                    { toggle-column-tabbed-display; }
 
-        Mod+Shift+H                 { move-column-left; }
-        Mod+Shift+J                 { move-window-down; }
-        Mod+Shift+K                   { move-window-up; }
-        Mod+Shift+L                { move-column-right; }
+        // Resize the current windows often, for height you need to split the active column.
+        Mod+Shift+Minus { set-window-height "-1%"; }
+        Mod+Shift+Equal { set-window-height "+1%"; }
+        Mod+Minus { set-column-width "-1%"; }
+        Mod+Equal { set-column-width "+1%"; }
+
+        Mod+R { switch-preset-column-width; }
+        Mod+Shift+R { switch-preset-window-height; }
+        Mod+Ctrl+R { reset-window-height; }
+        Mod+Ctrl+F { expand-column-to-available-width; }
+        Mod+C { center-column; }
+        Mod+Ctrl+C { center-visible-columns; }
+
+        // Focus managements or active window managements based on vim's keybind
+        Mod+H { focus-column-left; }
+        Mod+J { focus-window-down; }
+        Mod+K { focus-window-up; }
+        Mod+L { focus-column-right; }
+
+        Mod+Left  { focus-column-or-monitor-left; }
+        Mod+Down  { focus-window-or-workspace-down; }
+        Mod+Up    { focus-window-or-workspace-up; }
+        Mod+Right { focus-column-or-monitor-right; }
+
+        // Display navigation
+        Mod+Ctrl+H { focus-monitor-left; }
+        Mod+Ctrl+J { focus-monitor-down; }
+        Mod+Ctrl+K { focus-monitor-up; }
+        Mod+Ctrl+L { focus-monitor-right; }
+
+        // Move windows
+        Mod+Shift+H { move-column-left; }
+        Mod+Shift+J { move-window-down; }
+        Mod+Shift+K { move-window-up; }
+        Mod+Shift+L { move-column-right; }
+
+        Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
+        Mod+Shift+Down  { move-window-down-or-to-workspace-down; }
+        Mod+Shift+Up    { move-window-up-or-to-workspace-up; }
+        Mod+Shift+Right { move-column-right-or-to-monitor-right; }
+
+        // Move column to another window or workspace.
+        Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
+        Mod+Shift+Ctrl+Down  { move-column-to-workspace-down; }
+        Mod+Shift+Ctrl+Up    { move-column-to-workspace-up; }
+        Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
+
+        Mod+Shift+Ctrl+H     { move-column-to-monitor-left; }
+        Mod+Shift+Ctrl+J     { move-column-to-monitor-down; }
+        Mod+Shift+Ctrl+K     { move-column-to-monitor-up; }
+        Mod+Shift+Ctrl+L     { move-column-to-monitor-right; }
+
 
         Mod+1 { focus-workspace 1; }
         Mod+2 { focus-workspace 2; }
@@ -129,7 +198,7 @@ binds {
         Mod+7 { focus-workspace 7; }
         Mod+8 { focus-workspace 8; }
         Mod+9 { focus-workspace 9; }
-        Mod+0 { focus-workspace "left"; }
+        Mod+0 { focus-workspace 0; }
 
         Mod+Shift+1 { move-column-to-workspace 1; }
         Mod+Shift+2 { move-column-to-workspace 2; }
@@ -140,7 +209,7 @@ binds {
         Mod+Shift+7 { move-column-to-workspace 7; }
         Mod+Shift+8 { move-column-to-workspace 8; }
         Mod+Shift+9 { move-column-to-workspace 9; }
-        Mod+Shift+0 { move-column-to-workspace "left"; }
+        Mod+Shift+0 { move-column-to-workspace 0; }
 
 
         Mod+WheelScrollDown            { focus-column-right; }
@@ -149,37 +218,15 @@ binds {
         Mod+Shift+WheelScrollDown      { move-column-right; }
         Mod+Shift+WheelScrollUp        { move-column-left; }
 
-        Mod+Ctrl+H                  { focus-monitor-left; }
-        Mod+Ctrl+L                 { focus-monitor-right; }
-
-        Mod+Ctrl+Shift+H            { move-column-to-monitor-left; }
-        Mod+Ctrl+Shift+L           { move-column-to-monitor-right; }
-
-        Mod+Ctrl+WheelScrollDown       { focus-monitor-right; }
-        Mod+Ctrl+WheelScrollUp         { focus-monitor-left; }
-
-        Mod+Ctrl+Shift+WheelScrollDown { move-column-to-monitor-right; }
-        Mod+Ctrl+Shift+WheelScrollUp   { move-column-to-monitor-left; }
-
         Mod+Comma                      { consume-or-expel-window-left; }
         Mod+Period                     { consume-or-expel-window-right; }
-        Mod+F                          { maximize-column; }
-        Mod+Shift+F                    { fullscreen-window; }
-        Mod+C                          { center-column; }
-        Mod+V                          { toggle-window-floating; }
-        Mod+Shift+V                    { switch-focus-between-floating-and-tiling; }
-
-        Mod+Shift+Q                    { close-window; }
 
         Mod+Tab repeat=false           { toggle-overview; }
 
         Print                          { screenshot; }
         Ctrl+Print                     { screenshot-screen; }
         Alt+Print                      { screenshot-window; }
-}
 
-workspace "left" {
-        open-on-output "DP-3"
 }
 
 window-rule {
@@ -196,9 +243,9 @@ window-rule {
 }
 
 window-rule {
-        match title="Spotify"
-        open-on-workspace "left"
+	match app-id="spotify"
         open-maximized true
+        open-on-output "DP-3"
 }
 
 spawn-sh-at-startup "sleep 15; $$bin/signal-desktop$$ --use-tray-icon --start-in-tray"
