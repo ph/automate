@@ -1369,8 +1369,8 @@
 		       #'tempel-expand))))
   (add-hook 'eglot-managed-mode-hook #'ph/eglot-capf)
   :custom
-  (doList (mode '((nix-mode . ("nixd"))))
-	  (add-lo-list 'eglot-server-programs mode))
+  (dolist (mode '((nix-mode . ("nixd"))))
+    (add-to-list 'eglot-server-programs mode))
   :config
   (evil-define-key 'normal 'eglot-mode-map (kbd "K") #'eldoc)
   (setq-default eglot-workspace-configuration
@@ -1431,7 +1431,6 @@
 
   ;; Kill compile buffer on build success
   ;; (add-hook 'dape-compile-hook #'kill-buffer)
-  :init
   (defun lldb-rust-prettifier-for-lldb ()
     (concat (expand-file-name ".config/emacs" (getenv "HOME"))
 	    "/rust_prettifier_for_lldb.py"))
@@ -1459,3 +1458,125 @@
 ;; (use-package tab-line
 ;;   :config
 ;;   )
+
+;; Current velocity:
+;; Breaking => 3h
+;; news => 8h
+;; Article => 18h
+;; Essay => 3 days
+;; Evergreen => 7 days
+(use-package elfeed
+  :general
+  (ph/leader-key
+    "or" '(elfeed :wk "rss"))
+  :config
+  (setq elfeed-feeds
+	'(("https://matklad.github.io/feed.xml" velocity:breaking tech)
+	  ("https://lucumr.pocoo.org/feed.atom" velocity:essay tech)
+	  ("https://www.scattered-thoughts.net/atom.xml" velocity:news culture)
+	  ("https://yosefk.com/blog/feed" velocity:evergreen tech)
+	  ("https://smallcultfollowing.com/babysteps//atom.xml" velocity:essay)
+	  ("https://burntsushi.net/index.xml" velocity:breaking culture)
+	  ("https://ziglang.org/devlog/index.xml" velocity:essay tech)
+	  ("https://neugierig.org/software/blog/atom.xml" velocity:evergreen tech)
+	  ("https://mmapped.blog/feed.xml" velocity:article culture)
+	  ("https://jyn.dev/atom.xml" velocity:news culture)
+	  ("https://blog.buenzli.dev/atom.xml" velocity:article culture)
+	  "https://martinsos.com/rss.xml"
+	  "https://www.jamescherti.com/feed/"
+	  "https://sel4.systems/feed.xml"
+	  "https://gofranz.com/feed.xml"
+	  "https://www.terracrypt.net/feed.xml"
+	  "https://20y.hu/~slink/index.xml"
+	  "https://saylesss88.github.io/rss"
+	  "https://spdk.io/feed.xml"
+	  "https://sierrasoftworks.com/atom.xml"
+	  "https://nullderef.com/index.xml"
+	  "https://www.draketo.de/rss-feed.xml"
+	  "https://othacehe.org/feed.xml"
+	  "https://www.khuedoan.com/atom.xml"
+	  "https://j-k.io/atom.xml"
+	  "https://kraftnix.dev/rss.xml"
+	  "https://blog.awoo.systems/atom.xml"
+	  "https://britter.dev/feed.xml"
+	  "https://www.nijho.lt/index.xml"
+	  "https://michael.stapelberg.ch/feed.xml"
+	  "https://joshblais.com/rss.xml"
+	  "https://phip1611.de/blog/feed/"
+	  "https://merrick.luois.me/posts/feed.xml"
+	  "https://blog.arsfeld.dev/rss.xml"
+	  "https://protesilaos.com/master.xml"
+	  "https://www.rahuljuliato.com/rss.xml"
+	  "https://elken.dev/atom.xml"
+	  "https://journal.stuffwithstuff.com/atom.xml"
+	  "https://xerool.net/atom.xml"
+	  "https://jakegoldsborough.com/rss"
+	  "https://zackproser.com/rss/feed.xml"
+	  "https://nader.substack.com/feed"
+	  "https://www.mccurdyc.dev/posts/index.xml"
+	  "https://corrode.dev/rss.xml"
+	  "https://farcaller.net/index.xml"
+	  "https://engineering.videocall.rs/atom.xml"
+	  "https://jointhefreeworld.org/rss.xml"
+	  "https://magnus.therning.org/feed.xml"))
+
+  ;; (require 'elfeed-search)
+
+  ;; (defun elfeed-current--print-entry (entry)
+  ;;   (elfeed-entry-title entry))
+
+  ;; (defun elfeed-current--update-immediately (buffer &optional method)
+  ;;   "Update the page"
+  ;;   (with-selected-window (or (get-buffer-window buffer) (selected-window))
+  ;;     (with-current-buffer buffer
+  ;; 	(erase-buffer)
+  ;; 	(elfeed-search--update-list)
+  ;; 	(dolist (entry elfeed-search-entries)
+  ;; 	  (elfeed-current--print-entry entry)
+  ;; 	  (insert ?\n)))))
+
+  ;; (defun elfeed-current-update (&optional force)
+  ;;   "Update the `elfeed-current' buffer listing to match the database."
+  ;;   ;; (declare (completion ignore))
+  ;;   (interactive)
+  ;;   (when-let* ((buffer (get-buffer "*elfeed-current*")))
+  ;;     (elfeed-current--update-immediately buffer force)))
+
+  ;; (define-derived-mode elfeed-current-mode special-mode "elfeed-current"
+  ;;   "Major  mode for listing elfeed feed entries as a current river."
+  ;;   (hl-line-mode)
+  ;;   (elfeed-current-update :force))
+
+  ;; (defun elfeed-current-buffer ()
+  ;;   "Create and return current buffer."
+  ;;   (get-buffer-create "*elfeed-current*"))
+
+  ;; (defun elfeed-current ()
+  ;;   (interactive)
+  ;;   (switch-to-buffer (elfeed-current-buffer))
+  ;;   (unless (eq major-mode 'elfeed-current-mode)
+  ;;     (elfeed-current-mode))
+  ;;   (goto-char (point-min))
+  ;;   (set-window-start nil (point-min)))
+  (defun elfeed-current--entry-summary (entry)
+    ())
+
+  (defun elfeed-search-print-entry--default (entry)
+    "Print ENTRY to the buffer."
+    (pcase-let ((`(,date . ,date-width) (elfeed-search--column-date entry))
+		(`(,title . ,title-width) (elfeed-search--column-title entry))
+		(feed (elfeed-search--column-feed entry))
+		(tags (elfeed-search--column-tags entry)))
+      (insert
+       (or feed "")
+       title
+       date
+       (or tags ""))
+      ))
+  (setq elfeed-search-print-entry-function #'elfeed-search-print-entry--default))
+
+;; supervoid.org
+;; The rise and decline of AI, encouraging power usage.
+;; I am not sure we should really take ai so much, it encourages non efficient code.
+;; Even with precise prompt we will use more not less.
+;; 25m ago

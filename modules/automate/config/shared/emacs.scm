@@ -42,6 +42,7 @@
   (list emacs-evil/ph
 	emacs-evil-collection/ph
 	emacs-ben/ph
+	emacs-elfeed
 	;; Revisit later
 	;; emacs-flyover
 	emacs-dape
