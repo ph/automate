@@ -10,6 +10,7 @@
   #:use-module (gnu packages linux)
   #:use-module (gnu packages networking)
   #:use-module (gnu packages nfs)
+  #:use-module (gnu packages cups)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages base)
   #:use-module (gnu packages bash)
@@ -40,6 +41,7 @@
   #:use-module (guix inferior)
   #:use-module (guix packages)
   #:use-module (nongnu packages video)
+  #:use-module (nongnu packages printers)
   #:use-module (rosenthal services networking)
   #:use-module (srfi srfi-1)
   #:export (%ph
@@ -241,6 +243,10 @@
 	(service upower-service-type)
 	(service accountsservice-service-type)
 	(service cups-pk-helper-service-type)
+	(service cups-service-type
+		 (cups-configuration
+		  (web-interface? #t)
+		  (extensions (list cups-filters hplip-plugin))))
 	(service colord-service-type)
 	(service geoclue-service-type)
 	(service polkit-service-type)

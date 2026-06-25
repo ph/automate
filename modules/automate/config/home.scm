@@ -39,6 +39,7 @@
   #:use-module (gnu packages ghostscript)
   #:use-module (gnu packages glib)
   #:use-module (gnu packages gnome)
+  #:use-module (gnu packages cups)
   #:use-module (gnu packages gnome-xyz)
   #:use-module (gnu packages gnupg)
   #:use-module (gnu packages graphics)
@@ -214,6 +215,7 @@ set -g fish_term24bit 1 ")
    isync
    msmtp
    password-store
+   cups
    ))
 
 (define %vim
