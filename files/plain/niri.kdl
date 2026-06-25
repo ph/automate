@@ -60,10 +60,6 @@ layout {
 
 }
 
-animations {
-        slowdown 0.1
-}
-
 input {
         workspace-auto-back-and-forth
 
@@ -226,7 +222,6 @@ binds {
         Print                          { screenshot; }
         Ctrl+Print                     { screenshot-screen; }
         Alt+Print                      { screenshot-window; }
-
 }
 
 window-rule {
