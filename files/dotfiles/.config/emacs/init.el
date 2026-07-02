@@ -200,7 +200,7 @@
 (use-package ben
   :bind
   (:map ben-mode-map
-	("C-c e" . ben-command-map))
+	("C-c d" . ben-command-map))
   :init
   (add-hook 'after-init-hook #'ben-global-mode 99)
   :custom
