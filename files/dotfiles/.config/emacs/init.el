@@ -203,12 +203,15 @@
 	("C-c d" . ben-command-map))
   :init
   (add-hook 'after-init-hook #'ben-global-mode 99)
-  :custom
-  (add-hook 'ben-after-apply-hook (lambda ()
-				    (when (member major-mode
-						  '(rustic-mode
-						    nix-mode))
-				      (eglot-ensure)))))
+  ;; TODO: I am not sure I want to start it automatically
+  ;; it's a possible security risk.
+  ;; :custom
+  ;; (add-hook 'ben-after-apply-hook (lambda ()
+  ;; 				    (when (member major-mode
+  ;; 						  '(rustic-mode
+  ;; 						    nix-mode))
+  ;; 				      (eglot-ensure))))
+  )
 
 (use-package inheritenv
   :after ben)
@@ -1044,6 +1047,7 @@
   (require 'typescript-ts-mode)
   (require 'yaml-ts-mode)
   (require 'lua-ts-mode)
+  (require 'markdown-ts-mode)
 
   ;; Make them available in org mode.
   (add-to-list 'org-src-lang-modes '("dockerfile" . dockerfile-ts))
@@ -1482,6 +1486,10 @@
 	  ("https://mmapped.blog/feed.xml" velocity:article culture)
 	  ("https://jyn.dev/atom.xml" velocity:news culture)
 	  ("https://blog.buenzli.dev/atom.xml" velocity:article culture)
+	  "https://vlad.website/index.xml"
+	  "https://proycon.anaproy.nl/index.xml"
+	  "https://www.willowbarraco.fr/atom.xml"
+	  "https://alexalejandre.com/index.xml"
 	  "https://blog.dave.tf/index.xml"
 	  "https://martinsos.com/rss.xml"
 	  "https://www.jamescherti.com/feed/"

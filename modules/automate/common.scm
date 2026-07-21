@@ -119,7 +119,6 @@
 (define %my-packages
   (map specification->package (list "awesome"
 				    "bluez"
-
 				    "simple-scan"
 				    "sane-airscan"
 				    "bluez-alsa"
@@ -145,7 +144,7 @@
 				    "sway"
 				    "swaylock-effects"
 				    "xorg-server-xwayland"
-				    "chili-sddm-theme")))
+				    "chili-sddm-theme-qt5")))
 
 (define %probe-rs-udev-rules
   (file->udev-rule

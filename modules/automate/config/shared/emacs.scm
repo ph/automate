@@ -150,6 +150,7 @@
 	tree-sitter-bash
 	tree-sitter-cmake
 	tree-sitter-dockerfile
+	tree-sitter-markdown
 	tree-sitter-go
 	tree-sitter-gomod
 	tree-sitter-javascript

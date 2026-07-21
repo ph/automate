@@ -23,7 +23,7 @@
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
   #:use-module (gnu packages virtualization)
-  #:use-module (gnu packages wm)
+  #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xorg)
   #:use-module (gnu services base)
@@ -261,19 +261,15 @@
 (define +service/sddm-login-manager
   (+service (service sddm-service-type
 		     (sddm-configuration
-		      (sddm sddm-qt5)
-		      (theme "chili")
-		      (xorg-configuration
-		       (xorg-configuration
-			(keyboard-layout
-			 (keyboard-layout "us"
-					  #:options '("ctrl:nocaps")))))))))
+		      ;; (sddm sddm-qt5)
+		      (display-server "wayland")
+		      (theme "chili")))))
 
 (define (%packages/desktop)
   (list awesome
 	bluez
 	bluez-alsa
-	chili-sddm-theme
+	chili-sddm-theme-qt5
 	dconf
 	egl-wayland
 	ghostscript
