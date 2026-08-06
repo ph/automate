@@ -261,9 +261,7 @@
 (define +service/sddm-login-manager
   (+service (service sddm-service-type
 		     (sddm-configuration
-		      ;; (sddm sddm-qt5)
-		      (display-server "wayland")
-		      (theme "chili")))))
+		       (theme "chili")))))
 
 (define (%packages/desktop)
   (list awesome

@@ -203,15 +203,13 @@
 	("C-c d" . ben-command-map))
   :init
   (add-hook 'after-init-hook #'ben-global-mode 99)
-  ;; TODO: I am not sure I want to start it automatically
-  ;; it's a possible security risk.
-  ;; :custom
-  ;; (add-hook 'ben-after-apply-hook (lambda ()
-  ;; 				    (when (member major-mode
-  ;; 						  '(rustic-mode
-  ;; 						    nix-mode))
-  ;; 				      (eglot-ensure))))
-  )
+  ;; TODO, I need an accept list because this can be a security issue.
+  :custom
+  (add-hook 'ben-after-apply-hook (lambda ()
+				    (when (member major-mode
+						  '(rustic-mode
+						    nix-mode))
+				      (eglot-ensure)))))
 
 (use-package inheritenv
   :after ben)
@@ -1097,7 +1095,7 @@
 				       "node"
 				       "rust"
 				       "rust:cargo"
-				       "nix")
+				       "nix-ph")
   "Packages installed in the agent sandbox."
   :type '(repeat string)
   :group 'agent)
@@ -1134,6 +1132,7 @@
 (defun ph/guix-container-prefix (&optional buffer)
   `("guix"
     "shell"
+    "-L ~/src/automate/modules"
     "--container"
     "--network"
     "--emulate-fhs"
@@ -1567,21 +1566,21 @@
   ;;     (elfeed-current-mode))
   ;;   (goto-char (point-min))
   ;;   (set-window-start nil (point-min)))
-  (defun elfeed-current--entry-summary (entry)
-    ())
+  ;; (defun elfeed-current--entry-summary (entry)
+  ;;   ())
 
-  (defun elfeed-search-print-entry--default (entry)
-    "Print ENTRY to the buffer."
-    (pcase-let ((`(,date . ,date-width) (elfeed-search--column-date entry))
-		(`(,title . ,title-width) (elfeed-search--column-title entry))
-		(feed (elfeed-search--column-feed entry))
-		(tags (elfeed-search--column-tags entry)))
-      (insert
-       (or feed "")
-       title
-       date
-       (or tags ""))
-      ))
+  ;; (defun elfeed-search-print-entry--default (entry)
+  ;;   "Print ENTRY to the buffer."
+  ;;   (pcase-let ((`(,date . ,date-width) (elfeed-search--column-date entry))
+  ;; 		(`(,title . ,title-width) (elfeed-search--column-title entry))
+  ;; 		(feed (elfeed-search--column-feed entry))
+  ;; 		(tags (elfeed-search--column-tags entry)))
+  ;;     (insert
+  ;;      (or feed "")
+  ;;      title
+  ;;      date
+  ;;      (or tags ""))
+  ;;     ))
   ;; (setq elfeed-search-print-entry-function #'elfeed-search-print-entry--default)
   )
 

@@ -164,7 +164,7 @@
 	tree-sitter-typescript))
 
 (define* (+home-emacs-service-type #:key
-				   (emacs-bin emacs-next-pgtk)
+				   (emacs-bin emacs-pgtk)
 				   (emacs-packages %emacs-packages))
 
   (service home-emacs-service-type

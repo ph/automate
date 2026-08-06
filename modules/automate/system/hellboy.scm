@@ -38,7 +38,7 @@
 
 (define %hellboy-os
   (operating-system
-   (kernel linux-7.0)
+   (kernel linux-7.1)
    (kernel-arguments (cons*
 		      (format #f "lsm=~s"
 			      (string-join '("landlock"
