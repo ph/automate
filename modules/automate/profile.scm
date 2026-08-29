@@ -246,7 +246,7 @@
 		      (cpu-boost-on-ac? #t)
 		      (cpu-boost-on-bat? #t)
 		      (start-charge-thresh-bat0 75)
-		      (stop-charge-thresh-bat0 80)
+		      (stop-charge-thresh-bat0 95)
 		      (sched-powersave-on-bat? #t)))))
 
 (define* (+service/openssh #:key
@@ -272,7 +272,6 @@
 	egl-wayland
 	ghostscript
 	git
-	hplip
 	intel-media-driver/nonfree
 	intel-vaapi-driver
 	ldacbt
@@ -282,6 +281,8 @@
 	niri
 	nix
 	openssh
+	hplip
+	;; hplip-plugin
 	sane-airscan
 	simple-scan
 	sway
