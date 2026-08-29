@@ -18,7 +18,6 @@
   #:use-module (gnu system file-systems)
   #:use-module (gnu system keyboard)
   #:use-module (gnu packages gnome)
-  #:use-module (gnu packages linux)
   #:use-module (gnu packages vim)
   #:use-module (gnu packages)
   #:use-module (gnu services authentication)
@@ -40,18 +39,7 @@
 
 (define %babayaga-os
   (operating-system
-   (kernel linux-7.0)
-   (kernel-arguments (cons*
-		      (format #f "lsm=~s"
-			      (string-join '("landlock"
-					     "yama"
-					     "loadpin"
-					     "safesetid"
-					     "integrity"
-					     "selinux"
-					     "smack"
-					     "tomoyo") ","))
-		      %default-kernel-arguments))
+   (kernel linux)
    (initrd microcode-initrd)
    (firmware (list linux-firmware sof-firmware))
    (locale "en_CA.utf8")
@@ -59,41 +47,31 @@
    (keyboard-layout (keyboard-layout "us"
 				     #:options '("ctrl:nocaps")))
    (host-name "babayaga")
-   (services (modify-services %my-system-services
-	       (guix-service-type config =>
-				  (guix-configuration
-				   (inherit config)
-				   (extra-options '("--max-jobs=8"
-						    "--cores=0"))))))
+   (services %my-system-services)
    (bootloader (bootloader-configuration
 		(bootloader grub-efi-bootloader)
-		(targets (list "/boot/efi"))
+		(targets (list "/efi"))
 		(keyboard-layout keyboard-layout)))
-   (mapped-devices (list
-		    (mapped-device
-		     (source (uuid
-			      "8ca0f0c0-f61a-4b38-ac71-0b67f7ee6528"))
-		     (target "cryptroot-1")
-		     (type luks-device-mapping))
+   (mapped-devices
+    (list (mapped-device
+	   (source (uuid "ad45f277-b365-41d5-8a6c-f200f3b7e1b2"))
+	   (target "cryptroot-1") ;; /dev/nvme1n1p4
+	   (type luks-device-mapping))
 
-		    (mapped-device
-		     (source (uuid
-			      "499fd9f1-a482-4e81-9fd4-6825c4fc54bb"))
-		     (target "cryptroot-2")
-		     (type luks-device-mapping))
+	  (mapped-device
+	   (source (uuid "10cfee72-41ae-4cd6-b682-326cd85c0f3a"))
+	   (target "cryptroot-2") ;; /dev/nvme2n1p1
+	   (type luks-device-mapping))
 
-		    (mapped-device
-		     (source (uuid
-			      "a7886b6b-6515-4b82-917d-f698d806c94b"))
-		     (target "cryptboot")
-		     (type luks-device-mapping))
+	  (mapped-device
+	   (source (uuid "3256e181-ce47-4761-9fbd-31a3c198e0fe"))
+	   (target "cryptboot") ;; /dev/nvme1n1p3
+	   (type luks-device-mapping))
 
-		    (mapped-device
-		     (source (uuid
-			      "786c6f5d-b211-497b-9675-b45a6d47bc3e"))
-		     (target "cryptsys")
-		     (type luks-device-mapping))))
-
+	  (mapped-device
+	   (source (uuid "d180a9c5-fc63-4a2b-a1d1-e77571f0d7c3"))
+	   (target "cryptsys") ;; /dev/nvme1n1p2
+	   (type luks-device-mapping))))
    (file-systems (cons*
 		  (file-system
 		   (mount-point "/")
@@ -138,6 +116,13 @@
 		   (dependencies mapped-devices))
 
 		  (file-system
+		   (mount-point "/.snapshots")
+		   (device (file-system-label "root-fs"))
+		   (type "btrfs")
+		   (options "subvol=@snapshots")
+		   (dependencies mapped-devices))
+
+		  (file-system
 		   (mount-point "/boot")
 		   (device (file-system-label "boot-fs"))
 		   (type "btrfs")
@@ -145,16 +130,15 @@
 		   (dependencies mapped-devices))
 
 		  (file-system
-		   (mount-point "/boot/efi")
-		   (device (uuid "BD1F-1A01" 'fat32))
+		   (mount-point "/efi")
+                   (device (uuid "AA1C-E806" 'fat32))
 		   (type "vfat"))
 
 		  (file-system
 		   (mount-point "/tmp")
 		   (device "tmp")
 		   (type "tmpfs")
-		   (options "size=40G")
-		   (check? #f))
+		   (options "size=68G"))
 		  %base-file-systems))))
 
 (define +profile/babayaga

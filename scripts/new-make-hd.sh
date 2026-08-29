@@ -9,23 +9,24 @@ set -o pipefail
 
 PASSWORD="<PASSWORD>"
 
-DISK1=nvme0n1
-DISK2=nvme1n1
+DISK1=nvme1n1
+DISK2=nvme2n1
 
-#dd if=/dev/zero of=/dev/$DISK1 bs=8M count=4
-#dd if=/dev/zero of=/dev/$DISK2 bs=8M count=4
-#cryptsetup open --type plain -d /dev/urandom /dev/$DISK1 to_be_wiped_1
-#cryptsetup open --type plain -d /dev/urandom /dev/$DISK2 to_be_wiped_2
-#dd if=/dev/zero of=/dev/mapper/to_be_wiped_1 bs=4M status=progress
-#dd if=/dev/zero of=/dev/mapper/to_be_wiped_2 bs=4M status=progress
-#cryptsetup close to_be_wiped_1
-#cryptsetup close to_be_wiped_2
+dd if=/dev/zero of=/dev/$DISK1 bs=8M count=4
+cryptsetup open --type plain -d /dev/urandom /dev/$DISK1 to_be_wiped_1
+dd if=/dev/zero of=/dev/mapper/to_be_wiped_1 bs=4M status=progress || echo "finished to_be_wiped_1" >&2
+cryptsetup close to_be_wiped_1
+
+dd if=/dev/zero of=/dev/$DISK2 bs=8M count=4
+cryptsetup open --type plain -d /dev/urandom /dev/$DISK2 to_be_wiped_2
+dd if=/dev/zero of=/dev/mapper/to_be_wiped_2 bs=4M status=progress || echo "finished to_be_wiped_2" >&2
+cryptsetup close to_be_wiped_2
 
 sgdisk --zap-all /dev/$DISK1
 sgdisk --zap-all /dev/$DISK2
 
 sgdisk -og /dev/$DISK1
-sgdisk -n 1:0:+512M -t 1:EF00 /dev/$DISK1
+sgdisk -n 1:0:+500M -t 1:EF00 /dev/$DISK1
 sgdisk -n 2:0:+100G -t 2:8300 /dev/$DISK1
 sgdisk -n 3:0:+1G -t 3:8300 /dev/$DISK1
 sgdisk -n 4:0:0 -t 4:8300 /dev/$DISK1
@@ -63,10 +64,11 @@ btrfs subvol create /mnt/cryptroot/@ph
 btrfs subvol create /mnt/cryptroot/@nix
 btrfs subvol create /mnt/cryptroot/@log
 btrfs subvol create /mnt/cryptroot/@gnu
+btrfs subvol create /mnt/cryptroot/@snapshots
 
 umount /mnt/cryptroot
 
-mkfs.vfat -F32 /dev/${DISK1}p1
+mkfs.vfat -F32 -n EFI /dev/${DISK1}p1
 
 mkdir -p /mnt/newroot
 mount -o subvol=@ /dev/mapper/cryptroot-1 /mnt/newroot
@@ -81,7 +83,7 @@ umount /mnt/boot
 mkdir -p /mnt/newroot/boot/
 mount -o subvol=@boot /dev/mapper/cryptboot /mnt/newroot/boot
 
-mkdir -p /mnt/newroot/boot/efi
+mkdir -p /mnt/newroot/efi
 mkdir -p /mnt/newroot/boot/keys
 mkdir -p /mnt/newroot/home
 mkdir -p /mnt/newroot/gnu
@@ -89,6 +91,7 @@ mkdir -p /mnt/newroot/nix
 mkdir -p /mnt/newroot/etc
 mkdir -p /mnt/newroot/tmp
 mkdir -p /mnt/newroot/var/log
+mkdir -p /mnt/newroot/.snapshots
 
 mount -o subvol=@home /dev/mapper/cryptroot-1 /mnt/newroot/home
 mkdir -p /mnt/newroot/home/ph
@@ -96,7 +99,8 @@ mount -o subvol=@ph /dev/mapper/cryptroot-1 /mnt/newroot/home/ph
 mount -o subvol=@gnu /dev/mapper/cryptroot-1 /mnt/newroot/gnu
 mount -o subvol=@nix /dev/mapper/cryptroot-1 /mnt/newroot/nix
 mount -o subvol=@log /dev/mapper/cryptroot-1 /mnt/newroot/var/log
-mount /dev/${DISK1}p1 /mnt/newroot/boot/efi
+mount -o subvol=@snapshots /dev/mapper/cryptroot-1 /mnt/newroot/.snapshots
+mount /dev/${DISK1}p1 /mnt/newroot/efi
 
 # swap
 mkdir -p /mnt/sys

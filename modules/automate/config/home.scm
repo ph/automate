@@ -93,7 +93,6 @@
   #:use-module (guix packages)
   #:use-module (guix profiles)
   #:use-module (guix store)
-  #:use-module (heyk gnu home services avizo)
   #:use-module (heyk gnu home services fish)
   #:use-module (heyk gnu home services waybar)
   #:use-module (heyk gnu home services zathura)
@@ -293,17 +292,18 @@ set -g fish_term24bit 1 ")
 (define* (automate-home-environment #:key
 				    (current-user "ph"))
   (home-environment
-   (packages (append
-	      %browsers
-	      %multimedia
-	      %vcs
-	      %games
-	      %dev
-	      %tools
-	      %mail
-	      %editors
-	      %wm
-	      %fonts))
+   (packages '())
+   ;; (packages (append
+   ;; 	      %browsers
+   ;; 	      %multimedia
+   ;; 	      %vcs
+   ;; 	      %games
+   ;; 	      %dev
+   ;; 	      %tools
+   ;; 	      %mail
+   ;; 	      %editors
+   ;; 	      %wm
+   ;; 	      %fonts))
    (services
     (cons*
      (service home-shepherd-service-type
@@ -374,7 +374,7 @@ set -g fish_term24bit 1 ")
 		       ("VISUAL" . "$EDITOR")
 		       ("LSP_USE_PLISTS" . "true")
 		       ("ESHELL" . ,(file-append fish "/bin/fish"))))
-     (+home-emacs-service-type)
+     ;; (+home-emacs-service-type)
      (simple-service 'fish-emacs-eat home-fish-service-type
 		     (home-fish-extension
 		      (config

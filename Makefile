@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 ARGS := --verbosity=1
-GUIX := guix time-machine -C ./channels.lock.scm --
+GUIX := guix time-machine -C ./channels.lock.scm -L ./modules --
 
 default: help
 
@@ -14,6 +14,11 @@ reuse: ## - check for license header
 ## nrepl: run the nrepl
 nrepl: ## - run the nrepl for arei
 	$(GUIX) shell guile-next guile-ares-rs -- guile -c '((@ (ares server) run-nrepl-server))'
+
+
+## ios: build a live iso
+iso: ## - run the nrepl for arei
+	$(GUIX) system image --image-size=7.2GiB -t iso9660 ./modules/automate/image/live-install.scm
 
 ## check: run linters or any check on code
 check: reuse ## - check for license header

@@ -93,7 +93,7 @@
 		   (options "subvol=@home")
 		   (dependencies mapped-devices))
 		  (file-system
-		   (mount-point "/boot/efi")
+		   (mount-point "/efi")
 		   (device (uuid "4714-3B94" 'fat32))
 		   (type "vfat"))
 		  (file-system

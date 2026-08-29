@@ -1,0 +1,12 @@
+
+   ;; (kernel-arguments (cons*
+   ;; 		      (format #f "lsm=~s"
+   ;; 			      (string-join '("landlock"
+   ;; 					     "yama"
+   ;; 					     "loadpin"
+   ;; 					     "safesetid"
+   ;; 					     "integrity"
+   ;; 					     "selinux"
+   ;; 					     "smack"
+   ;; 					     "tomoyo") ","))
+   ;; 		      %default-kernel-arguments))

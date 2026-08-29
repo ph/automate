@@ -57,7 +57,9 @@
 		   (propagated-inputs (list emacs-consult emacs-embark))))
 
 (define %emacs-packages
+  '()
   (list emacs-evil/ph
+	emacs-org-super-agenda
 	emacs-evil-collection/ph
 	emacs-ben/ph
 	emacs-dape/ph
@@ -71,7 +73,8 @@
 	emacs-doom-modeline
 	emacs-lambda-line
 	emacs-agent-shell
-	emacs-rustic/ph
+	emacs-ox-pandoc
+	;; emacs-rustic/ph
 	emacs-treemacs
 	emacs-treemacs-extra
 	emacs-treemacs-nerd-icons
@@ -95,7 +98,8 @@
 	emacs-enhanced-evil-paredit
 	emacs-lispy
 	emacs-lispyville
-	emacs-eat/dolly
+	emacs-eat
+	emacs-flycheck
 	emacs-lin
 	emacs-hl-todo
 	emacs-forge
@@ -140,6 +144,7 @@
 	emacs-marginalia
 	emacs-vertico
 	emacs-consult
+	emacs-consult-flycheck
 	emacs-kdl-mode
 	emacs-rainbow-delimiters
 	mu ;; mu4e and mu cli
