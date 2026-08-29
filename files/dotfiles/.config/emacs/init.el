@@ -175,6 +175,8 @@
   (add-to-list 'default-frame-alist '(alpha-background . 95))
   (set-frame-parameter nil 'alpha-background 95)
 
+  (global-set-key (kbd "C-c l") 'org-store-link)
+
   ;; Fonts
   ;; (set-face-attribute 'default nil :font "Lilex Nerd Font Mono" :height 120)
   ;; (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 100)
@@ -288,7 +290,7 @@
   (define-key evil-insert-state-map (kbd "C-h") 'evil-delete-backward-char-and-join)
 
   (ph/leader-key
-    "f" '(consult-flymake :wk "toggle flymake")
+    "f" '(consult-flycheck :wk "toggle flycheck")
 
     ;; window
     "w" '(:ignore t :wk "window")
@@ -346,11 +348,22 @@
 ;;   ;; `modus-themes-load-random-light').
 ;;   (modus-themes-load-theme 'ef-dream))
 
+(defun ph/theme-light ()
+  (interactive)
+  "Set a predefined light theme."
+  (catppuccin-load-flavor 'latte))
+
+(defun ph/theme-dark ()
+  "Set a predefined dark theme."
+  (interactive)
+  (catppuccin-load-flavor 'macchiato))
+
+;; Flavors: 'latte, 'macchiato, or 'mocha
 (use-package catppuccin-theme
-  :custom
-  (catppuccin-flavor 'macchiato) ;; or 'latte, 'macchiato, or 'mocha
+  ;; :custom
+  ;; (catppuccin-flavor 'macchiato)
   :config
-  (load-theme 'catppuccin :no-confirm))
+  (ph/theme-dark))
 
 ;; Improved termibal experience
 (use-package eat
@@ -362,7 +375,6 @@
   :general
   (ph/leader-key
     "pv" '(eat :wk "open term")))
-
 
 ;; Make emacs commenting behave as vim.
 (use-package evil-commentary
@@ -610,28 +622,31 @@
 (use-package org
   :config
   (setq org-directory (expand-file-name "src/notes" (getenv "HOME")))
-  (setq org-agenda-files (list org-directory))
+  (setq org-agenda-files (append (list org-directory)
+				 (expand-file-name "src/lcpt" (getenv "HOME"))))
 
   (setq org-capture-templates
 	`(("i" "󱉰 Inbox" entry (file+headline ,(expand-file-name "inbox.org" org-directory) "Inbox")
+	   "**  %?\n%i\n%a" :preprend t :jump-to-captured t)
+	  ("il" "󱉰 Inbox (LCPT)" entry (file+headline ,(expand-file-name "src/lcpt/inbox.org" (getenv "HOME")) "Inbox")
 	   "**  %?\n%i\n%a" :preprend t :jump-to-captured t)))
 
   (setq org-todo-keywords
-	'((sequence "TODO(t)" "|"
-		    "NEXT(n)" "|"
-		    "PROGRESS(p)" "|"
-		    "WAIT(w)" "|"
-		    "HOLD(h)" "|"
-		    "DELEGATED(l)" "|"
-		    "DONE(d)" "|"
-		    "KILL(k)")))
+	'((sequence "TODO(t!)"
+		    "NEXT(n!)"
+		    "DOING(p!)"
+		    "WAITING(w@/@)"
+		    "DELEGATED(l!)"
+		    "|" "DONE(d!)" "KILL(k!)")))
 
   (setq org-refile-targets
 	`((,(expand-file-name "todo.org" org-directory) :maxlevel . 1))
 	org-refile-use-outline-path 'file
 	org-outline-path-complete-in-steps nil)
 
-  (setq org-archive-location (concat (expand-file-name "archives.org" org-directory) "::datetree/* Archived Tasks"))
+  (setq org-archive-location (concat
+			      (expand-file-name "archives.org" org-directory)
+			      "::datetree/* Archived Tasks"))
 
   ;; ensure files is saved after refile
   (add-hook 'org-after-refile-insert-hook #'save-buffer)
@@ -646,6 +661,31 @@
     "xn" '(org-roam-capture :wk "new note")
     "xf" '(org-roam-find-file :wk "find note")))
 
+(use-package org-super-agenda
+  :after org-agenda
+  :config
+  (org-super-agenda-mode 1)
+  (setq org-super-agenda-groups
+        '((:name "Overdue"
+                 :deadline past
+                 :face (:foreground "red" :weight bold))
+          (:name "Today"
+                 :time-grid t
+                 :scheduled today
+                 :deadline today)
+          (:name "Important"
+                 :priority "A")
+          (:name "Waiting"
+                 :todo "WAITING"
+                 :order 8)
+          (:name "Mireille:PH"
+                 :tag '("sync" "@mireille"))
+          ;; Anything left over lands here
+          (:name "Other items"
+                 :anything t)))
+  (ph/leader-key
+    "xa" '(org-agenda :wk "agenda")))
+
 (use-package org-roam
   :after org
   :defer t
@@ -655,9 +695,24 @@
 
 (use-package org-modern
   :after org
-  :config
-  (add-hook 'org-mode-hook #'org-modern-mode)
-  (add-hook 'org-agenda-finalize-hook #'org-modern-agenda))
+  :custom
+  (set-face-attribute 'variable-pitch nil :family "Iosevka")
+  (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
+  (setq
+   ;; Edit settings
+   org-auto-align-tags nil
+   org-tags-column 0
+   org-catch-invisible-edits 'show-and-error
+   org-special-ctrl-a/e t
+   org-insert-heading-respect-content t
+
+   ;; Org styling, hide markup etc.
+   org-hide-emphasis-markers t
+   org-pretty-entities t
+   org-agenda-tags-column 0
+   org-ellipsis "…")
+  :init
+  (global-org-modern-mode 1))
 
 ;; Ligatures
 ;; JetBrain Mono
@@ -979,6 +1034,9 @@
   ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
   )
 
+(use-package consult-flycheck
+  :after consult)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Syntax and prog mode.
 (use-package geiser
@@ -1032,10 +1090,12 @@
 (use-package protobuf-mode
   :mode "\\.proto\\'")
 
-(use-package flymake
-  :after project
-  :custom
-  (flymake-mode))
+(use-package flycheck
+  :after eglot
+  :hook ((after-init . global-flycheck-mode)
+         (after-init . global-flycheck-annotate-mode))
+  :config
+  (global-flycheck-eglot-mode 1))
 
 (use-package treesit-auto
   :config
@@ -1045,7 +1105,6 @@
   (require 'typescript-ts-mode)
   (require 'yaml-ts-mode)
   (require 'lua-ts-mode)
-  (require 'markdown-ts-mode)
 
   ;; Make them available in org mode.
   (add-to-list 'org-src-lang-modes '("dockerfile" . dockerfile-ts))
@@ -1589,3 +1648,13 @@
 ;; I am not sure we should really take ai so much, it encourages non efficient code.
 ;; Even with precise prompt we will use more not less.
 ;; 25m ago
+
+;; (use-package ox-pandoc
+;;   :after org
+;;   )
+
+;; (defun my/org-set-inherited-tags ()
+;;   "Copy inherited tags onto the current headline before refiling."
+;;   (org-set-tags (org-get-tags)))  ; org-get-tags includes inherited by default
+
+;; (add-hook 'org-after-refile-insert-hook ...) ; or advise org-refile
