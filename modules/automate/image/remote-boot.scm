@@ -22,7 +22,7 @@
 (define %remote-boot-os
   (operating-system
     (inherit %installation-os)
-    (kernel linux-7.0)
+    (kernel linux-7.1)
     (initrd microcode-initrd)
     (firmware (list linux-firmware
 		    sof-firmware))
