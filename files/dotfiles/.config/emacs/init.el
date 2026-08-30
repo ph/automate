@@ -1659,3 +1659,13 @@
 ;;   (org-set-tags (org-get-tags)))  ; org-get-tags includes inherited by default
 
 ;; (add-hook 'org-after-refile-insert-hook ...) ; or advise org-refile
+
+(use-package zig-mode
+  :custom
+  (if (>= emacs-major-version 28)
+      (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
+    (progn
+      (defun colorize-compilation-buffer ()
+	(let ((inhibit-read-only t))
+	  (ansi-color-apply-on-region compilation-filter-start (point))))
+      (add-hook 'compilation-filter-hook 'colorize-compilation-buffer))))
