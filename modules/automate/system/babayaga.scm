@@ -39,9 +39,11 @@
 
 (define %babayaga-os
   (operating-system
-   (kernel linux)
+   (kernel linux-7.1)
    (initrd microcode-initrd)
-   (firmware (list linux-firmware sof-firmware))
+   (firmware (cons* linux-firmware
+		    amdgpu-firmware
+		    %base-firmware))
    (locale "en_CA.utf8")
    (timezone "America/Toronto")
    (keyboard-layout (keyboard-layout "us"
@@ -54,22 +56,22 @@
 		(keyboard-layout keyboard-layout)))
    (mapped-devices
     (list (mapped-device
-	   (source (uuid "ad45f277-b365-41d5-8a6c-f200f3b7e1b2"))
+	   (source (uuid "a9b14713-e26c-43db-b8b5-111ab42962dd"))
 	   (target "cryptroot-1") ;; /dev/nvme1n1p4
 	   (type luks-device-mapping))
 
 	  (mapped-device
-	   (source (uuid "10cfee72-41ae-4cd6-b682-326cd85c0f3a"))
+	   (source (uuid "3294e5b1-6de2-4ba0-ad80-581896b86afb"))
 	   (target "cryptroot-2") ;; /dev/nvme2n1p1
 	   (type luks-device-mapping))
 
 	  (mapped-device
-	   (source (uuid "3256e181-ce47-4761-9fbd-31a3c198e0fe"))
+	   (source (uuid "220eb590-1ddc-4613-93d1-7869db2d37ba"))
 	   (target "cryptboot") ;; /dev/nvme1n1p3
 	   (type luks-device-mapping))
 
 	  (mapped-device
-	   (source (uuid "d180a9c5-fc63-4a2b-a1d1-e77571f0d7c3"))
+	   (source (uuid "a38a78fe-d839-45e0-a87b-3976c9cccaf5"))
 	   (target "cryptsys") ;; /dev/nvme1n1p2
 	   (type luks-device-mapping))))
    (file-systems (cons*
@@ -88,6 +90,7 @@
 		   (dependencies mapped-devices))
 
 		  (file-system
+		   (create-mount-point? #t)
 		   (mount-point "/nix")
 		   (device (file-system-label "root-fs"))
 		   (type "btrfs")
@@ -95,6 +98,7 @@
 		   (dependencies mapped-devices))
 
 		  (file-system
+		   (create-mount-point? #t)
 		   (mount-point "/home")
 		   (device (file-system-label "root-fs"))
 		   (type "btrfs")
@@ -103,6 +107,7 @@
 
 		  (file-system
 		   (mount-point "/home/ph")
+		   (create-mount-point? #t)
 		   (device (file-system-label "root-fs"))
 		   (type "btrfs")
 		   (options "subvol=@ph")
@@ -116,6 +121,7 @@
 		   (dependencies mapped-devices))
 
 		  (file-system
+		   (create-mount-point? #t)
 		   (mount-point "/.snapshots")
 		   (device (file-system-label "root-fs"))
 		   (type "btrfs")
@@ -131,14 +137,16 @@
 
 		  (file-system
 		   (mount-point "/efi")
-                   (device (uuid "AA1C-E806" 'fat32))
+		   (check? #f)
+                   (device (uuid "2451-0156" 'fat32))
 		   (type "vfat"))
 
 		  (file-system
 		   (mount-point "/tmp")
 		   (device "tmp")
 		   (type "tmpfs")
-		   (options "size=68G"))
+		   (check? #f)
+		   (options "size=40G"))
 		  %base-file-systems))))
 
 (define +profile/babayaga
@@ -150,29 +158,33 @@
 	   (+service/openssh)
 	   +system/substitutes
 	   +networking/increase-udp-buffer-size
-	   (+service
-	    (simple-service 'lemonade-directory activation-service-type
-			    #~(begin
-				(use-modules (guix build utils))
-				(mkdir-p "/var/lemonade/cache")
-				(mkdir-p "/var/lemonade/llama")
-				(mkdir-p "/var/lemonade/recipe"))))
-	   (+service
-	    (simple-service 'lemonade-container oci-service-type
-			    (oci-extension
-			     (containers
-			      (list (oci-container-configuration
-				     ;; (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
-				     (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
-				     (provision "lemonade-server")
-				     (log-file "/var/log/lemonade-server.log")
-				     (ports '(("13305" . "13305")
-					      ("9000" . "9000")))
-				     (volumes '(("/var/lemonade/cache" . "/root/.cache/huggingface")
-						("/var/lemonade/llama" . "/opt/lemonade/llama")
-						("/var/lemonade/recipe" . "/root/.cache/lemonade")))
-				     (extra-arguments '("--device" "/dev/kfd"
-							"--device" "/dev/dri"))))))))
 	   (+system/zram-device #:ram-size "129G")))
 
 (+profile/babayaga %babayaga-os)
+
+ ;; sudo guix time-machine -C ./channels.lock.scm -- \
+ ;;   system init -L ./modules ./modules/automate/system/babayaga.scm /mnt/newroot
+
+;; (+service
+;;  (simple-service 'lemonade-directory activation-service-type
+;; 		 #~(begin
+;; 		     (use-modules (guix build utils))
+;; 		     (mkdir-p "/var/lemonade/cache")
+;; 		     (mkdir-p "/var/lemonade/llama")
+;; 		     (mkdir-p "/var/lemonade/recipe"))))
+;; (+service
+;;  (simple-service 'lemonade-container oci-service-type
+;; 		 (oci-extension
+;; 		  (containers
+;; 		   (list (oci-container-configuration
+;; 			  ;; (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
+;; 			  (image "ghcr.io/lemonade-sdk/lemonade-server:latest")
+;; 			  (provision "lemonade-server")
+;; 			  (log-file "/var/log/lemonade-server.log")
+;; 			  (ports '(("13305" . "13305")
+;; 				   ("9000" . "9000")))
+;; 			  (volumes '(("/var/lemonade/cache" . "/root/.cache/huggingface")
+;; 				     ("/var/lemonade/llama" . "/opt/lemonade/llama")
+;; 				     ("/var/lemonade/recipe" . "/root/.cache/lemonade")))
+;; 			  (extra-arguments '("--device" "/dev/kfd"
+;; 					     "--device" "/dev/dri"))))))))

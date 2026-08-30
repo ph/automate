@@ -7,7 +7,8 @@
   #:use-module ((ice-9 ftw) #:select (scandir))
   #:use-module (gnu home services desktop)
   #:use-module (gnu home services dotfiles)
-  #:use-module (gnu home services gnupg)
+  ;; #:use-module (gnu home services gnupg)
+  #:use-module (automate overrides)
   #:use-module (gnu home services guix)
   #:use-module (gnu home services ssh)
   #:use-module (gnu home services pm)
@@ -161,7 +162,7 @@ set -g fish_term24bit 1 ")
   (list node
 	gdb
 	mosh
-	fish-foreign-env
+	;;fish-foreign-env
 	zathura-pdf-mupdf
 	atuin
 	;; (@ (rosenthal packages rust-apps) atuin)
@@ -275,6 +276,8 @@ set -g fish_term24bit 1 ")
    krita
    qtwayland-5
    wl-clipboard
+   ;; flameshot
+   swappy
    foot
    grim
    slurp
@@ -292,18 +295,17 @@ set -g fish_term24bit 1 ")
 (define* (automate-home-environment #:key
 				    (current-user "ph"))
   (home-environment
-   (packages '())
-   ;; (packages (append
-   ;; 	      %browsers
-   ;; 	      %multimedia
-   ;; 	      %vcs
-   ;; 	      %games
-   ;; 	      %dev
-   ;; 	      %tools
-   ;; 	      %mail
-   ;; 	      %editors
-   ;; 	      %wm
-   ;; 	      %fonts))
+    (packages (append
+    	      %browsers
+    	      %multimedia
+    	      %vcs
+    	      %games
+    	      %dev
+    	      %tools
+    	      %mail
+    	      %editors
+    	      %wm
+    	      %fonts))
    (services
     (cons*
      (service home-shepherd-service-type
@@ -358,6 +360,9 @@ set -g fish_term24bit 1 ")
 		 "niri.kdl"
 		 (local-file "../../../files/plain/niri.kdl")
 		 (list xwayland-satellite
+		       swappy
+		       slurp
+		       grim
 		       signal-desktop)))))
 
      (service home-noctalia-service-type)
@@ -374,7 +379,7 @@ set -g fish_term24bit 1 ")
 		       ("VISUAL" . "$EDITOR")
 		       ("LSP_USE_PLISTS" . "true")
 		       ("ESHELL" . ,(file-append fish "/bin/fish"))))
-     ;; (+home-emacs-service-type)
+     (+home-emacs-service-type)
      (simple-service 'fish-emacs-eat home-fish-service-type
 		     (home-fish-extension
 		      (config
@@ -390,6 +395,7 @@ set -g fish_term24bit 1 ")
 	      (home-xdg-mime-applications-configuration
 	       (default
 		 '((text/html . librewolf.desktop)
+		   (x-scheme-handler/slack . com.slack.Slack.desktop)
 		   (x-scheme-handler/http . librewolf.desktop)
 		   (x-scheme-handler/https . librewolf.desktop)))
 	       (desktop-entries
@@ -405,11 +411,6 @@ set -g fish_term24bit 1 ")
 	       (config (list
 			     (mixed-text-file
 			      "disable-fish-greetings" "set -U fish_greeting")
-			     (mixed-text-file
-			      "enable-foreign-fish-env"
-			      "set fish_function_path $fish_function_path $HOME/.guix-home/profile/share/fish/functions
-set -g DIRENV_WARN_TIMEOUT 10m
-fenv \"source $HOME/.guix-home/profile/etc/profile\"") ;; ensure all the environments variable are configured.
 			     (plain-file "fish-hydro-config.fish" %fish-hydro-config)
 			     (plain-file "add-npm-bin.fish" "fish_add_path $HOME/.local/npm/bin")))))
      %base-home-services))))

@@ -20,6 +20,7 @@
   #:use-module (gnu packages scanner)
   #:use-module (gnu packages shells)
   #:use-module (gnu packages ssh)
+  #:use-module (gnu packages terminals)
   #:use-module (gnu packages version-control)
   #:use-module (gnu packages video)
   #:use-module (gnu packages virtualization)
@@ -269,6 +270,7 @@
 	bluez-alsa
 	chili-sddm-theme-qt5
 	dconf
+	foot
 	egl-wayland
 	ghostscript
 	git

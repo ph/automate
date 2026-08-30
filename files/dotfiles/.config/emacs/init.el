@@ -1153,8 +1153,7 @@
 				       "git"
 				       "node"
 				       "rust"
-				       "rust:cargo"
-				       "nix-ph")
+				       "rust:cargo")
   "Packages installed in the agent sandbox."
   :type '(repeat string)
   :group 'agent)
@@ -1219,7 +1218,9 @@
   (setq agent-shell-anthropic-claude-environment
 	(agent-shell-make-environment-variables :inherit-env t))
   ;; TODO(ph): just use the proc directly.
-  (setq agent-shell-command-prefix (lambda (buffer) (ph/guix-container-prefix buffer))))
+  (setq agent-shell-command-prefix (lambda (buffer)
+				     (message "cli: %S" (ph/guix-container-prefix buffer))
+				     (ph/guix-container-prefix buffer))))
 
 (use-package symex-core)
 

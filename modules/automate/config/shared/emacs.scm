@@ -57,7 +57,6 @@
 		   (propagated-inputs (list emacs-consult emacs-embark))))
 
 (define %emacs-packages
-  '()
   (list emacs-evil/ph
 	emacs-org-super-agenda
 	emacs-evil-collection/ph
@@ -74,7 +73,7 @@
 	emacs-lambda-line
 	emacs-agent-shell
 	emacs-ox-pandoc
-	;; emacs-rustic/ph
+	emacs-rustic/ph
 	emacs-treemacs
 	emacs-treemacs-extra
 	emacs-treemacs-nerd-icons
@@ -126,6 +125,7 @@
 	emacs-htmlize
 	emacs-esxml
 	emacs-pass
+	emacs-zig-mode
 	emacs-password-store
 	emacs-auth-source-pass
 	emacs-envrc
@@ -152,6 +152,7 @@
 	emacs-mu4e-thread-folding
 	;; treesitter
 	emacs-treesit-auto
+	tree-sitter-zig
 	tree-sitter-bash
 	tree-sitter-cmake
 	tree-sitter-dockerfile

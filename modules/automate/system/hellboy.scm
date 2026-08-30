@@ -60,7 +60,7 @@
    (host-name "hellboy")
    (bootloader (bootloader-configuration
 		(bootloader grub-efi-bootloader)
-		(targets '("/boot/efi"))
+		(targets '("/efi"))
 		(keyboard-layout keyboard-layout)))
    (mapped-devices (list
 		    (mapped-device
@@ -83,6 +83,7 @@
 		  (file-system
 		   (mount-point "/nix")
 		   (device (file-system-label "root-fs"))
+		   (create-mount-point? #t)
 		   (type "btrfs")
 		   (options "subvol=@nix")
 		   (dependencies mapped-devices))

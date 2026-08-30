@@ -218,7 +218,7 @@ binds {
         Mod+Period                     { consume-or-expel-window-right; }
 
         Mod+Tab repeat=false           { toggle-overview; }
-
+        // Print                          { spawn "$$bin/grim$$ -t ppm -g \"$($$bin/slurp$$ -d)\" - | $$bin/swappy$$ -f - -o \"$HOME/Pictures/$(date '+%Y%m%d%H%M%S').png\""; }
         Print                          { screenshot; }
         Ctrl+Print                     { screenshot-screen; }
         Alt+Print                      { screenshot-window; }

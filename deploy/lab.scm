@@ -35,7 +35,6 @@
 		   (user "deploy")
 		   (port 4222)
 		   (system "x86_64-linux")))))
-(list
- %azzael
- ;; %lusk
- )
+
+(list %azzael
+      %lusk)
