@@ -32,5 +32,8 @@ directory = "/home/ph/src/automate/wallpapers"
     [wallpaper.monitors.eDP-1]
     path = "/home/ph/src/automate/wallpapers/kanagwa.jpg"
 
+[shell.session.power]
+suspend = "loginctl suspend-then-hibernate"
+
 [weather]
 enabled = false

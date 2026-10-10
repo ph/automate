@@ -40,6 +40,8 @@
   (operating-system
    (kernel linux-7.1)
    (kernel-arguments (cons*
+		      "resume=/dev/mapper/cryptroot"        ;device that holds /swapfile
+		      "resume_offset=51127552"              ;offset of /swapfile on device
 		      (format #f "lsm=~s"
 			      (string-join '("landlock"
 					     "yama"
@@ -103,7 +105,13 @@
 		   (type "tmpfs")
 		   (options "size=40G")
 		   (check? #f))
-		  %base-file-systems))))
+		  %base-file-systems))
+   (swap-devices
+    (list
+     (swap-space
+      (target "/.swapfile")
+      (dependencies (filter (file-system-mount-point-predicate "/")
+			    file-systems)))))))
 
 (define +profile/thinkpad-x1-carbon
   (compose (+service (udev-rules-service 'light light))
@@ -113,8 +121,12 @@
 	   (+service/openssh)
 	   +system/substitutes
 	   +networking/tailscale
-	   (+system/zram-device)
+	   ;; (+system/zram-device)
 	   +system/power-management
 	   +profile/ph))
 
 (+profile/thinkpad-x1-carbon %hellboy-os)
+
+;; sudo btrfs filesystem mkswapfile --size 20g /.swapfile
+;; sudo swapon /.swapfile
+;; sudo btrfs inspect-internal map-swapfile -r /.swapfile

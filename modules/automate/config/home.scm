@@ -254,6 +254,7 @@ set -g fish_term24bit 1 ")
    blueman
    imv
    signal-desktop
+   tuba
    mpv
    pamixer
    pulseaudio

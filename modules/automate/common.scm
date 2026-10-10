@@ -249,7 +249,23 @@
 	(service colord-service-type)
 	(service geoclue-service-type)
 	(service polkit-service-type)
-	(service elogind-service-type)
+	(service elogind-service-type
+		 (elogind-configuration
+		  (handle-power-key 'suspend-then-hibernate)
+		  (handle-suspend-key 'suspend-then-hibernate)
+		  (handle-hibernate-key 'hibernate)
+		  (handle-lid-switch 'suspend-then-hibernate)
+		  (handle-lid-switch-external-power 'suspend)
+
+		  (idle-action 'suspend-then-hibernate)
+		  (idle-action-seconds (* 20 60))
+
+		  ;; suspend leg
+		  (suspend-state '("mem"))
+		  ;; hibernate leg
+		  (hibernate-mode '("shutdown"))
+		  ;; how long it stays in RAM before falling through to disk
+		  (hibernate-delay-seconds (* 30 60))))
 	(service dbus-root-service-type)
 	(service ntp-service-type
 		 (ntp-configuration

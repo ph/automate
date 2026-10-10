@@ -120,6 +120,7 @@
 	   (+service/openssh)
 	   +profile/deployable
 	   +system/substitutes
+	   +networking/tailscale
 	   +networking/ip-forwarding
 	   +profile/root-disabled-login-passwd
 	   +networking/dhcp

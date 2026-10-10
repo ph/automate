@@ -68,7 +68,7 @@
 	emacs-elfeed
 	;; Revisit later
 	;; emacs-flyover
-	emacs-xref
+	;; emacs-xref
 	emacs-doom-modeline
 	emacs-lambda-line
 	emacs-agent-shell
@@ -127,7 +127,7 @@
 	emacs-pass
 	emacs-zig-mode
 	emacs-password-store
-	emacs-auth-source-pass
+	;; emacs-auth-source-pass
 	emacs-envrc
 	emacs-inheritenv
 	emacs-circe

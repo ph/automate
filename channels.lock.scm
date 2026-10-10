@@ -2,7 +2,7 @@
        (name 'guix)
        (url "https://git.guix.gnu.org/guix.git")
        (branch "master")
-       (commit "0bc7063da67b286c7faf1ead87a732be81100550")
+       (commit "4341c003d7655ac02d72aea58cda706d87d0f965")
        (introduction
         (make-channel-introduction
          "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -12,7 +12,7 @@
        (name 'nonguix)
        (url "https://gitlab.com/nonguix/nonguix")
        (branch "master")
-       (commit "accdba77be815bbe00868145dd66d68056eecf7a")
+       (commit "c0192e90a52cafb4d33b04734cbe9bbedd703a04")
        (introduction
         (make-channel-introduction
          "897c1a470da759236cc11798f4e0a5f7d4d59fbc"
@@ -22,7 +22,7 @@
        (name 'rosenthal)
        (url "https://codeberg.org/hako/rosenthal.git")
        (branch "trunk")
-       (commit "c6361f6e7b087a48eda47f32981cfda70c9fa424")
+       (commit "34502202bfad9a8edf120d005cdf33b20f19e03b")
        (introduction
         (make-channel-introduction
          "7677db76330121a901604dfbad19077893865f35"
@@ -42,7 +42,7 @@
        (name 'bluebox)
        (url "https://codeberg.org/lapislazuli/bluebox")
        (branch "main")
-       (commit "71628770c8612c041e06672f34c0c8e6fc67c13c")
+       (commit "a5b2168123bcc236f79cbb4f1c5d4cf5412ee31d")
        (introduction
         (make-channel-introduction
          "63350484aaacc362aea28fb14236019fced4050f"
