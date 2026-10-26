@@ -9,6 +9,6 @@
 
 (specifications->manifest (list "make"
 				"reuse"
-				"blue"
+				;;"blue"
 				"guile-next"
 				"guile-ares-rs"))

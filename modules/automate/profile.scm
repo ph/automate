@@ -5,6 +5,7 @@
 (define-module (automate profile)
   #:use-module (automate config home)
   #:use-module (automate config shared)
+  #:use-module (automate gnu packages wm)
   #:use-module (automate fragments)
   #:use-module (automate user)
   #:use-module (gnu packages audio)
@@ -280,7 +281,7 @@
 	libfreeaptx
 	light
 	mesa
-	niri
+	niri/ph
 	nix
 	openssh
 	hplip

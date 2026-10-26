@@ -30,6 +30,7 @@
   #:use-module (gnu packages curl)
   #:use-module (gnu packages dns)
   #:use-module (gnu packages kde-graphics)
+  #:use-module (automate gnu packages wm)
   #:use-module (gnu packages docker)
   #:use-module (gnu packages electronics)
   #:use-module (gnu packages emulators)
@@ -254,7 +255,7 @@ set -g fish_term24bit 1 ")
    blueman
    imv
    signal-desktop
-   tuba
+   ;;tuba
    mpv
    pamixer
    pulseaudio
@@ -274,8 +275,8 @@ set -g fish_term24bit 1 ")
 
 (define %multimedia
   (list
-   krita
-   qtwayland-5
+   ;; krita
+   ;; qtwayland-5
    wl-clipboard
    ;; flameshot
    swappy
@@ -356,6 +357,7 @@ set -g fish_term24bit 1 ")
 
      (service home-niri-service-type
 	      (home-niri-configuration
+	       (niri niri/ph)
 	       (config
 		(computed-substitution-with-inputs
 		 "niri.kdl"
@@ -378,6 +380,7 @@ set -g fish_term24bit 1 ")
      (simple-service 'emacs-environment home-environment-variables-service-type
 		     `(("EDITOR" . "emacsclient")
 		       ("VISUAL" . "$EDITOR")
+		       ("XDG_DATA_DIRS" . "/var/lib/flatpak/exports/share:/home/ph/.local/share/flatpak/exports/share:$XDG_DATA_DIRS")
 		       ("LSP_USE_PLISTS" . "true")
 		       ("ESHELL" . ,(file-append fish "/bin/fish"))))
      (+home-emacs-service-type)

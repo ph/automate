@@ -81,6 +81,10 @@ input {
                 click-method "button-areas"
         }
 
+        touch {
+                map-to-output "DP-2"
+        }
+
         warp-mouse-to-focus
 }
 
@@ -244,3 +248,100 @@ window-rule {
 }
 
 spawn-sh-at-startup "sleep 15; $$bin/signal-desktop$$ --use-tray-icon --start-in-tray"
+
+// Touchscreen gestures for the niri-tablet patchset.
+//
+// Include from your main config:   include "~/.config/niri/cfg/gestures.kdl"
+// (or paste the gestures block straight into config.kdl). This is the
+// scheme the project ships and its author runs daily; treat it as the
+// default and edit it as you see fit. Every action node takes any niri
+// action, same as keybinds.
+gestures {
+    // Dots that follow the fingers on screen (demos, debugging).
+    // "gestures": only while a multi-finger gesture is down. "all": every
+    // finger. Remove the line to disable.
+    show-touch-points "gestures"
+
+    // Per-event gesture logging for bug reports ("gesture-debug:" lines,
+    // info level, applies live from the next touch). Uncomment to enable.
+    // debug-log
+
+    // Multi-finger gestures: the two animated drags, taps, flicks, hold-swipes.
+    touchscreen-swipe {
+        // Base finger count for everything in this block that has no "more"
+        // in its name (the drags and `tap`): 3 or 4. The *-more nodes below
+        // override their gesture at one finger more than this (4 by default).
+        fingers 3
+
+        // What the horizontal drag does: "resize-column" widens/narrows the
+        // focused window, tracking the fingers 1:1; the default "move-view"
+        // scrolls the view across columns instead.
+        // horizontal-swipe "resize-column"
+        horizontal-swipe "move-view"
+
+        // The discrete gestures (taps, flicks) fire once, on finger lift.
+        tap             { maximize-column; }                    // maximize / restore
+        tap-more        { toggle-overview; }                    // niri's own overview
+        swipe-more-down { close-window; }
+        swipe-more-up   { fullscreen-window; }                  // fullscreen on/off
+
+        // Extra-finger horizontal flicks, unbound by default: uncommented
+        // they leave those flicks on the horizontal drag above (resize or
+        // move-view). Examples:
+        // swipe-more-left { focus-column-left; }
+        // swipe-more-right { focus-column-right; }
+
+        // Prefer an app launcher on the extra-finger tap? Comment out the
+        // toggle-overview line above and uncomment ONE of these (or write
+        // your own spawn):
+        // tap-more { spawn-sh "noctalia msg panel-toggle launcher"; }  // Noctalia
+        // tap-more { spawn "fuzzel"; }                                 // fuzzel
+        // tap-more { spawn "wofi" "--show" "drun"; }                   // wofi
+        // tap-more { spawn "rofi" "-show" "drun"; }                    // rofi
+
+        // Press, hold ~400ms, then swipe: moves the focused window (left or
+        // right a column, up or down a workspace) instead of the animated
+        // drag. Quick swipes never trigger it.
+        hold {
+            left { move-column-left; }
+            right { move-column-right; }
+            up { move-window-to-workspace-up; }
+            down { move-window-to-workspace-down; }
+        }
+    }
+
+    // One finger swiping inward from a screen edge. Taps and short drags in
+    // the strip still reach apps. Don't bind an edge covered by a
+    // swipe-driven panel (e.g. a notification pull-down): it would fire
+    // mid-drag.
+    touchscreen-edge-swipe {
+        bottom { spawn-sh "~/.local/bin/niri-osk.sh"; }
+        top { toggle-overview; }
+        left { focus-column-left; }
+        right { focus-column-right; }
+    }
+
+    // One finger swiping diagonally inward from a corner. Mostly straight
+    // swipes near a corner do nothing on purpose, so the edges stay usable.
+    // Unbound by default: uncomment to bind a corner.
+    // touchscreen-corner-swipe {
+    //     top-left { maximize-column; }
+    //     top-right { toggle-overview; }
+    //     bottom-left { spawn "foot"; }
+    //     bottom-right { close-window; }
+    // }
+}
+
+// Using wvkbd as the OSK with a non-US system layout? A two-group xkb layout
+// lets the OSK type US while the physical keyboard stays native, and
+// niri-osk.sh flips the active group on toggle. This belongs in your INPUT
+// config (config.kdl or its input include), not in this file - and the
+// layout node lives under xkb:
+//
+//     input {
+//         keyboard {
+//             xkb {
+//                 layout "pt,us"   // your layout first, us second
+//             }
+//         }
+//     }
