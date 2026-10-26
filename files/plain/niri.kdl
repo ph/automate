@@ -103,6 +103,7 @@ output "DP-3" {
         position x=0 y=0
 }
 
+
 binds {
         // Media keys, mostly for the laptop.
         XF86AudioRaiseVolume  allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
