@@ -51,6 +51,7 @@
   #:use-module (nongnu packages video)
   #:use-module (rosenthal packages networking)
   #:use-module (rosenthal services networking)
+  #:use-module (rosenthal services base)
   #:export (+networking/increase-udp-buffer-size
 	    +networking/ip-forwarding
 	    +networking/tailscale
@@ -260,6 +261,19 @@
 		      (password-authentication? password-authentication?)
 		      (port-number port-number)))))
 
+(define +service/noctalia-greeter
+  (compose
+   (+service(service greetd-service-type
+		     (greetd-configuration
+		      (greeter-supplementary-groups '("video" "input"))
+		      (terminals
+		       (list (greetd-terminal-configuration
+			      (terminal-vt "1")
+			      (terminal-switch #t)
+			      (initial-session-command "dbus-run-session niri --session")
+			      (default-session-command (greetd-noctalia-greeter-session))))))))
+   (+service (service noctalia-greeter-service-type))))
+
 (define +service/sddm-login-manager
   (+service (service sddm-service-type
 		     (sddm-configuration
@@ -301,7 +315,8 @@
    (+packages (%packages/desktop))
    (+service (service sane-service-type))
    +system/pam-realtime-options
-   +service/sddm-login-manager
+   +service/noctalia-greeter
+   ;; +service/sddm-login-manager
    +profile/gaming
    +profile/bluetooth))
 
