@@ -28,6 +28,7 @@
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xorg)
+  #:use-module (gnu packages desktop)
   #:use-module (gnu services base)
   #:use-module (gnu services desktop)
   #:use-module (gnu services docker)
@@ -54,7 +55,7 @@
   #:use-module (rosenthal packages wm)
   #:use-module (rosenthal utils file)
   #:use-module (rosenthal services networking)
-  #:use-module (rosenthal services base)
+  #:use-module (automate overrides noctalia-greeter)
   #:export (+networking/increase-udp-buffer-size
 	    +networking/ip-forwarding
 	    +networking/tailscale
@@ -287,6 +288,8 @@
 (define +service/noctalia-greeter
   (compose
    (+service
+    (service accountsservice-service-type))
+   (+service
     (simple-service 'noctalia-greeter-polkit polkit-service-type
 		    (list (computed-file "noctalia-greeter-polkit"
 					 (with-imported-modules '((guix build utils))
@@ -305,7 +308,21 @@
 			       (terminal-switch #t)
 			       (initial-session-command "dbus-run-session niri --session")
 			       (default-session-command (greetd-noctalia-greeter-session))))))))
-   (+service (service noctalia-greeter-service-type))))
+   (+service (service noctalia-greeter-service-type
+		      (noctalia-greeter-configuration
+		       (greeter-yaml
+			(plain-file "greeter.yml"
+				    "
+[appearance]
+hide_logo = true
+
+[user]
+default = \"ph\"
+
+[session]
+default = \"niri\"
+")))))))
+
 
 (define +service/sddm-login-manager
   (+service (service sddm-service-type

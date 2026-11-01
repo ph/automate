@@ -276,9 +276,6 @@
 	(service x11-socket-directory-service-type)
 	(service pulseaudio-service-type)
 	(service alsa-service-type)
-	(service thermald-service-type
-		 (thermald-configuration
-		  (ignore-cpuid-check? #t)))
 	(service qemu-binfmt-service-type
 		 (qemu-binfmt-configuration
 		  (platforms (lookup-qemu-platforms "aarch64"))))))

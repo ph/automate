@@ -105,6 +105,7 @@
   #:use-module (nongnu packages mozilla)
   #:use-module (nonguix utils)
   #:use-module (rosenthal packages rust-apps)
+  #:use-module (rosenthal packages networking)
   #:use-module (rosenthal home services desktop)
   #:use-module (rosenthal services shellutils)
   #:use-module (rosenthal services desktop)
@@ -366,6 +367,7 @@ set -g fish_term24bit 1 ")
 		       swappy
 		       slurp
 		       grim
+		       tailscale
 		       signal-desktop)))))
 
      (service home-noctalia-service-type)

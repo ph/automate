@@ -249,6 +249,7 @@ window-rule {
 }
 
 spawn-sh-at-startup "sleep 15; $$bin/signal-desktop$$ --use-tray-icon --start-in-tray"
+spawn-sh-at-startup "sleep 15; $$bin/tailscale$$ systray"
 
 // Touchscreen gestures for the niri-tablet patchset.
 //
