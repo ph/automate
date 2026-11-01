@@ -28,9 +28,11 @@
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xorg)
+  #:use-module (gnu packages desktop)
   #:use-module (gnu services base)
   #:use-module (gnu services desktop)
   #:use-module (gnu services docker)
+  #:use-module (gnu services dbus)
   #:use-module (gnu services guix)
   #:use-module (gnu services linux)
   #:use-module (gnu services mcron)
@@ -50,7 +52,10 @@
   #:use-module (guix gexp)
   #:use-module (nongnu packages video)
   #:use-module (rosenthal packages networking)
+  #:use-module (rosenthal packages wm)
+  #:use-module (rosenthal utils file)
   #:use-module (rosenthal services networking)
+  #:use-module (automate overrides noctalia-greeter)
   #:export (+networking/increase-udp-buffer-size
 	    +networking/ip-forwarding
 	    +networking/tailscale
@@ -260,10 +265,69 @@
 		      (password-authentication? password-authentication?)
 		      (port-number port-number)))))
 
+(define noctalia-greeter-polkit-rules
+  (computed-substitution-with-inputs
+   "noctalia-greeter-polkit-actions.rules"
+   (plain-file "noctalia-greeter-actions.rules"
+	       "polkit.addRule(function (action, subject) {
+	polkit.log(\"noctalia: \" + action + \" | \" + subject);
+    var allowedUsers = [\"ph\"];
+    if (
+	action.id == \"org.noctalia.greeter.sync-appearance\" &&
+	    action.lookup(\"program\") == \"$$bin/noctalia-greeter-apply-appearance$$\" &&
+	    action.lookup(\"user\") == \"root\" &&
+	    subject.local &&
+	    subject.active &&
+	    allowedUsers.indexOf(subject.user) >= 0
+    ) {
+	return polkit.Result.YES;
+    }
+});")
+   (list noctalia-greeter)))
+
+(define +service/noctalia-greeter
+  (compose
+   (+service
+    (service accountsservice-service-type))
+   (+service
+    (simple-service 'noctalia-greeter-polkit polkit-service-type
+		    (list (computed-file "noctalia-greeter-polkit"
+					 (with-imported-modules '((guix build utils))
+					   #~(begin
+					       (use-modules (guix build utils))
+					       (let ((dir (string-append #$output "/share/polkit-1/rules.d")))
+						 (mkdir-p dir)
+						 (copy-file #$noctalia-greeter-polkit-rules
+							    (string-append dir "/49-noctalia-greeter.rules")))))))))
+   (+service (service greetd-service-type
+		      (greetd-configuration
+		       (greeter-supplementary-groups '("video" "input"))
+		       (terminals
+			(list (greetd-terminal-configuration
+			       (terminal-vt "1")
+			       (terminal-switch #t)
+			       (initial-session-command "dbus-run-session niri --session")
+			       (default-session-command (greetd-noctalia-greeter-session))))))))
+   (+service (service noctalia-greeter-service-type
+		      (noctalia-greeter-configuration
+		       (greeter-yaml
+			(plain-file "greeter.yml"
+				    "
+[appearance]
+hide_logo = true
+
+[user]
+default = \"ph\"
+
+[session]
+default = \"niri\"
+")))))))
+
+
 (define +service/sddm-login-manager
   (+service (service sddm-service-type
 		     (sddm-configuration
-		       (theme "chili")))))
+		      (theme "chili")))))
 
 (define (%packages/desktop)
   (list awesome
@@ -301,7 +365,8 @@
    (+packages (%packages/desktop))
    (+service (service sane-service-type))
    +system/pam-realtime-options
-   +service/sddm-login-manager
+   +service/noctalia-greeter
+   ;; +service/sddm-login-manager
    +profile/gaming
    +profile/bluetooth))
 

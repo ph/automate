@@ -155,10 +155,10 @@
   (list (service login-service-type)
 
 	(service virtual-terminal-service-type)
-	(service console-font-service-type
-		 (map (lambda (tty)
-			(cons tty %default-console-font))
-                      '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
+	;; (service console-font-service-type
+	;; 	 (map (lambda (tty)
+	;; 		(cons tty %default-console-font))
+        ;;               '("tty1" "tty2" "tty3" "tty4" "tty5" "tty6")))
 
 	(service shepherd-system-log-service-type)
 	(service agetty-service-type (agetty-configuration
@@ -167,18 +167,18 @@
                                       (tty #f) ; automatic
                                       (shepherd-requirement '(syslogd))))
 
-	(service mingetty-service-type (mingetty-configuration
-					(tty "tty1")))
-	(service mingetty-service-type (mingetty-configuration
-					(tty "tty2")))
-	(service mingetty-service-type (mingetty-configuration
-					(tty "tty3")))
-	(service mingetty-service-type (mingetty-configuration
-					(tty "tty4")))
-	(service mingetty-service-type (mingetty-configuration
-					(tty "tty5")))
-	(service mingetty-service-type (mingetty-configuration
-					(tty "tty6")))
+	;; (service mingetty-service-type (mingetty-configuration
+	;; 				(tty "tty1")))
+	;; (service mingetty-service-type (mingetty-configuration
+	;; 				(tty "tty2")))
+	;; (service mingetty-service-type (mingetty-configuration
+	;; 				(tty "tty3")))
+	;; (service mingetty-service-type (mingetty-configuration
+	;; 				(tty "tty4")))
+	;; (service mingetty-service-type (mingetty-configuration
+	;; 				(tty "tty5")))
+	;; (service mingetty-service-type (mingetty-configuration
+	;; 				(tty "tty6")))
 
 	;; Extra Bash configuration including Bash completion and aliases.
 	(service etc-bashrc-d-service-type)
@@ -276,7 +276,6 @@
 	(service x11-socket-directory-service-type)
 	(service pulseaudio-service-type)
 	(service alsa-service-type)
-	(service thermald-service-type)
 	(service qemu-binfmt-service-type
 		 (qemu-binfmt-configuration
 		  (platforms (lookup-qemu-platforms "aarch64"))))))
