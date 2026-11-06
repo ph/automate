@@ -11,3 +11,4 @@ This is how my machines are bootstrap, there are not completely automated but th
 ```
 	sudo -E guix time-machine -C ./channels.lock.scm -- -L ./modules ./modules/automate/system/hellboy.scm
 ```
+.

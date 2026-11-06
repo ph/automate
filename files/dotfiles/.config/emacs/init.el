@@ -1669,3 +1669,36 @@
 	(let ((inhibit-read-only t))
 	  (ansi-color-apply-on-region compilation-filter-start (point))))
       (add-hook 'compilation-filter-hook 'colorize-compilation-buffer))))
+
+;;; deluge-mode.el --- Minimal major mode for Zoho Deluge scripts -*- lexical-binding: t; -*-
+
+;; Deluge's syntax is close to JavaScript (braces, // comments, double-quoted
+;; strings), so this derives from js-mode and adds Deluge keywords on top.
+
+(require 'js)
+
+(defconst deluge-font-lock-keywords
+  `((,(regexp-opt '("if" "else" "for" "each" "in" "return" "continue" "break"
+                    "info" "invokeurl" "try" "catch" "void")
+                  'symbols)
+     . font-lock-keyword-face)
+    (,(regexp-opt '("true" "false" "null") 'symbols) . font-lock-constant-face)
+    (,(regexp-opt '("Map" "List" "Collection" "string" "int" "decimal" "bool" "date")
+                  'symbols)
+     . font-lock-type-face)
+    ;; invokeurl block parameters: url, type, headers, parameters, connection...
+    ("^\\s-*\\([a-zA-Z_]+\\)\\s-*:" 1 font-lock-builtin-face)
+    ;; zoho.* built-ins such as zoho.currenttime
+    ("\\_<zoho\\(?:\\.[a-zA-Z_]+\\)+" . font-lock-builtin-face)))
+
+;;;###autoload
+(define-derived-mode deluge-mode js-mode "Deluge"
+  "Major mode for editing Zoho Deluge scripts."
+  (setq-local js-indent-level 4)
+  (font-lock-add-keywords nil deluge-font-lock-keywords))
+
+;;;###autoload
+(add-to-list 'auto-mode-alist '("\\.\\(deluge\\|dg\\)\\'" . deluge-mode))
+
+(provide 'deluge-mode)
+;;; deluge-mode.el ends here

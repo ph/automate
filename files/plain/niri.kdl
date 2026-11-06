@@ -92,15 +92,24 @@ output "eDP-1" {
         scale 2.0
 }
 
-// Babayaga
-output "DP-1" {
-        scale 1.4
+output "HP Inc. HP Z27 CN4931126Z" {
+    mode "3840x2160@60.000"
+    scale 1.4
+    transform "90"
+    position x=1017 y=0
 }
 
-output "DP-3" {
-        scale 1.4
-        transform "90"
-        position x=0 y=0
+output "Cyrix Corporation XENEON EDGE 231526395656" {
+    mode "2560x720@60.266"
+    scale 1
+    position x=2560 y=1543
+}
+
+output "HP Inc. HP Z27 CN483803K8" {
+    mode "3840x2160@60.000"
+    scale 1.4
+    position x=2560 y=0
+    focus-at-startup
 }
 
 

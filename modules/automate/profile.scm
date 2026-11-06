@@ -28,7 +28,7 @@
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
   #:use-module (gnu packages xorg)
-  #:use-module (gnu packages desktop)
+  ;; #:use-module (gnu packages desktop)
   #:use-module (gnu services base)
   #:use-module (gnu services desktop)
   #:use-module (gnu services docker)
@@ -265,6 +265,7 @@
 		      (password-authentication? password-authentication?)
 		      (port-number port-number)))))
 
+;; TODO: This need to accept a users, maybe we can upstream this chane to Rosenthal?
 (define noctalia-greeter-polkit-rules
   (computed-substitution-with-inputs
    "noctalia-greeter-polkit-actions.rules"
@@ -287,8 +288,8 @@
 
 (define +service/noctalia-greeter
   (compose
-   (+service
-    (service accountsservice-service-type))
+   ;; (+service
+    ;; (service accountsservice-service-type))
    (+service
     (simple-service 'noctalia-greeter-polkit polkit-service-type
 		    (list (computed-file "noctalia-greeter-polkit"
@@ -308,6 +309,7 @@
 			       (terminal-switch #t)
 			       (initial-session-command "dbus-run-session niri --session")
 			       (default-session-command (greetd-noctalia-greeter-session))))))))
+
    (+service (service noctalia-greeter-service-type
 		      (noctalia-greeter-configuration
 		       (greeter-yaml
@@ -320,8 +322,8 @@ hide_logo = true
 default = \"ph\"
 
 [session]
-default = \"niri\"
-")))))))
+default = \"niri\"")))))
+   ))
 
 
 (define +service/sddm-login-manager
